@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Spectral:ital,wght@0,400;0,600;1,400&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(165deg, #0F1A12 0%, #1B2E22 50%, #0F1A12 100%);
+  color: #E8E4DE;
+  min-height: 100vh;
+}
+
+::selection { background: rgba(168,196,154,0.3); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(168,196,154,0.2); border-radius: 3px; }
+
+textarea:focus, input:focus { border-color: rgba(168,196,154,0.4) !important; }
