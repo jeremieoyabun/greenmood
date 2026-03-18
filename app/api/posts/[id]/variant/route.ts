@@ -5,7 +5,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   try {
     const { id: postId } = await params
     const body = await req.json()
-    const { variantId, text, hashtags, firstComment } = body
+    const { variantId, text, hashtags, firstComment, imageUrl } = body
 
     if (!variantId) {
       return NextResponse.json(
@@ -33,6 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         ...(text !== undefined && { text }),
         ...(hashtags !== undefined && { hashtags }),
         ...(firstComment !== undefined && { firstComment }),
+        ...(imageUrl !== undefined && { imageUrl }),
       },
     })
 

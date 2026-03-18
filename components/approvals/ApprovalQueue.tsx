@@ -21,6 +21,7 @@ interface PostData {
     firstComment: string | null
     notes: string | null
     timing: string | null
+    imageUrl: string | null
   } | null
   lastStep: { comment: string | null; action: string } | null
   date: string | null
@@ -58,6 +59,25 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
   const [analyzing, setAnalyzing] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  // Filters
+  const [filterMarket, setFilterMarket] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterPlatform, setFilterPlatform] = useState('all')
+  // Scheduling
+  const [scheduleDate, setScheduleDate] = useState('')
+  const [scheduleTime, setScheduleTime] = useState('12:00')
+  const [showScheduler, setShowScheduler] = useState(false)
+
+  const markets = Array.from(new Set(posts.map(p => p.market)))
+  const statuses = Array.from(new Set(posts.map(p => p.status)))
+  const platforms = Array.from(new Set(posts.map(p => p.platform)))
+
+  const filteredPosts = posts.filter(p => {
+    if (filterMarket !== 'all' && p.market !== filterMarket) return false
+    if (filterStatus !== 'all' && p.status !== filterStatus) return false
+    if (filterPlatform !== 'all' && p.platform !== filterPlatform) return false
+    return true
+  })
 
   const handleImageUpload = async (file: File) => {
     // Show preview
@@ -74,7 +94,14 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       if (selectedPost?.id) formData.append('postId', selectedPost.id)
       const res = await fetch('/api/assets/analyze', { method: 'POST', body: formData })
       const data = await res.json()
-      if (data.success) setImageAnalysis(data.data)
+      if (data.success) {
+        setImageAnalysis(data.data)
+        // Save image as data URL to DB
+        if (selectedPost?.variant) {
+          const dataUrl = URL.createObjectURL(file)
+          saveImageUrl(dataUrl)
+        }
+      }
       else setImageAnalysis({ status: 'error', summary: data.error })
     } catch {
       setImageAnalysis({ status: 'error', summary: 'Analysis failed' })
@@ -153,7 +180,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
         { action: 'REJECT', label: 'Reject', variant: 'danger' as const },
       ]
       case 'READY_TO_SCHEDULE': return [
-        { action: 'APPROVE', label: 'Mark Scheduled', variant: 'primary' as const },
+        { action: 'SCHEDULE', label: 'Schedule Post', variant: 'primary' as const },
       ]
       case 'SCHEDULED': return [
         { action: 'APPROVE', label: 'Mark Published', variant: 'primary' as const },
@@ -165,16 +192,71 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
     }
   }
 
+  // Save image URL to DB when uploaded
+  const saveImageUrl = async (url: string) => {
+    if (!selectedPost?.variant) return
+    await fetch(`/api/posts/${selectedPost.id}/variant`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variantId: selectedPost.variant.id, imageUrl: url }),
+    })
+  }
+
+  const handleSchedule = async () => {
+    if (!selectedPost || !scheduleDate) { alert('Pick a date first'); return }
+    setApproving('SCHEDULE')
+    try {
+      // Update calendar slot date/time
+      const res = await fetch(`/api/posts/${selectedPost.id}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: scheduleDate, time: scheduleTime }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        // Also advance status
+        await handleApproval('APPROVE')
+        setShowScheduler(false)
+      } else alert('Schedule failed: ' + data.error)
+    } catch { alert('Schedule failed') }
+    setApproving(null)
+  }
+
   return (
     <div className="flex gap-4">
-      {/* Post List */}
+      {/* Filters */}
       <div className="w-1/2 space-y-2">
-        {posts.length === 0 ? (
+        <div className="flex gap-2 mb-3 flex-wrap">
+          <select value={filterMarket} onChange={e => setFilterMarket(e.target.value)}
+            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            <option value="all">All Markets</option>
+            {markets.map(m => (
+              <option key={m} value={m}>{MARKETS[m]?.emoji} {MARKETS[m]?.name || m}</option>
+            ))}
+          </select>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
+            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            <option value="all">All Statuses</option>
+            {statuses.map(s => (
+              <option key={s} value={s}>{POST_STATUS_CONFIG[s as keyof typeof POST_STATUS_CONFIG]?.label || s}</option>
+            ))}
+          </select>
+          <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)}
+            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            <option value="all">All Platforms</option>
+            {platforms.map(p => (
+              <option key={p} value={p}>{p}</option>
+            ))}
+          </select>
+          <span className="text-[9px] text-gm-cream/25 self-center ml-auto">{filteredPosts.length} posts</span>
+        </div>
+
+        {filteredPosts.length === 0 ? (
           <Card>
-            <EmptyState title="No pending approvals" description="Generate content in the Composer to start the workflow." />
+            <EmptyState title="No posts match filters" description="Try changing your filters or generate new content." />
           </Card>
         ) : (
-          posts.map((post) => {
+          filteredPosts.map((post) => {
             const config = POST_STATUS_CONFIG[post.status as keyof typeof POST_STATUS_CONFIG]
             const isSelected = selectedPost?.id === post.id
             return (
@@ -182,7 +264,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 key={post.id}
                 hover
                 className={`cursor-pointer transition-all ${isSelected ? 'ring-1 ring-gm-sage/30 bg-white/[0.03]' : ''}`}
-                onClick={() => { setSelectedPost(post); setEditing(false); setShowReject(false); setImagePreview(null); setImageAnalysis(null) }}
+                onClick={() => { setSelectedPost(post); setEditing(false); setShowReject(false); setShowScheduler(false); setImagePreview(post.variant?.imageUrl || null); setImageAnalysis(null) }}
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Badge variant={
@@ -422,16 +504,46 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                         <Button variant="outline" size="sm" onClick={() => { setShowReject(false); setRejectComment('') }}>Cancel</Button>
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {getActions(selectedPost.status).map(({ action, label, variant }) => (
-                        <Button key={action} variant={variant} size="sm" loading={approving === action}
-                          onClick={() => action === 'REJECT' ? setShowReject(true) : handleApproval(action)}>
-                          {label}
-                        </Button>
-                      ))}
-                    </div>
-                  )}
+                  ) : showScheduler ? (
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="text-[9px] uppercase tracking-wider text-gm-cream/40 block mb-1">Date</label>
+                            <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                          </div>
+                          <div className="w-24">
+                            <label className="text-[9px] uppercase tracking-wider text-gm-cream/40 block mb-1">Time</label>
+                            <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
+                              className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="primary" size="sm" loading={approving === 'SCHEDULE'} onClick={handleSchedule}>
+                            Confirm Schedule
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setShowScheduler(false)}>Cancel</Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {getActions(selectedPost.status).map(({ action, label, variant }) => (
+                          <Button key={action} variant={variant} size="sm" loading={approving === action}
+                            onClick={() => {
+                              if (action === 'REJECT') setShowReject(true)
+                              else if (action === 'SCHEDULE') {
+                                setScheduleDate(selectedPost.date ? selectedPost.date.split('T')[0] : new Date().toISOString().split('T')[0])
+                                setScheduleTime(selectedPost.time || '12:00')
+                                setShowScheduler(true)
+                              }
+                              else handleApproval(action)
+                            }}>
+                            {label}
+                          </Button>
+                        ))}
+                      </div>
+                    )}
                 </div>
               </div>
             )}

@@ -48,6 +48,7 @@ async function getApprovalData() {
       firstComment: p.variants[0].firstComment,
       notes: p.variants[0].notes,
       timing: p.variants[0].timing,
+      imageUrl: (p.variants[0] as any).imageUrl || null,
     } : null,
     lastStep: p.approvalSteps[0] ? {
       comment: p.approvalSteps[0].comment,

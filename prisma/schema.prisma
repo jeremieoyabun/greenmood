@@ -194,6 +194,7 @@ model PostVariant {
   firstComment String?       @map("first_comment")
   timing       String?
   notes        String?
+  imageUrl     String?       @map("image_url")
   isActive     Boolean       @default(true) @map("is_active")
   source       VariantSource @default(AI_GENERATED)
   createdAt    DateTime      @default(now()) @map("created_at")
