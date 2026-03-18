@@ -80,9 +80,16 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
   })
 
   const handleImageUpload = async (file: File) => {
-    // Show preview
+    // Convert to persistent data URL
     const reader = new FileReader()
-    reader.onload = (e) => setImagePreview(e.target?.result as string)
+    reader.onload = async (e) => {
+      const dataUrl = e.target?.result as string
+      setImagePreview(dataUrl)
+      // Persist to DB immediately
+      if (selectedPost?.variant) {
+        await saveImageUrl(dataUrl)
+      }
+    }
     reader.readAsDataURL(file)
 
     // Analyze
@@ -94,14 +101,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       if (selectedPost?.id) formData.append('postId', selectedPost.id)
       const res = await fetch('/api/assets/analyze', { method: 'POST', body: formData })
       const data = await res.json()
-      if (data.success) {
-        setImageAnalysis(data.data)
-        // Save image as data URL to DB
-        if (selectedPost?.variant) {
-          const dataUrl = URL.createObjectURL(file)
-          saveImageUrl(dataUrl)
-        }
-      }
+      if (data.success) setImageAnalysis(data.data)
       else setImageAnalysis({ status: 'error', summary: data.error })
     } catch {
       setImageAnalysis({ status: 'error', summary: 'Analysis failed' })
@@ -183,7 +183,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
         { action: 'SCHEDULE', label: 'Schedule Post', variant: 'primary' as const },
       ]
       case 'SCHEDULED': return [
-        { action: 'APPROVE', label: 'Mark Published', variant: 'primary' as const },
+        { action: 'PUBLISH', label: 'Publish Now', variant: 'primary' as const },
       ]
       case 'REJECTED': return [
         { action: 'APPROVE', label: 'Back to Draft', variant: 'secondary' as const },
@@ -200,6 +200,24 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ variantId: selectedPost.variant.id, imageUrl: url }),
     })
+  }
+
+  const handlePublish = async () => {
+    if (!selectedPost) return
+    setApproving('PUBLISH')
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId: selectedPost.id }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`Published successfully! Platform ID: ${data.data?.platformId || 'OK'}`)
+        window.location.reload()
+      } else alert('Publish failed: ' + data.error)
+    } catch { alert('Publish failed') }
+    setApproving(null)
   }
 
   const handleSchedule = async () => {
@@ -537,6 +555,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                                 setScheduleTime(selectedPost.time || '12:00')
                                 setShowScheduler(true)
                               }
+                              else if (action === 'PUBLISH') handlePublish()
                               else handleApproval(action)
                             }}>
                             {label}

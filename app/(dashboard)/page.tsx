@@ -31,7 +31,7 @@ async function getDashboardData() {
     prisma.knowledgeBaseEntry.count({ where: { workspaceId, isActive: true } }),
     prisma.post.count({ where: { workspaceId } }),
     prisma.post.count({ where: { workspaceId, status: { in: ['AI_GENERATED', 'FACT_CHECKED', 'BRAND_APPROVED'] } } }),
-    prisma.post.count({ where: { workspaceId, status: 'READY_TO_SCHEDULE' } }),
+    prisma.post.count({ where: { workspaceId, status: { in: ['BRAND_APPROVED', 'READY_TO_SCHEDULE', 'SCHEDULED'] } } }),
     prisma.post.count({ where: { workspaceId, status: 'PUBLISHED' } }),
     prisma.competitorEntity.count({ where: { isActive: true } }),
     prisma.intelligenceSignal.count({ where: { isDuplicate: false } }),
