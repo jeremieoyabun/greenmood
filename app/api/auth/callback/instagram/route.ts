@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * Instagram OAuth Callback (New Instagram API)
- *
- * Flow:
- * 1. User clicks Connect → redirects to instagram.com/oauth/authorize
- * 2. User authorizes → Instagram redirects here with ?code=xxx
- * 3. We exchange code for short-lived token
- * 4. Exchange short-lived for long-lived token (60 days)
- * 5. Get user profile info
- * 6. Store and redirect back to settings
- */
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.greenmood.be'
+const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
@@ -18,24 +10,23 @@ export async function GET(req: NextRequest) {
   const error = searchParams.get('error')
 
   if (error) {
-    console.error('Instagram OAuth denied:', error, searchParams.get('error_description'))
-    return NextResponse.redirect(new URL('/settings?error=instagram_denied', req.url))
+    console.error('Instagram OAuth denied:', error)
+    return NextResponse.redirect(`${APP_URL}/settings?error=instagram_denied`)
   }
 
   if (!code) {
-    return NextResponse.redirect(new URL('/settings?error=no_code', req.url))
+    return NextResponse.redirect(`${APP_URL}/settings?error=no_code`)
   }
 
   try {
     const appId = process.env.INSTAGRAM_APP_ID
     const appSecret = process.env.INSTAGRAM_APP_SECRET
-    // Use the same origin that received this callback — must match what was sent to Instagram
-    const origin = `https://${req.headers.get('host') || 'app.greenmood.be'}`
-    const redirectUri = `${origin}/api/auth/callback/instagram`
 
     if (!appId || !appSecret) {
-      return NextResponse.redirect(new URL('/settings?error=instagram_not_configured', req.url))
+      return NextResponse.redirect(`${APP_URL}/settings?error=instagram_not_configured`)
     }
+
+    console.log('Instagram token exchange — redirect_uri:', REDIRECT_URI)
 
     // Step 1: Exchange code for short-lived token
     const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
@@ -45,16 +36,16 @@ export async function GET(req: NextRequest) {
         client_id: appId,
         client_secret: appSecret,
         grant_type: 'authorization_code',
-        redirect_uri: redirectUri,
+        redirect_uri: REDIRECT_URI,
         code,
       }),
     })
     const tokenData = await tokenRes.json()
 
     if (!tokenData.access_token) {
-      console.error('Instagram token exchange failed:', tokenData, 'redirectUri used:', redirectUri)
+      console.error('Instagram token exchange failed:', JSON.stringify(tokenData))
       const errorDetail = tokenData.error_message || tokenData.error?.message || 'token_exchange_failed'
-      return NextResponse.redirect(new URL(`/settings?error=${encodeURIComponent(errorDetail)}`, req.url))
+      return NextResponse.redirect(`${APP_URL}/settings?error=${encodeURIComponent(errorDetail)}`)
     }
 
     const shortToken = tokenData.access_token
@@ -74,22 +65,17 @@ export async function GET(req: NextRequest) {
     const profile = await profileRes.json()
 
     console.log('Instagram OAuth success:', {
-      state,
-      userId,
+      state, userId,
       username: profile.username,
       accountType: profile.account_type,
       tokenExpires: longTokenData.expires_in ? `${Math.round(longTokenData.expires_in / 86400)} days` : 'unknown',
     })
 
-    // TODO: Save token + profile to social_accounts table in DB
-    // For now, redirect with success info
-    const successUrl = new URL('/settings', req.url)
-    successUrl.searchParams.set('connected', 'instagram')
-    successUrl.searchParams.set('username', profile.username || '')
-    return NextResponse.redirect(successUrl)
-
+    return NextResponse.redirect(
+      `${APP_URL}/settings?connected=instagram&username=${encodeURIComponent(profile.username || '')}`
+    )
   } catch (error) {
     console.error('Instagram OAuth error:', error)
-    return NextResponse.redirect(new URL('/settings?error=instagram_error', req.url))
+    return NextResponse.redirect(`${APP_URL}/settings?error=instagram_error`)
   }
 }
