@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { prisma } from './db'
 import { createHash, randomBytes } from 'crypto'
 
@@ -27,7 +28,7 @@ export async function createSession(userId: string): Promise<string> {
   return token
 }
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async function getCurrentUser() {
   try {
     const cookieStore = await cookies()
     const sessionToken = cookieStore.get(SESSION_COOKIE)?.value
@@ -53,7 +54,7 @@ export async function getCurrentUser() {
   } catch {
     return null
   }
-}
+})
 
 export type UserWithAccess = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 

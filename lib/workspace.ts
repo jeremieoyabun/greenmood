@@ -1,10 +1,10 @@
 import { prisma } from './db'
+import { cache } from 'react'
 
 /**
- * Get the default workspace.
- * Phase 1: Single workspace. Phase 2: Multi-workspace with auth.
+ * Get the default workspace — cached per request via React cache().
  */
-export async function getDefaultWorkspace() {
+export const getDefaultWorkspace = cache(async () => {
   const workspace = await prisma.workspace.findFirst({
     orderBy: { createdAt: 'asc' },
   })
@@ -14,16 +14,12 @@ export async function getDefaultWorkspace() {
   }
 
   return workspace
-}
+})
 
 /**
- * Get workspace ID. Cached after first call per request.
+ * Get workspace ID — cached per request.
  */
-let cachedWorkspaceId: string | null = null
-
-export async function getWorkspaceId(): Promise<string> {
-  if (cachedWorkspaceId) return cachedWorkspaceId
+export const getWorkspaceId = cache(async (): Promise<string> => {
   const ws = await getDefaultWorkspace()
-  cachedWorkspaceId = ws.id
   return ws.id
-}
+})

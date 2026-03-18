@@ -131,20 +131,37 @@ export function PostDetailModal({ slot, open, onClose }: PostDetailModalProps) {
           </div>
         )}
 
-        {/* First Comment */}
-        {firstComment && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
+        {/* First Comment — CRITICAL for LinkedIn */}
+        <div className={`rounded-lg p-3 border ${
+          firstComment
+            ? 'bg-sky-500/5 border-sky-500/15'
+            : slot.platform === 'linkedin'
+              ? 'bg-amber-500/5 border-amber-500/15'
+              : 'bg-white/[0.02] border-white/[0.05]'
+        }`}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
+              {slot.platform === 'linkedin' && (
+                <Badge variant="warning" size="sm">Required for LinkedIn</Badge>
+              )}
+            </div>
+            {firstComment && (
               <Button variant="ghost" size="sm" onClick={() => copy(firstComment, 'fc')}>
                 {copied === 'fc' ? 'Copied!' : 'Copy'}
               </Button>
-            </div>
-            <p className="text-xs text-gm-cream/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
-              {firstComment}
-            </p>
+            )}
           </div>
-        )}
+          {firstComment ? (
+            <p className="text-xs text-gm-cream/70 leading-relaxed">{firstComment}</p>
+          ) : (
+            <p className="text-[10px] text-gm-cream/25 italic">
+              {slot.platform === 'linkedin'
+                ? 'No first comment set — LinkedIn posts should have the link in the first comment (not in the post body).'
+                : 'No first comment. Add one for extra engagement or to include a link.'}
+            </p>
+          )}
+        </div>
 
         {/* Visual Direction */}
         {meta.visualDirection && (
