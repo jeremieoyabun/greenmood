@@ -111,6 +111,23 @@ export function SocialAccountsPanel() {
       setTimeout(() => setSuccessMessage(''), 5000)
       // Clean URL
       window.history.replaceState({}, '', '/settings')
+    } else if (connected === 'linkedin') {
+      setAccounts(prev => {
+        // Mark first disconnected linkedin account as connected
+        let found = false
+        const updated = prev.map(a => {
+          if (!found && a.platform === 'linkedin' && a.status !== 'connected') {
+            found = true
+            return { ...a, status: 'connected' as const }
+          }
+          return a
+        })
+        localStorage.setItem('gm-social-accounts', JSON.stringify(updated))
+        return updated
+      })
+      setSuccessMessage(`LinkedIn ${username || ''} connected!`)
+      setTimeout(() => setSuccessMessage(''), 5000)
+      window.history.replaceState({}, '', '/settings')
     } else if (connected === 'tiktok') {
       setSuccessMessage('TikTok account connected!')
       setTimeout(() => setSuccessMessage(''), 5000)
