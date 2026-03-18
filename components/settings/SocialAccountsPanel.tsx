@@ -52,6 +52,40 @@ export function SocialAccountsPanel() {
   const [showAddAccount, setShowAddAccount] = useState(false)
   const [newAccount, setNewAccount] = useState({ platform: 'instagram', handle: '', market: 'ae' })
   const [successMessage, setSuccessMessage] = useState('')
+  const [tokenModal, setTokenModal] = useState<string | null>(null)
+  const [tokenInput, setTokenInput] = useState('')
+  const [savingToken, setSavingToken] = useState(false)
+
+  const saveToken = async () => {
+    if (!tokenInput.trim() || !tokenModal) return
+    setSavingToken(true)
+    try {
+      const res = await fetch('/api/auth/save-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: tokenModal, token: tokenInput }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setAccounts(prev => {
+          const updated = prev.map(a => a.id === tokenModal ? { ...a, status: 'connected' as const } : a)
+          localStorage.setItem('gm-social-accounts', JSON.stringify(updated))
+          return updated
+        })
+        setSuccessMessage(`${data.username || 'Account'} connected!`)
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        setSuccessMessage(`Error: ${data.error}`)
+        setTimeout(() => setSuccessMessage(''), 8000)
+      }
+    } catch {
+      setSuccessMessage('Failed to save token')
+      setTimeout(() => setSuccessMessage(''), 5000)
+    }
+    setSavingToken(false)
+    setTokenModal(null)
+    setTokenInput('')
+  }
 
   // Handle OAuth callback success
   useEffect(() => {
@@ -195,14 +229,23 @@ export function SocialAccountsPanel() {
                         <p className="text-[10px] text-gm-cream/25">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleConnect(account.id)}
-                      loading={connecting === account.id}
-                    >
-                      Connect
-                    </Button>
+                    <div className="flex gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleConnect(account.id)}
+                        loading={connecting === account.id}
+                      >
+                        Connect
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => { setTokenModal(account.id); setTokenInput('') }}
+                      >
+                        Paste Token
+                      </Button>
+                    </div>
                   </div>
                 )
               })}
@@ -242,6 +285,29 @@ export function SocialAccountsPanel() {
             options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))}
           />
           <Button className="w-full" onClick={addAccount}>Add Account</Button>
+        </div>
+      </Modal>
+
+      {/* Paste Token Modal */}
+      <Modal open={!!tokenModal} onClose={() => setTokenModal(null)} title="Paste Access Token" size="sm">
+        <div className="space-y-4">
+          <p className="text-xs text-gm-cream/50">
+            Go to <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="text-gm-sage hover:underline">Meta Developers</a> → your app → Instagram API → Generate a token. Paste it below.
+          </p>
+          <Input
+            label="Access Token"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder="IGAAxxxxxxx..."
+          />
+          <Button
+            className="w-full"
+            loading={savingToken}
+            onClick={saveToken}
+            disabled={!tokenInput.trim()}
+          >
+            Verify & Connect
+          </Button>
         </div>
       </Modal>
     </>
