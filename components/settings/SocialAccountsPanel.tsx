@@ -56,8 +56,16 @@ export function SocialAccountsPanel() {
     // For LinkedIn: redirect to LinkedIn OAuth
     // For now, simulate the flow
     if (account.platform === 'instagram' || account.platform === 'facebook') {
+      // Use scopes that are enabled in the Meta App
+      // instagram_basic + instagram_content_publish require app review
+      // Start with basic page permissions, add IG scopes after Meta approval
+      const scopes = [
+        'pages_show_list',
+        'pages_read_engagement',
+        'pages_manage_posts',
+      ].join(',')
       window.open(
-        `https://www.facebook.com/v18.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_META_APP_ID || 'YOUR_META_APP_ID'}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/meta')}&scope=instagram_basic,instagram_content_publish,pages_show_list,pages_read_engagement&response_type=code&state=${accountId}`,
+        `https://www.facebook.com/v25.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_META_APP_ID || 'YOUR_META_APP_ID'}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/meta')}&scope=${scopes}&response_type=code&state=${accountId}`,
         'meta-oauth', 'width=600,height=700'
       )
     } else if (account.platform === 'tiktok') {

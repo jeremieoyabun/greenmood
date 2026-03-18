@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
     // Step 1: Exchange code for short-lived token
     const tokenRes = await fetch(
-      `https://graph.facebook.com/v18.0/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${code}`
+      `https://graph.facebook.com/v25.0/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${code}`
     )
     const tokenData = await tokenRes.json()
 
@@ -46,14 +46,14 @@ export async function GET(req: NextRequest) {
 
     // Step 2: Exchange for long-lived token (60 days)
     const longTokenRes = await fetch(
-      `https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${tokenData.access_token}`
+      `https://graph.facebook.com/v25.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${tokenData.access_token}`
     )
     const longTokenData = await longTokenRes.json()
     const longToken = longTokenData.access_token || tokenData.access_token
 
     // Step 3: Get user's pages
     const pagesRes = await fetch(
-      `https://graph.facebook.com/v18.0/me/accounts?access_token=${longToken}`
+      `https://graph.facebook.com/v25.0/me/accounts?access_token=${longToken}`
     )
     const pagesData = await pagesRes.json()
 
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
     const igAccounts = []
     for (const page of pagesData.data || []) {
       const igRes = await fetch(
-        `https://graph.facebook.com/v18.0/${page.id}?fields=instagram_business_account,name&access_token=${page.access_token}`
+        `https://graph.facebook.com/v25.0/${page.id}?fields=instagram_business_account,name&access_token=${page.access_token}`
       )
       const igData = await igRes.json()
       if (igData.instagram_business_account) {
