@@ -187,7 +187,11 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Badge variant={
                     post.status === 'REJECTED' ? 'danger' :
-                    post.status === 'READY_TO_SCHEDULE' ? 'success' : 'info'
+                    post.status === 'AI_GENERATED' ? 'purple' :
+                    post.status === 'FACT_CHECKED' ? 'info' :
+                    post.status === 'BRAND_APPROVED' ? 'success' :
+                    post.status === 'READY_TO_SCHEDULE' ? 'warning' :
+                    post.status === 'SCHEDULED' ? 'info' : 'default'
                   } size="sm">{config?.label || post.status}</Badge>
                   <span className="text-[10px] text-gm-cream/50">
                     {MARKETS[post.market]?.emoji} {MARKETS[post.market]?.name} — {post.platform}

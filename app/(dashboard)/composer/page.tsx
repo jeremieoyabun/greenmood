@@ -37,6 +37,8 @@ export default function ComposerPage() {
   const [error, setError] = useState('')
   const [activePost, setActivePost] = useState('')
   const [copied, setCopied] = useState('')
+  const [savingToCalendar, setSavingToCalendar] = useState(false)
+  const [savedCount, setSavedCount] = useState(0)
 
   const toggleMarket = (id: string) => {
     setSelectedMarkets(prev =>
@@ -235,8 +237,21 @@ export default function ComposerPage() {
           <Card>
             <CardHeader>
               <CardTitle>{results.title}</CardTitle>
-              <Badge variant="success">{Object.keys(results.posts).length} variants generated</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="success">{Object.keys(results.posts).length} variants generated</Badge>
+                {(results as any).postsCreated && (
+                  <Badge variant="info">{(results as any).postsCreated} saved to DB</Badge>
+                )}
+              </div>
             </CardHeader>
+            <div className="flex gap-2 mt-3">
+              <Button variant="primary" size="sm" onClick={() => window.location.href = '/approvals'}>
+                Review in Approvals
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => window.location.href = '/calendar'}>
+                View in Calendar
+              </Button>
+            </div>
           </Card>
 
           {/* Post Tabs */}

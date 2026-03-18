@@ -42,10 +42,37 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = buildContentPrompt(knowledgeBase)
 
+    // Load recent posts to avoid duplication
+    const recentPosts = await prisma.postVariant.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { text: true },
+    })
+    const recentCaptions = recentPosts.map(p => p.text).join('\n---\n')
+
     const userMessage = `TYPE: ${contentType}
 BRIEF: ${brief}
 MARKETS: ${markets.join(', ')}
 PLATFORMS: ${platforms.join(', ')}
+
+RECENT POSTS (do NOT repeat similar angles or topics):
+${recentCaptions || 'None'}
+
+EDITORIAL STYLE (match this exactly):
+- Short, punchy captions. The photo does the work.
+- Tone: like a design publication, not a sales pitch. Expert, calm, refined.
+- Use 🌿 sparingly (max 1x per post). No other emojis unless data-related (📉, 🔹).
+- NEVER use em dashes (—). Use periods, commas, or line breaks instead.
+- Instagram: 8-12 hashtags max in #CamelCase. Hashtags at the end, no "..." separator.
+- LinkedIn: NO link in post body (put in first_comment). Hook on first line. Data-driven.
+- Stories: use --- to separate slides (3 slides max).
+
+IMAGE SUGGESTIONS:
+- For each post, suggest in "notes" field either:
+  - A Pomelli AI prompt for product imagery (detailed, photographic style)
+  - OR "Check Nextcloud for [specific photo type]" for real photos
+- Priority: real photos from Nextcloud > Pomelli AI-generated
 
 Generate content for each market × platform combination.
 Respond ONLY with valid JSON.
@@ -56,14 +83,14 @@ Format:
   "posts": {
     "marketId--platformId": {
       "text": "full post text",
-      "first_comment": "link for linkedin or null",
-      "hashtags": "hashtags string",
+      "first_comment": "link or engagement text, or null",
+      "hashtags": "#Tag1 #Tag2 ... or null for LinkedIn",
       "timing": "posting time suggestion",
-      "notes": "any notes"
+      "notes": "Image: [Pomelli prompt or Nextcloud reference]"
     }
   },
-  "image_prompts": ["2-3 image generation prompts"],
-  "stories": ["story descriptions if applicable"]
+  "image_prompts": ["Detailed Pomelli prompt 1", "Detailed Pomelli prompt 2"],
+  "stories": ["Slide 1 --- Slide 2 --- Slide 3"]
 }`
 
     const response = await anthropic.messages.create({
