@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const APP_URL = 'https://app.greenmood.be'
-const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
-
+// Force Node.js runtime (not Edge) to avoid fetch encoding issues
+export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
+
+const APP_URL = 'https://app.greenmood.be'
+const REDIRECT_URI = 'https://app.greenmood.be/api/auth/callback/instagram'
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const code = searchParams.get('code')
-  const error = searchParams.get('error')
+  const url = new URL(req.url)
+  const code = url.searchParams.get('code')
+  const error = url.searchParams.get('error')
 
   if (error) {
-    return NextResponse.redirect(`${APP_URL}/settings?error=instagram_denied`)
+    return NextResponse.redirect(`${APP_URL}/settings?error=ig_denied`)
   }
-
   if (!code) {
     return NextResponse.redirect(`${APP_URL}/settings?error=no_code`)
   }
@@ -27,32 +27,48 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Exchange code for short-lived token
+    // Build form body as a raw string to avoid any encoding issues
+    const formBody = [
+      `client_id=${appId}`,
+      `client_secret=${appSecret}`,
+      `grant_type=authorization_code`,
+      `redirect_uri=${encodeURIComponent(REDIRECT_URI)}`,
+      `code=${encodeURIComponent(code)}`,
+    ].join('&')
+
     const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: appId,
-        client_secret: appSecret,
-        grant_type: 'authorization_code',
-        redirect_uri: REDIRECT_URI,
-        code,
-      }),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formBody,
     })
 
     const tokenText = await tokenRes.text()
-    let tokenData: any
-    try { tokenData = JSON.parse(tokenText) } catch { tokenData = {} }
 
-    if (!tokenData.access_token) {
-      // Show the EXACT error from Instagram in the URL for debugging
-      const igError = tokenData.error_message || tokenData.error_type || tokenText.substring(0, 200)
+    let tokenData: any
+    try {
+      tokenData = JSON.parse(tokenText)
+    } catch {
       return NextResponse.redirect(
-        `${APP_URL}/settings?error=${encodeURIComponent('IG: ' + igError)}&debug_client_id=${appId}&debug_redirect=${encodeURIComponent(REDIRECT_URI)}`
+        `${APP_URL}/settings?error=${encodeURIComponent('Parse error: ' + tokenText.substring(0, 150))}`
       )
     }
 
-    // Exchange for long-lived token (60 days)
+    if (tokenData.error_type || tokenData.error_message) {
+      // Show debug info: what client_id and redirect_uri we sent
+      return NextResponse.redirect(
+        `${APP_URL}/settings?error=${encodeURIComponent(tokenData.error_message || tokenData.error_type)}&sent_id=${appId}&sent_uri=${encodeURIComponent(REDIRECT_URI)}`
+      )
+    }
+
+    if (!tokenData.access_token) {
+      return NextResponse.redirect(
+        `${APP_URL}/settings?error=${encodeURIComponent('No token: ' + tokenText.substring(0, 150))}`
+      )
+    }
+
+    // Exchange for long-lived token
     const longRes = await fetch(
       `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${tokenData.access_token}`
     )
@@ -66,11 +82,11 @@ export async function GET(req: NextRequest) {
     const profile = await profileRes.json()
 
     return NextResponse.redirect(
-      `${APP_URL}/settings?connected=instagram&username=${encodeURIComponent(profile.username || 'unknown')}`
+      `${APP_URL}/settings?connected=instagram&username=${encodeURIComponent(profile.username || 'connected')}`
     )
   } catch (err) {
     return NextResponse.redirect(
-      `${APP_URL}/settings?error=${encodeURIComponent('Exception: ' + (err instanceof Error ? err.message : String(err)))}`
+      `${APP_URL}/settings?error=${encodeURIComponent(err instanceof Error ? err.message : String(err))}`
     )
   }
 }
