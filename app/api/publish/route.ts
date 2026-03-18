@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
           postId,
           fromStatus: post.status,
           toStatus: 'PUBLISHED',
-          action: 'PUBLISH',
+          action: 'APPROVE',
           comment: `Published to ${post.platform}. Platform ID: ${result.platformId || 'N/A'}`,
         },
       })

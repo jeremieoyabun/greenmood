@@ -280,7 +280,6 @@ enum ApprovalAction {
   REJECT
   REQUEST_CHANGES
   AUTO_PASS
-  PUBLISH
 }
 
 // ─── AI AGENT RUNS ───
