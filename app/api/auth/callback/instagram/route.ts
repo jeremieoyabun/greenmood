@@ -29,7 +29,9 @@ export async function GET(req: NextRequest) {
   try {
     const appId = process.env.INSTAGRAM_APP_ID
     const appSecret = process.env.INSTAGRAM_APP_SECRET
-    const redirectUri = `${process.env.NEXT_PUBLIC_APP_URL || 'https://greenmood-one.vercel.app'}/api/auth/callback/instagram`
+    // Use the same origin that received this callback — must match what was sent to Instagram
+    const origin = `https://${req.headers.get('host') || 'app.greenmood.be'}`
+    const redirectUri = `${origin}/api/auth/callback/instagram`
 
     if (!appId || !appSecret) {
       return NextResponse.redirect(new URL('/settings?error=instagram_not_configured', req.url))
@@ -50,8 +52,9 @@ export async function GET(req: NextRequest) {
     const tokenData = await tokenRes.json()
 
     if (!tokenData.access_token) {
-      console.error('Instagram token exchange failed:', tokenData)
-      return NextResponse.redirect(new URL('/settings?error=instagram_token_failed', req.url))
+      console.error('Instagram token exchange failed:', tokenData, 'redirectUri used:', redirectUri)
+      const errorDetail = tokenData.error_message || tokenData.error?.message || 'token_exchange_failed'
+      return NextResponse.redirect(new URL(`/settings?error=${encodeURIComponent(errorDetail)}`, req.url))
     }
 
     const shortToken = tokenData.access_token
