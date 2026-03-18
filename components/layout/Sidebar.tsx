@@ -23,7 +23,7 @@ const NAV_ITEMS = [
   { href: '/intelligence', label: 'Intelligence', icon: 'Radar', roles: ['OPERATOR'] },
   { href: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
   { href: '/agent-runs', label: 'Agent Runs', icon: 'Bot', roles: ['OPERATOR'] },
-  { href: '/settings', label: 'Settings', icon: 'Settings', roles: ['OPERATOR'] },
+  { href: '/settings', label: 'Settings', icon: 'Settings', roles: ['OPERATOR', 'COORDINATOR'] },
 ]
 
 interface SidebarProps {

@@ -74,8 +74,14 @@ export function SocialAccountsPanel() {
         'tiktok-oauth', 'width=600,height=700'
       )
     } else if (account.platform === 'linkedin') {
+      const linkedinClientId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
+      if (!linkedinClientId) {
+        alert('LinkedIn API not configured yet. Contact Jeremie to set up LinkedIn Developer App credentials.')
+        setConnecting(null)
+        return
+      }
       window.open(
-        `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID || 'YOUR_LINKEDIN_ID'}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/linkedin')}&scope=w_member_social%20r_organization_social%20w_organization_social&state=${accountId}`,
+        `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedinClientId}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/linkedin')}&scope=w_member_social%20r_organization_social%20w_organization_social&state=${accountId}`,
         'linkedin-oauth', 'width=600,height=700'
       )
     }
