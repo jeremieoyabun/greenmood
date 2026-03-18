@@ -1,0 +1,488 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── WORKSPACE & USERS ───
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users           User[]
+  campaigns       Campaign[]
+  contentPillars  ContentPillar[]
+  calendarSlots   CalendarSlot[]
+  posts           Post[]
+  assets          Asset[]
+  agentRuns       AgentRun[]
+  knowledgeBase   KnowledgeBaseEntry[]
+  promptTemplates PromptTemplate[]
+
+  @@map("workspaces")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?  @map("password_hash")
+  role         UserRole @default(COORDINATOR)
+  workspaceId  String   @map("workspace_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  workspace      Workspace          @relation(fields: [workspaceId], references: [id])
+  approvalSteps  ApprovalStep[]
+  agentRuns      AgentRun[]
+  marketAccess   UserMarketAccess[]
+  sessions       Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum UserRole {
+  OPERATOR      // Full access — AI agents, intelligence, composer, strategy, analytics
+  COORDINATOR   // Regional access — calendar, approvals, comments, local assets for their markets only
+  VIEWER        // Read-only dashboards and published content
+}
+
+model UserMarketAccess {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  market String // market code: "pl", "ae", "fr", etc.
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, market])
+  @@map("user_market_access")
+}
+
+// ─── CAMPAIGNS & CONTENT PILLARS ───
+
+model ContentPillar {
+  id          String @id @default(cuid())
+  workspaceId String @map("workspace_id")
+  name        String
+  description String?
+  color       String @default("#A8C49A")
+  sortOrder   Int    @default(0) @map("sort_order")
+
+  workspace Workspace  @relation(fields: [workspaceId], references: [id])
+  campaigns Campaign[]
+
+  @@map("content_pillars")
+}
+
+model Campaign {
+  id              String         @id @default(cuid())
+  workspaceId     String         @map("workspace_id")
+  contentPillarId String?        @map("content_pillar_id")
+  title           String
+  brief           String?
+  contentType     ContentType    @map("content_type")
+  status          CampaignStatus @default(DRAFT)
+  markets         String[]
+  platforms       String[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  contentPillar ContentPillar? @relation(fields: [contentPillarId], references: [id])
+  posts         Post[]
+  calendarSlots CalendarSlot[]
+  agentRuns     AgentRun[]
+
+  @@map("campaigns")
+}
+
+enum ContentType {
+  ARTICLE
+  PROJECT
+  PRODUCT
+  EVENT
+  EDUCATION
+  BEHIND_THE_SCENES
+}
+
+enum CampaignStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  ARCHIVED
+}
+
+// ─── CALENDAR ───
+
+model CalendarSlot {
+  id          String         @id @default(cuid())
+  workspaceId String         @map("workspace_id")
+  campaignId  String?        @map("campaign_id")
+  postId      String?        @unique @map("post_id")
+  date        DateTime       @db.Date
+  time        String?
+  market      String
+  platform    String
+  status      CalendarStatus @default(PLANNED)
+  notes       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  campaign  Campaign? @relation(fields: [campaignId], references: [id])
+  post      Post?     @relation(fields: [postId], references: [id])
+
+  @@index([workspaceId, date])
+  @@map("calendar_slots")
+}
+
+enum CalendarStatus {
+  PLANNED
+  CONTENT_READY
+  SCHEDULED
+  PUBLISHED
+  SKIPPED
+}
+
+// ─── POSTS & VARIANTS ───
+
+model Post {
+  id          String     @id @default(cuid())
+  workspaceId String     @map("workspace_id")
+  campaignId  String     @map("campaign_id")
+  market      String
+  platform    String
+  status      PostStatus @default(DRAFT)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  workspace     Workspace      @relation(fields: [workspaceId], references: [id])
+  campaign      Campaign       @relation(fields: [campaignId], references: [id])
+  variants      PostVariant[]
+  approvalSteps ApprovalStep[]
+  calendarSlot  CalendarSlot?
+  assets        PostAsset[]
+
+  @@index([campaignId])
+  @@index([status])
+  @@map("posts")
+}
+
+model PostVariant {
+  id           String        @id @default(cuid())
+  postId       String        @map("post_id")
+  version      Int           @default(1)
+  text         String
+  hashtags     String?
+  firstComment String?       @map("first_comment")
+  timing       String?
+  notes        String?
+  isActive     Boolean       @default(true) @map("is_active")
+  source       VariantSource @default(AI_GENERATED)
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_variants")
+}
+
+enum VariantSource {
+  AI_GENERATED
+  MANUAL
+  AI_EDITED
+}
+
+enum PostStatus {
+  DRAFT
+  AI_GENERATED
+  FACT_CHECKED
+  BRAND_APPROVED
+  READY_TO_SCHEDULE
+  SCHEDULED
+  PUBLISHED
+  REJECTED
+}
+
+// ─── ASSETS ───
+
+model Asset {
+  id          String   @id @default(cuid())
+  workspaceId String   @map("workspace_id")
+  filename    String
+  url         String
+  mimeType    String   @map("mime_type")
+  size        Int
+  width       Int?
+  height      Int?
+  alt         String?
+  tags        String[]
+  collection  String?
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id])
+  posts     PostAsset[]
+
+  @@map("assets")
+}
+
+model PostAsset {
+  postId    String @map("post_id")
+  assetId   String @map("asset_id")
+  sortOrder Int    @default(0) @map("sort_order")
+
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  asset Asset @relation(fields: [assetId], references: [id])
+
+  @@id([postId, assetId])
+  @@map("post_assets")
+}
+
+// ─── APPROVAL WORKFLOW ───
+
+model ApprovalStep {
+  id         String         @id @default(cuid())
+  postId     String         @map("post_id")
+  reviewerId String?        @map("reviewer_id")
+  fromStatus PostStatus     @map("from_status")
+  toStatus   PostStatus     @map("to_status")
+  action     ApprovalAction
+  comment    String?
+  createdAt  DateTime       @default(now()) @map("created_at")
+
+  post     Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  reviewer User? @relation(fields: [reviewerId], references: [id])
+
+  @@index([postId])
+  @@map("approval_steps")
+}
+
+enum ApprovalAction {
+  APPROVE
+  REJECT
+  REQUEST_CHANGES
+  AUTO_PASS
+}
+
+// ─── AI AGENT RUNS ───
+
+model AgentRun {
+  id          String         @id @default(cuid())
+  workspaceId String         @map("workspace_id")
+  campaignId  String?        @map("campaign_id")
+  triggeredBy String?        @map("triggered_by")
+  agentType   AgentType      @map("agent_type")
+  status      AgentRunStatus @default(RUNNING)
+  input       Json?
+  output      Json?
+  tokensUsed  Int?           @map("tokens_used")
+  durationMs  Int?           @map("duration_ms")
+  error       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  completedAt DateTime?      @map("completed_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  campaign  Campaign? @relation(fields: [campaignId], references: [id])
+  user      User?     @relation(fields: [triggeredBy], references: [id])
+
+  @@map("agent_runs")
+}
+
+enum AgentType {
+  ORCHESTRATOR
+  EDITORIAL_STRATEGIST
+  CONTENT_GENERATOR
+  FACT_CHECKER
+  BRAND_GUARDIAN
+  CHANNEL_ADAPTER
+  VISUAL_BUILDER
+  SCHEDULER
+  PERFORMANCE_ANALYST
+  MARKET_INTELLIGENCE
+}
+
+enum AgentRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// ─── KNOWLEDGE BASE ───
+
+model KnowledgeBaseEntry {
+  id          String     @id @default(cuid())
+  workspaceId String     @map("workspace_id")
+  category    KBCategory
+  key         String
+  value       String
+  metadata    Json?
+  isActive    Boolean    @default(true) @map("is_active")
+  source      String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceId, category, key])
+  @@map("knowledge_base")
+}
+
+enum KBCategory {
+  PRODUCT_FACT
+  APPROVED_CLAIM
+  RESTRICTED_CLAIM
+  BRAND_RULE
+  MARKET_TONE
+  PLATFORM_RULE
+  RESOURCE_LINK
+  COLOR_PALETTE
+}
+
+// ─── PROMPT TEMPLATES ───
+
+model PromptTemplate {
+  id          String    @id @default(cuid())
+  workspaceId String    @map("workspace_id")
+  name        String
+  description String?
+  template    String
+  variables   String[]
+  agentType   AgentType @map("agent_type")
+  isDefault   Boolean   @default(false) @map("is_default")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@map("prompt_templates")
+}
+
+// ─── INTELLIGENCE (Phase 3) ───
+
+model IntelligenceSource {
+  id         String   @id @default(cuid())
+  name       String
+  type       String
+  url        String
+  country    String?
+  topics     String[]
+  isActive   Boolean  @default(true) @map("is_active")
+  lastFetched DateTime? @map("last_fetched")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  signals IntelligenceSignal[]
+
+  @@map("intelligence_sources")
+}
+
+model CompetitorEntity {
+  id             String   @id @default(cuid())
+  name           String
+  website        String
+  socialHandles  Json?    @map("social_handles")
+  country        String
+  products       String[]
+  positioning    String?
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  signals IntelligenceSignal[]
+
+  @@map("competitor_entities")
+}
+
+model IntelligenceSignal {
+  id                String   @id @default(cuid())
+  sourceId          String?  @map("source_id")
+  competitorId      String?  @map("competitor_id")
+  title             String
+  category          String
+  country           String?
+  summary           String
+  whyItMatters      String   @map("why_it_matters")
+  confidence        String
+  urgency           String
+  recommendedAction String   @map("recommended_action")
+  recommendedFormat String?  @map("recommended_format")
+  recommendedChannel String? @map("recommended_channel")
+  score             Float    @default(0)
+  isDuplicate       Boolean  @default(false) @map("is_duplicate")
+  detectedAt        DateTime @default(now()) @map("detected_at")
+  expiresAt         DateTime? @map("expires_at")
+
+  source     IntelligenceSource? @relation(fields: [sourceId], references: [id])
+  competitor CompetitorEntity?   @relation(fields: [competitorId], references: [id])
+
+  @@map("intelligence_signals")
+}
+
+model IntelligenceDigest {
+  id        String   @id @default(cuid())
+  type      String
+  period    String
+  content   Json
+  signalIds String[] @map("signal_ids")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("intelligence_digests")
+}
+
+// ─── PUBLICATION JOBS (Phase 3) ───
+
+model PublicationJob {
+  id          String   @id @default(cuid())
+  postId      String   @map("post_id")
+  platform    String
+  status      String   @default("pending")
+  scheduledAt DateTime @map("scheduled_at")
+  publishedAt DateTime? @map("published_at")
+  attempts    Int      @default(0)
+  lastError   String?  @map("last_error")
+  platformPostId String? @map("platform_post_id")
+  platformUrl String?  @map("platform_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("publication_jobs")
+}
+
+// ─── ANALYTICS (Phase 4) ───
+
+model AnalyticsSnapshot {
+  id         String   @id @default(cuid())
+  postId     String?  @map("post_id")
+  platform   String
+  market     String?
+  date       DateTime @db.Date
+  impressions Int     @default(0)
+  reach      Int      @default(0)
+  likes      Int      @default(0)
+  comments   Int      @default(0)
+  shares     Int      @default(0)
+  saves      Int      @default(0)
+  clicks     Int      @default(0)
+  engagement Float    @default(0)
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([postId])
+  @@index([platform, date])
+  @@map("analytics_snapshots")
+}
