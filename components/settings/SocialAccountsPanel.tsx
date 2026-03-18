@@ -115,7 +115,7 @@ export function SocialAccountsPanel() {
     } else if (account.platform === 'linkedin') {
       const linkedinId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
       if (!linkedinId) { alert('LinkedIn API not configured yet. Contact Jeremie.'); setConnecting(null); return }
-      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedinId}&redirect_uri=${encodeURIComponent(baseUrl + '/api/auth/callback/linkedin')}&scope=w_member_social%20r_organization_social%20w_organization_social&state=${accountId}`
+      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedinId}&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/linkedin')}&scope=openid%20profile%20w_member_social&state=${accountId}`
     }
   }
 
