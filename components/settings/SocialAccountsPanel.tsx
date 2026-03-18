@@ -135,12 +135,8 @@ export function SocialAccountsPanel() {
     const baseUrl = window.location.origin
 
     if (account.platform === 'instagram') {
-      const igAppId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID
-      if (!igAppId) { alert('Instagram API not configured yet.'); setConnecting(null); return }
       const scopes = 'instagram_business_basic,instagram_business_manage_comments,instagram_business_content_publish'
-      // MUST be identical in both OAuth dialog and token exchange — hardcoded to production domain
-      const redirectUri = 'https://app.greenmood.be/api/auth/callback/instagram'
-      window.location.href = `https://www.instagram.com/oauth/authorize?client_id=${igAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=code&state=${accountId}`
+      window.location.href = `https://www.instagram.com/oauth/authorize?client_id=3228543280657809&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/instagram')}&scope=${scopes}&response_type=code&state=${accountId}`
     } else if (account.platform === 'facebook') {
       const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID
       if (!metaAppId) { alert('Meta API not configured yet.'); setConnecting(null); return }
@@ -150,9 +146,7 @@ export function SocialAccountsPanel() {
       if (!tiktokKey) { alert('TikTok API not configured yet.'); setConnecting(null); return }
       window.location.href = `https://www.tiktok.com/v2/auth/authorize/?client_key=${tiktokKey}&scope=user.info.basic,video.upload,video.publish&response_type=code&redirect_uri=${encodeURIComponent(baseUrl + '/api/auth/callback/tiktok')}&state=${accountId}`
     } else if (account.platform === 'linkedin') {
-      const linkedinId = process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID
-      if (!linkedinId) { alert('LinkedIn API not configured yet. Contact Jeremie.'); setConnecting(null); return }
-      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${linkedinId}&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/linkedin')}&scope=openid%20profile%20w_member_social&state=${accountId}`
+      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=77cfx3q0hjhjdk&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/linkedin')}&scope=openid%20profile%20w_member_social&state=${accountId}`
     }
   }
 
