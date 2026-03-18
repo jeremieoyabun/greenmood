@@ -31,12 +31,13 @@ export function ApprovalActions({ postId, currentStatus }: ApprovalActionsProps)
       if (data.success) {
         setShowReject(false)
         setComment('')
-        router.refresh()
+        // Force full page reload to reflect server-side changes
+        window.location.reload()
       } else {
-        alert(data.error || 'Action failed')
+        alert('Action failed: ' + (data.error || 'Unknown error'))
       }
-    } catch {
-      alert('Action failed')
+    } catch (err) {
+      alert('Action failed: ' + (err instanceof Error ? err.message : 'Network error'))
     }
     setLoading(null)
   }

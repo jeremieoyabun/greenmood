@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { approvalActionSchema } from '@/lib/schemas/validation'
 import { PostStatus } from '@prisma/client'
@@ -74,6 +75,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         },
       }),
     ])
+
+    // Revalidate pages that show post status
+    revalidatePath('/approvals')
+    revalidatePath('/calendar')
 
     return NextResponse.json({
       success: true,
