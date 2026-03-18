@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  // Derive APP_URL and REDIRECT_URI from the actual request URL so it matches the OAuth dialog
+  // On Vercel, req.url has an internal host — use forwarded headers to get the real origin
+  const forwardedHost = req.headers.get('x-forwarded-host')
+  const forwardedProto = req.headers.get('x-forwarded-proto') || 'https'
   const reqUrl = new URL(req.url)
-  const APP_URL = `${reqUrl.protocol}//${reqUrl.host}`
+  const realHost = forwardedHost || reqUrl.host
+  const APP_URL = `${forwardedProto}://${realHost}`
   const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
 
   const { searchParams } = reqUrl
