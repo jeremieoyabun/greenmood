@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -54,6 +54,33 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
   const [rejectComment, setRejectComment] = useState('')
   const [showReject, setShowReject] = useState(false)
   const [copied, setCopied] = useState('')
+  const [imageAnalysis, setImageAnalysis] = useState<any>(null)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleImageUpload = async (file: File) => {
+    // Show preview
+    const reader = new FileReader()
+    reader.onload = (e) => setImagePreview(e.target?.result as string)
+    reader.readAsDataURL(file)
+
+    // Analyze
+    setAnalyzing(true)
+    setImageAnalysis(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      if (selectedPost?.id) formData.append('postId', selectedPost.id)
+      const res = await fetch('/api/assets/analyze', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.success) setImageAnalysis(data.data)
+      else setImageAnalysis({ status: 'error', summary: data.error })
+    } catch {
+      setImageAnalysis({ status: 'error', summary: 'Analysis failed' })
+    }
+    setAnalyzing(false)
+  }
 
   const copy = (text: string, key: string) => {
     navigator.clipboard.writeText(text)
@@ -155,7 +182,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 key={post.id}
                 hover
                 className={`cursor-pointer transition-all ${isSelected ? 'ring-1 ring-gm-sage/30 bg-white/[0.03]' : ''}`}
-                onClick={() => { setSelectedPost(post); setEditing(false); setShowReject(false) }}
+                onClick={() => { setSelectedPost(post); setEditing(false); setShowReject(false); setImagePreview(null); setImageAnalysis(null) }}
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <Badge variant={
@@ -306,6 +333,61 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     <p className="text-[10px] text-gm-cream/20 italic">
                       {selectedPost.platform === 'linkedin' ? 'Missing — put the link here, not in the post body' : 'No first comment'}
                     </p>
+                  )}
+                </div>
+
+                {/* Image */}
+                <div className="pt-3 border-t border-white/[0.06]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Image</span>
+                    <div className="flex gap-2">
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
+                      <Button variant="outline" size="sm" loading={analyzing}
+                        onClick={() => fileInputRef.current?.click()}>
+                        {imagePreview ? 'Change Image' : 'Add Image'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {imagePreview && (
+                    <div className="mb-2 rounded-lg overflow-hidden border border-white/[0.06]">
+                      <img src={imagePreview} alt="Post image" className="w-full h-48 object-cover" />
+                    </div>
+                  )}
+
+                  {analyzing && (
+                    <p className="text-[10px] text-gm-cream/30 animate-pulse">Analyzing image with AI...</p>
+                  )}
+
+                  {imageAnalysis && !analyzing && (
+                    <div className={`rounded-lg p-3 border ${
+                      imageAnalysis.status === 'approved' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                      imageAnalysis.status === 'needs_adjustment' ? 'bg-amber-500/10 border-amber-500/20' :
+                      'bg-red-500/10 border-red-500/20'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant={
+                          imageAnalysis.status === 'approved' ? 'success' :
+                          imageAnalysis.status === 'needs_adjustment' ? 'warning' : 'danger'
+                        }>{imageAnalysis.status?.toUpperCase()}</Badge>
+                        {imageAnalysis.quality_score && <span className="text-[9px] text-gm-cream/30">Quality: {imageAnalysis.quality_score}/10</span>}
+                        {imageAnalysis.brand_alignment && <span className="text-[9px] text-gm-cream/30">Brand: {imageAnalysis.brand_alignment}/10</span>}
+                      </div>
+                      {imageAnalysis.product_identified && (
+                        <p className="text-[10px] text-gm-cream/50 mb-1">Product: {imageAnalysis.product_identified}</p>
+                      )}
+                      {imageAnalysis.issues?.map((issue: any, i: number) => (
+                        <p key={i} className={`text-[9px] ${issue.severity === 'critical' ? 'text-red-400' : 'text-amber-400/70'}`}>
+                          {issue.severity === 'critical' ? '✕' : '△'} {issue.detail}
+                        </p>
+                      ))}
+                      <p className="text-[10px] text-gm-cream/40 mt-1">{imageAnalysis.summary}</p>
+                    </div>
+                  )}
+
+                  {!imagePreview && !analyzing && (
+                    <p className="text-[9px] text-gm-cream/15">Upload an image to preview and verify with AI</p>
                   )}
                 </div>
 
