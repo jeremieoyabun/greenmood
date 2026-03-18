@@ -28,25 +28,39 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(`${APP_URL}/settings?error=instagram_not_configured`)
     }
 
-    console.log('Instagram token exchange — redirect_uri:', REDIRECT_URI)
+    // Debug: log all headers to understand Vercel's request
+    const debugHeaders: Record<string, string> = {}
+    req.headers.forEach((v, k) => { debugHeaders[k] = v })
+    console.log('Instagram callback debug:', {
+      reqUrl: req.url,
+      REDIRECT_URI,
+      headers: debugHeaders,
+    })
 
     // Step 1: Exchange code for short-lived token
+    const body = new URLSearchParams({
+      client_id: appId,
+      client_secret: appSecret,
+      grant_type: 'authorization_code',
+      redirect_uri: REDIRECT_URI,
+      code,
+    })
+    console.log('Token exchange body:', body.toString())
+
     const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: appId,
-        client_secret: appSecret,
-        grant_type: 'authorization_code',
-        redirect_uri: REDIRECT_URI,
-        code,
-      }),
+      body,
     })
-    const tokenData = await tokenRes.json()
+    const tokenText = await tokenRes.text()
+    console.log('Instagram token response raw:', tokenText)
+
+    let tokenData: Record<string, unknown>
+    try { tokenData = JSON.parse(tokenText) } catch { tokenData = { error_message: tokenText } }
 
     if (!tokenData.access_token) {
-      console.error('Instagram token exchange failed:', JSON.stringify(tokenData))
-      const errorDetail = tokenData.error_message || tokenData.error?.message || 'token_exchange_failed'
+      console.error('Instagram token exchange failed:', tokenText)
+      const errorDetail = String(tokenData.error_message || tokenData.error || 'token_exchange_failed')
       return NextResponse.redirect(`${APP_URL}/settings?error=${encodeURIComponent(errorDetail)}`)
     }
 
