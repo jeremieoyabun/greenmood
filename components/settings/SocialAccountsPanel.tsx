@@ -55,17 +55,28 @@ export function SocialAccountsPanel() {
     // For TikTok: redirect to TikTok OAuth
     // For LinkedIn: redirect to LinkedIn OAuth
     // For now, simulate the flow
-    if (account.platform === 'instagram' || account.platform === 'facebook') {
-      // Use scopes that are enabled in the Meta App
-      // instagram_basic + instagram_content_publish require app review
-      // Start with basic page permissions, add IG scopes after Meta approval
-      const scopes = [
-        'pages_show_list',
-        'pages_read_engagement',
-        'pages_manage_posts',
-      ].join(',')
+    if (account.platform === 'instagram') {
+      // New Instagram API (direct, not via Facebook Graph)
+      const igAppId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID
+      if (!igAppId) {
+        alert('Instagram API not configured yet.')
+        setConnecting(null)
+        return
+      }
+      const scopes = 'instagram_business_basic,instagram_business_manage_comments,instagram_business_content_publish'
       window.open(
-        `https://www.facebook.com/v25.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_META_APP_ID || 'YOUR_META_APP_ID'}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/meta')}&scope=${scopes}&response_type=code&state=${accountId}`,
+        `https://www.instagram.com/oauth/authorize?client_id=${igAppId}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/instagram')}&scope=${scopes}&response_type=code&state=${accountId}`,
+        'instagram-oauth', 'width=600,height=700'
+      )
+    } else if (account.platform === 'facebook') {
+      const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID
+      if (!metaAppId) {
+        alert('Meta API not configured yet.')
+        setConnecting(null)
+        return
+      }
+      window.open(
+        `https://www.facebook.com/v25.0/dialog/oauth?client_id=${metaAppId}&redirect_uri=${encodeURIComponent(window.location.origin + '/api/auth/callback/meta')}&scope=pages_show_list,pages_read_engagement,pages_manage_posts&response_type=code&state=${accountId}`,
         'meta-oauth', 'width=600,height=700'
       )
     } else if (account.platform === 'tiktok') {
