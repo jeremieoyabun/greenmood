@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(req: NextRequest) {
-  // On Vercel, req.url has an internal host — use forwarded headers to get the real origin
-  const forwardedHost = req.headers.get('x-forwarded-host')
-  const forwardedProto = req.headers.get('x-forwarded-proto') || 'https'
   const reqUrl = new URL(req.url)
-  const realHost = forwardedHost || reqUrl.host
-  const APP_URL = `${forwardedProto}://${realHost}`
+  // Hardcode the production domain — dynamic detection fails on Vercel edge
+  const APP_URL = 'https://app.greenmood.be'
   const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
 
   const { searchParams } = reqUrl

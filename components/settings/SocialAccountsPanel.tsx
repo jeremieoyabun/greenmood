@@ -101,8 +101,8 @@ export function SocialAccountsPanel() {
       const igAppId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID
       if (!igAppId) { alert('Instagram API not configured yet.'); setConnecting(null); return }
       const scopes = 'instagram_business_basic,instagram_business_manage_comments,instagram_business_content_publish'
-      // MUST use the exact same redirect_uri as the callback — use current origin
-      const redirectUri = `${baseUrl}/api/auth/callback/instagram`
+      // MUST be identical in both OAuth dialog and token exchange — hardcoded to production domain
+      const redirectUri = 'https://app.greenmood.be/api/auth/callback/instagram'
       window.location.href = `https://www.instagram.com/oauth/authorize?client_id=${igAppId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&response_type=code&state=${accountId}`
     } else if (account.platform === 'facebook') {
       const metaAppId = process.env.NEXT_PUBLIC_META_APP_ID
