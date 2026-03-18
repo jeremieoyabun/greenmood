@@ -4,6 +4,7 @@ import { buildContentPrompt } from '@/lib/ai/prompts'
 import { generateContentSchema } from '@/lib/schemas/validation'
 import { prisma } from '@/lib/db'
 import { getWorkspaceId } from '@/lib/workspace'
+import { findNextAvailableSlotDate } from '@/lib/calendar-utils'
 
 const CONTENT_TYPE_MAP: Record<string, string> = {
   article: 'ARTICLE',
@@ -184,6 +185,30 @@ Format:
       })
 
       createdPosts.push(post)
+    }
+
+    // Auto-schedule posts to calendar
+    for (const post of createdPosts) {
+      const slotDate = await findNextAvailableSlotDate(workspaceId)
+      const timeByPlatform: Record<string, string> = {
+        instagram: '12:00',
+        linkedin: '09:00',
+        stories: '08:00',
+      }
+      const time = timeByPlatform[post.platform] || '10:00'
+
+      await prisma.calendarSlot.create({
+        data: {
+          workspaceId,
+          campaignId: campaign.id,
+          postId: post.id,
+          date: slotDate,
+          time,
+          market: post.market,
+          platform: post.platform,
+          status: 'CONTENT_READY',
+        },
+      })
     }
 
     // Log agent run
