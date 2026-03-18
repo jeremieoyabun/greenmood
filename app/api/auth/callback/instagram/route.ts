@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.greenmood.be'
-const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
-
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
+  // Derive APP_URL and REDIRECT_URI from the actual request URL so it matches the OAuth dialog
+  const reqUrl = new URL(req.url)
+  const APP_URL = `${reqUrl.protocol}//${reqUrl.host}`
+  const REDIRECT_URI = `${APP_URL}/api/auth/callback/instagram`
+
+  const { searchParams } = reqUrl
   const code = searchParams.get('code')
   const state = searchParams.get('state')
   const error = searchParams.get('error')
