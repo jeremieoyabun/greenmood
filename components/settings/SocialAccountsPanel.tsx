@@ -40,14 +40,17 @@ const PLATFORM_ICONS: Record<string, { icon: string; label: string }> = {
 
 export function SocialAccountsPanel() {
   const searchParams = useSearchParams()
-  const [accounts, setAccounts] = useState<SocialAccount[]>(() => {
-    // Load from localStorage if available
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('gm-social-accounts')
-      if (saved) return JSON.parse(saved)
+  const [accounts, setAccounts] = useState<SocialAccount[]>(INITIAL_ACCOUNTS)
+  const [hydrated, setHydrated] = useState(false)
+
+  // Load from localStorage after hydration to avoid React #418
+  useEffect(() => {
+    const saved = localStorage.getItem('gm-social-accounts')
+    if (saved) {
+      try { setAccounts(JSON.parse(saved)) } catch { /* ignore */ }
     }
-    return INITIAL_ACCOUNTS
-  })
+    setHydrated(true)
+  }, [])
   const [connecting, setConnecting] = useState<string | null>(null)
   const [showAddAccount, setShowAddAccount] = useState(false)
   const [newAccount, setNewAccount] = useState({ platform: 'instagram', handle: '', market: 'ae' })
