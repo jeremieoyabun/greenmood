@@ -29,7 +29,7 @@ interface CalendarSlot {
   post: {
     id: string
     status: string
-    variants: { text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null }[]
+    variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null }[]
   } | null
 }
 
@@ -349,6 +349,7 @@ export default function CalendarPage() {
         slot={selectedSlot}
         open={!!selectedSlot}
         onClose={() => setSelectedSlot(null)}
+        onUpdate={() => fetchSlots()}
       />
 
       {/* Add Slot Modal */}
