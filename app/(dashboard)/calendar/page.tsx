@@ -15,6 +15,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { PostDetailModal } from '@/components/calendar/PostDetailModal'
+import { SocialIcon } from '@/components/ui/SocialIcon'
 import { MARKETS, PLATFORMS } from '@/lib/constants'
 
 interface CalendarSlot {
@@ -53,17 +54,6 @@ function getAccountStyle(market: string, platform: string) {
   }
 }
 
-function getPostTypeIcon(notes: string | null): string {
-  if (!notes) return ''
-  try {
-    const meta = JSON.parse(notes)
-    const type = meta?.type
-    if (type === 'carousel') return '◫'
-    if (type === 'reel') return '▶'
-    if (type === 'story') return '○'
-    return '■'
-  } catch { return '' }
-}
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -227,12 +217,16 @@ export default function CalendarPage() {
     } catch { fetchSlots() }
   }
 
+  const MARKET_FLAGS: Record<string, string> = {
+    hq: '🇧🇪', us: '🇺🇸', uk: '🇬🇧', ae: '🇦🇪', fr: '🇫🇷', pl: '🇵🇱', kr: '🇰🇷', de: '🇩🇪',
+  }
+
   const SlotChip = ({ slot, compact = false }: { slot: CalendarSlot; compact?: boolean }) => {
     const style = getAccountStyle(slot.market, slot.platform)
     const variant = slot.post?.variants?.[0]
-    const typeIcon = variant ? getPostTypeIcon(variant.notes) : ''
     const previewText = variant?.text?.split('\n')[0]?.substring(0, 40) || ''
     const hasImage = !!variant?.imageUrl
+    const flag = MARKET_FLAGS[slot.market] || '🌐'
 
     return (
       <button
@@ -244,16 +238,16 @@ export default function CalendarPage() {
         }}
         onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
         onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
-        className={`w-full text-left rounded-md border-l-[3px] ${style.border} ${style.bg} px-2 py-1 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
+        className={`w-full text-left rounded-lg border-l-[3px] ${style.border} ${style.bg} px-2 py-1.5 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
       >
         <div className="flex items-center gap-1.5">
-          <span className={`text-[9px] font-semibold ${style.text} whitespace-nowrap`}>{style.label}</span>
-          {hasImage && <span className="text-[8px] text-gm-cream/30">🖼</span>}
-          {typeIcon && <span className="text-[8px] text-gm-cream/30">{typeIcon}</span>}
-          {slot.time && <span className="text-[8px] text-gm-cream/20 ml-auto">{slot.time}</span>}
+          <span className="text-xs">{flag}</span>
+          <SocialIcon platform={slot.platform} size="sm" />
+          {hasImage && <span className="text-[9px] text-gm-cream/30">🖼</span>}
+          {slot.time && <span className="text-[10px] text-gm-cream/25 ml-auto">{slot.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className="text-[8px] text-gm-cream/30 truncate mt-0.5 group-hover:text-gm-cream/50">{previewText}</p>
+          <p className="text-[9px] text-gm-cream/35 truncate mt-0.5 group-hover:text-gm-cream/50">{previewText}</p>
         )}
       </button>
     )
@@ -306,17 +300,17 @@ export default function CalendarPage() {
             <option value="facebook" className="bg-gm-dark">Facebook</option>
           </select>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-4 flex-wrap">
           {[
-            { label: 'IG BE', dot: 'bg-pink-400' },
-            { label: 'IG US', dot: 'bg-blue-400' },
-            { label: 'IG UAE', dot: 'bg-amber-400' },
-            { label: 'LinkedIn', dot: 'bg-sky-400' },
-            { label: 'Stories', dot: 'bg-purple-400' },
-          ].map((l) => (
-            <div key={l.label} className="flex items-center gap-1">
-              <span className={`w-2 h-2 rounded-full ${l.dot}`} />
-              <span className="text-[9px] text-gm-cream/30">{l.label}</span>
+            { flag: '🇧🇪', platform: 'instagram' },
+            { flag: '🇺🇸', platform: 'instagram' },
+            { flag: '🇦🇪', platform: 'instagram' },
+            { flag: '', platform: 'linkedin' },
+            { flag: '', platform: 'stories' },
+          ].map((l, i) => (
+            <div key={i} className="flex items-center gap-1">
+              {l.flag && <span className="text-xs">{l.flag}</span>}
+              <SocialIcon platform={l.platform} size="sm" withLabel />
             </div>
           ))}
         </div>

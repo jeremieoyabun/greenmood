@@ -4,7 +4,21 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
+import { SocialIcon, MarketBadge } from '@/components/ui/SocialIcon'
 import { MARKETS } from '@/lib/constants'
+import { cookies } from 'next/headers'
+
+async function getUserRole() {
+  const cookieStore = await cookies()
+  const session = cookieStore.get('gm-session')
+  if (!session?.value) return 'OPERATOR'
+  try {
+    const decoded = Buffer.from(session.value, 'base64').toString()
+    const parsed = JSON.parse(decoded)
+    const user = await prisma.user.findUnique({ where: { id: parsed.userId }, select: { role: true } })
+    return user?.role || 'OPERATOR'
+  } catch { return 'OPERATOR' }
+}
 
 async function getDashboardData() {
   const workspaceId = await getWorkspaceId()
@@ -16,17 +30,8 @@ async function getDashboardData() {
   weekEnd.setDate(weekEnd.getDate() + 7)
 
   const [
-    kbCount,
-    totalPosts,
-    pendingApprovals,
-    scheduledPosts,
-    publishedPosts,
-    competitorCount,
-    signalCount,
-    todaySlots,
-    weekSlots,
-    recentRuns,
-    topSignals,
+    kbCount, totalPosts, pendingApprovals, scheduledPosts, publishedPosts,
+    competitorCount, signalCount, todaySlots, weekSlots, recentRuns, topSignals,
   ] = await Promise.all([
     prisma.knowledgeBaseEntry.count({ where: { workspaceId, isActive: true } }),
     prisma.post.count({ where: { workspaceId } }),
@@ -35,7 +40,6 @@ async function getDashboardData() {
     prisma.post.count({ where: { workspaceId, status: 'PUBLISHED' } }),
     prisma.competitorEntity.count({ where: { isActive: true } }),
     prisma.intelligenceSignal.count({ where: { isDuplicate: false } }),
-    // Today's calendar
     prisma.calendarSlot.findMany({
       where: { workspaceId, date: { gte: today, lt: tomorrow } },
       include: {
@@ -48,7 +52,6 @@ async function getDashboardData() {
       },
       orderBy: { time: 'asc' },
     }),
-    // This week's calendar
     prisma.calendarSlot.findMany({
       where: { workspaceId, date: { gte: today, lt: weekEnd } },
       include: {
@@ -56,14 +59,12 @@ async function getDashboardData() {
       },
       orderBy: [{ date: 'asc' }, { time: 'asc' }],
     }),
-    // Recent agent runs
     prisma.agentRun.findMany({
       where: { workspaceId },
       orderBy: { createdAt: 'desc' },
       take: 5,
       select: { id: true, agentType: true, status: true, createdAt: true, durationMs: true, tokensUsed: true },
     }),
-    // Top intelligence signals
     prisma.intelligenceSignal.findMany({
       where: { isDuplicate: false },
       orderBy: { score: 'desc' },
@@ -81,40 +82,32 @@ async function getDashboardData() {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default async function DashboardPage() {
-  const data = await getDashboardData()
+  const [data, userRole] = await Promise.all([getDashboardData(), getUserRole()])
 
-  const todayActions: { label: string; type: 'post' | 'approve' | 'alert'; detail: string }[] = []
+  const todayActions: { market: string; platform: string; time: string; type: 'post' | 'approve' | 'alert'; detail: string }[] = []
 
-  // Build today's actions
   data.todaySlots.forEach(slot => {
     if (slot.post) {
-      const caption = slot.post.variants?.[0]?.text?.substring(0, 60) || 'No caption'
-      const market = MARKETS[slot.post.market]
+      const caption = slot.post.variants?.[0]?.text?.substring(0, 70) || 'No caption'
       todayActions.push({
-        label: `${market?.emoji || ''} ${slot.post.platform} ${slot.time || ''}`,
+        market: slot.post.market,
+        platform: slot.post.platform,
+        time: slot.time || '',
         type: slot.post.status === 'READY_TO_SCHEDULE' || slot.post.status === 'SCHEDULED' ? 'post' : 'approve',
         detail: caption,
       })
     }
   })
 
-  if (data.pendingApprovals > 0) {
-    todayActions.push({
-      label: `${data.pendingApprovals} posts awaiting approval`,
-      type: 'approve',
-      detail: 'Review in Approvals queue',
-    })
-  }
-
   return (
     <>
       <PageHeader
         title="Dashboard"
-        description={`${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}`}
+        description={new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
       />
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-5 gap-4 mb-8">
         {[
           { label: 'Pending Approval', value: data.pendingApprovals, color: 'text-amber-400', href: '/approvals' },
           { label: 'Ready to Publish', value: data.scheduledPosts, color: 'text-emerald-400', href: '/approvals' },
@@ -124,41 +117,42 @@ export default async function DashboardPage() {
         ].map((stat) => (
           <a key={stat.label} href={stat.href}>
             <Card hover>
-              <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-medium">{stat.label}</span>
-              <p className={`text-2xl font-semibold mt-1 ${stat.color}`}>{stat.value}</p>
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">{stat.label}</span>
+              <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
             </Card>
           </a>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-5">
         {/* Today's Actions */}
         <Card className="col-span-2">
           <CardHeader>
-            <CardTitle>Today&apos;s Actions</CardTitle>
+            <CardTitle className="text-base">Today&apos;s Actions</CardTitle>
             <Badge variant="info">{todayActions.length} items</Badge>
           </CardHeader>
           <CardContent>
             {todayActions.length === 0 ? (
-              <div className="py-6 text-center">
-                <p className="text-xs text-gm-cream/40">No posts scheduled for today</p>
-                <a href="/composer" className="text-xs text-gm-sage hover:underline mt-2 inline-block">Create content in Composer</a>
+              <div className="py-8 text-center">
+                <p className="text-sm text-gm-cream/40">No posts scheduled for today</p>
+                <a href="/composer" className="text-sm text-gm-sage hover:underline mt-2 inline-block">Create content in Composer</a>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {todayActions.map((action, i) => (
-                  <div key={i} className={`flex items-start gap-3 p-2.5 rounded-lg border ${
+                  <div key={i} className={`flex items-center gap-4 p-3 rounded-xl border ${
                     action.type === 'post' ? 'bg-emerald-500/5 border-emerald-500/10' :
                     action.type === 'approve' ? 'bg-amber-500/5 border-amber-500/10' :
                     'bg-red-500/5 border-red-500/10'
                   }`}>
-                    <span className="text-xs mt-0.5">
-                      {action.type === 'post' ? '📤' : action.type === 'approve' ? '✋' : '🔔'}
-                    </span>
+                    <MarketBadge market={action.market} platform={action.platform} size="md" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gm-cream/80">{action.label}</p>
-                      <p className="text-[10px] text-gm-cream/40 truncate">{action.detail}</p>
+                      <p className="text-sm text-gm-cream/80 truncate">{action.detail}</p>
                     </div>
+                    <span className="text-xs text-gm-cream/30 whitespace-nowrap">{action.time}</span>
+                    <span className="text-sm">
+                      {action.type === 'post' ? '📤' : '✋'}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -167,11 +161,11 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Quick Actions + Top Signals */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           <Card>
-            <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
             <CardContent>
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {[
                   { label: 'Create New Post', href: '/composer', icon: '✏️' },
                   { label: 'View Calendar', href: '/calendar', icon: '📅' },
@@ -181,9 +175,9 @@ export default async function DashboardPage() {
                   <a
                     key={action.href}
                     href={action.href}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-gm-cream/60 hover:text-gm-cream hover:bg-white/[0.03] transition-colors"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gm-cream/60 hover:text-gm-cream hover:bg-white/[0.04] transition-all"
                   >
-                    <span>{action.icon}</span>
+                    <span className="text-base">{action.icon}</span>
                     <span className="flex-1">{action.label}</span>
                     {action.count ? <Badge variant="info" size="sm">{action.count}</Badge> : null}
                   </a>
@@ -192,22 +186,21 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Top Intelligence */}
           {data.topSignals.length > 0 && (
             <Card>
-              <CardHeader><CardTitle>Top Signals</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">Top Signals</CardTitle></CardHeader>
               <CardContent>
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {data.topSignals.map((signal) => (
-                    <a key={signal.id} href="/intelligence" className="block p-2 rounded bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.08] transition-colors">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className={`text-xs font-bold ${
+                    <a key={signal.id} href="/intelligence" className="block p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] transition-all">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className={`text-sm font-bold ${
                           (signal.score || 0) >= 90 ? 'text-emerald-400' :
                           (signal.score || 0) >= 80 ? 'text-sky-400' : 'text-amber-400'
                         }`}>{signal.score}</span>
                         <Badge variant={signal.urgency === 'HIGH' ? 'danger' : 'default'} size="sm">{signal.category?.replace('_', ' ')}</Badge>
                       </div>
-                      <p className="text-[10px] text-gm-cream/50 line-clamp-2">{signal.title}</p>
+                      <p className="text-xs text-gm-cream/50 line-clamp-2">{signal.title}</p>
                     </a>
                   ))}
                 </div>
@@ -218,13 +211,13 @@ export default async function DashboardPage() {
       </div>
 
       {/* Week Overview */}
-      <Card className="mt-4">
+      <Card className="mt-5">
         <CardHeader>
-          <CardTitle>This Week</CardTitle>
+          <CardTitle className="text-base">This Week</CardTitle>
           <Badge variant="default">{data.weekSlots.length} posts planned</Badge>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-3">
             {[...Array(5)].map((_, i) => {
               const day = new Date()
               day.setDate(day.getDate() + i)
@@ -238,27 +231,24 @@ export default async function DashboardPage() {
               const isToday = i === 0
 
               return (
-                <div key={i} className={`rounded-lg p-2 border ${
+                <div key={i} className={`rounded-xl p-3 border ${
                   isToday ? 'border-gm-sage/20 bg-gm-sage/5' : 'border-white/[0.04] bg-white/[0.01]'
                 }`}>
-                  <p className={`text-[10px] font-medium mb-1.5 ${isToday ? 'text-gm-sage' : 'text-gm-cream/30'}`}>
+                  <p className={`text-xs font-semibold mb-2 ${isToday ? 'text-gm-sage' : 'text-gm-cream/40'}`}>
                     {DAY_NAMES[day.getDay()]} {day.getDate()}
-                    {isToday && <span className="ml-1 text-[8px] text-gm-sage/60">TODAY</span>}
+                    {isToday && <span className="ml-1.5 text-[10px] text-gm-sage/60">TODAY</span>}
                   </p>
                   {daySlots.length === 0 ? (
-                    <p className="text-[9px] text-gm-cream/15">No posts</p>
+                    <p className="text-xs text-gm-cream/15">No posts</p>
                   ) : (
-                    <div className="space-y-1">
-                      {daySlots.map((slot) => {
-                        const market = MARKETS[slot.post?.market || '']
-                        return (
-                          <div key={slot.id} className="flex items-center gap-1">
-                            <span className="text-[9px]">{market?.emoji || ''}</span>
-                            <span className="text-[9px] text-gm-cream/40 truncate">{slot.post?.platform} {slot.time || ''}</span>
-                            <StatusDot status={slot.post?.status || ''} className="ml-auto" />
-                          </div>
-                        )
-                      })}
+                    <div className="space-y-1.5">
+                      {daySlots.map((slot) => (
+                        <div key={slot.id} className="flex items-center gap-2">
+                          <MarketBadge market={slot.post?.market || ''} platform={slot.post?.platform || ''} size="sm" />
+                          <span className="text-[10px] text-gm-cream/30">{slot.time || ''}</span>
+                          <StatusDot status={slot.post?.status || ''} className="ml-auto" />
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -268,21 +258,20 @@ export default async function DashboardPage() {
         </CardContent>
       </Card>
 
-      {/* Recent Agent Activity */}
-      {data.recentRuns.length > 0 && (
-        <Card className="mt-4">
-          <CardHeader><CardTitle>Recent Agent Activity</CardTitle></CardHeader>
+      {/* Recent Agent Activity — Operator only */}
+      {userRole === 'OPERATOR' && data.recentRuns.length > 0 && (
+        <Card className="mt-5">
+          <CardHeader><CardTitle className="text-base">Recent Agent Activity</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-2">
               {data.recentRuns.map((run) => (
-                <div key={run.id} className="flex items-center gap-3 py-1.5 border-b border-white/[0.04] last:border-0">
+                <div key={run.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
                   <StatusDot status={run.status} />
-                  <span className="text-xs text-gm-cream/60 flex-1">{run.agentType.replace(/_/g, ' ')}</span>
+                  <span className="text-sm text-gm-cream/60 flex-1">{run.agentType.replace(/_/g, ' ')}</span>
                   <Badge variant={run.status === 'COMPLETED' ? 'success' : run.status === 'FAILED' ? 'danger' : 'warning'} size="sm">
                     {run.status}
                   </Badge>
-                  {run.tokensUsed ? <span className="text-[9px] text-gm-cream/20">{run.tokensUsed} tokens</span> : null}
-                  {run.durationMs ? <span className="text-[9px] text-gm-cream/20">{(run.durationMs / 1000).toFixed(1)}s</span> : null}
+                  {run.tokensUsed ? <span className="text-xs text-gm-cream/20">{run.tokensUsed} tokens</span> : null}
                 </div>
               ))}
             </div>
