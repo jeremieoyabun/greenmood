@@ -1,24 +1,12 @@
 import { prisma } from '@/lib/db'
 import { getWorkspaceId } from '@/lib/workspace'
+import { getCurrentUser } from '@/lib/auth'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { SocialIcon, MarketBadge } from '@/components/ui/SocialIcon'
 import { MARKETS } from '@/lib/constants'
-import { cookies } from 'next/headers'
-
-async function getUserRole() {
-  const cookieStore = await cookies()
-  const session = cookieStore.get('gm-session')
-  if (!session?.value) return 'OPERATOR'
-  try {
-    const decoded = Buffer.from(session.value, 'base64').toString()
-    const parsed = JSON.parse(decoded)
-    const user = await prisma.user.findUnique({ where: { id: parsed.userId }, select: { role: true } })
-    return user?.role || 'OPERATOR'
-  } catch { return 'OPERATOR' }
-}
 
 async function getDashboardData() {
   const workspaceId = await getWorkspaceId()
@@ -82,7 +70,8 @@ async function getDashboardData() {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default async function DashboardPage() {
-  const [data, userRole] = await Promise.all([getDashboardData(), getUserRole()])
+  const [data, currentUser] = await Promise.all([getDashboardData(), getCurrentUser()])
+  const userRole = currentUser?.role || 'VIEWER'
 
   const todayActions: { market: string; platform: string; time: string; type: 'post' | 'approve' | 'alert'; detail: string }[] = []
 
