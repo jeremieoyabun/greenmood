@@ -166,7 +166,7 @@ enum CalendarStatus {
 model Post {
   id          String     @id @default(cuid())
   workspaceId String     @map("workspace_id")
-  campaignId  String     @map("campaign_id")
+  campaignId  String?    @map("campaign_id")
   market      String
   platform    String
   status      PostStatus @default(DRAFT)
@@ -174,7 +174,7 @@ model Post {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   workspace     Workspace      @relation(fields: [workspaceId], references: [id])
-  campaign      Campaign       @relation(fields: [campaignId], references: [id])
+  campaign      Campaign?      @relation(fields: [campaignId], references: [id])
   variants      PostVariant[]
   approvalSteps ApprovalStep[]
   calendarSlot  CalendarSlot?

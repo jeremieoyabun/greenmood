@@ -28,9 +28,10 @@ interface PostDetailModalProps {
   open: boolean
   onClose: () => void
   onUpdate?: () => void
+  onDelete?: () => void
 }
 
-export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailModalProps) {
+export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: PostDetailModalProps) {
   const [copied, setCopied] = useState('')
   const [imageAnalysis, setImageAnalysis] = useState<any>(null)
   const [analyzing, setAnalyzing] = useState(false)
@@ -265,6 +266,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
           {meta.type && <Badge variant="info">{meta.type}</Badge>}
           {pillar && <Badge variant={pillar.color as any}>{pillar.label}</Badge>}
           <StatusDot status={postStatus} />
+          {onDelete && (
+            <button onClick={onDelete} className="ml-auto text-[10px] text-red-400/60 hover:text-red-400 transition-colors" title="Delete post">Delete</button>
+          )}
           {editingSchedule ? (
             <div className="flex items-center gap-2 ml-auto">
               <input

@@ -35,7 +35,6 @@ interface CalendarSlot {
 
 type ViewMode = 'month' | 'week' | 'agenda'
 
-// Account config for visual distinction
 const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
   'hq--instagram': { label: 'IG HQ', bg: 'bg-pink-500/15', text: 'text-pink-300', border: 'border-l-pink-400', dot: 'bg-pink-400' },
   'us--instagram': { label: 'IG US', bg: 'bg-blue-500/15', text: 'text-blue-300', border: 'border-l-blue-400', dot: 'bg-blue-400' },
@@ -73,10 +72,18 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
-  const [newSlot, setNewSlot] = useState({ market: 'hq', platform: 'linkedin', time: '09:00', notes: '' })
+  const [newSlot, setNewSlot] = useState({ market: 'hq', platform: 'instagram', time: '12:00', notes: '' })
   const [selectedSlot, setSelectedSlot] = useState<CalendarSlot | null>(null)
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
   const [filterMarket, setFilterMarket] = useState<string>('all')
+
+  // New post form
+  const [newText, setNewText] = useState('')
+  const [newHashtags, setNewHashtags] = useState('')
+  const [newFirstComment, setNewFirstComment] = useState('')
+  const [newImage, setNewImage] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
+  const [genHash, setGenHash] = useState(false)
 
   const fetchSlots = useCallback(async () => {
     setLoading(true)
@@ -122,26 +129,80 @@ export default function CalendarPage() {
     else setCurrentDate(dir > 0 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1))
   }
 
-  const addSlot = async () => {
-    if (!selectedDate) return
-    try {
-      await fetch('/api/calendar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: selectedDate, ...newSlot }),
-      })
-      setShowAddModal(false)
-      setNewSlot({ market: 'hq', platform: 'linkedin', time: '09:00', notes: '' })
-      fetchSlots()
-    } catch { /* ignore */ }
+  const resetForm = () => {
+    setNewText('')
+    setNewHashtags('')
+    setNewFirstComment('')
+    setNewImage(null)
+    setNewSlot({ market: 'hq', platform: 'instagram', time: '12:00', notes: '' })
   }
 
   const openAddModal = (date?: Date) => {
     setSelectedDate(date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'))
+    resetForm()
     setShowAddModal(true)
   }
 
-  // Drag & drop state
+  // Create post with text, image, hashtags
+  const createPost = async () => {
+    if (!selectedDate || !newText.trim()) return
+    setCreating(true)
+    try {
+      const res = await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: selectedDate,
+          time: newSlot.time,
+          market: newSlot.market,
+          platform: newSlot.platform,
+          text: newText,
+          hashtags: newHashtags || null,
+          firstComment: newFirstComment || null,
+          imageUrl: newImage || null,
+          notes: newSlot.notes || null,
+        }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setShowAddModal(false)
+        resetForm()
+        fetchSlots()
+      } else {
+        alert('Failed: ' + data.error)
+      }
+    } catch { alert('Failed to create post') }
+    setCreating(false)
+  }
+
+  // Delete a post
+  const deleteSlot = async (slotId: string, postId?: string) => {
+    if (!confirm('Delete this post?')) return
+    try {
+      await fetch(`/api/calendar/${slotId}`, { method: 'DELETE' })
+      if (postId) await fetch(`/api/posts/${postId}`, { method: 'DELETE' })
+      setSelectedSlot(null)
+      fetchSlots()
+    } catch { alert('Delete failed') }
+  }
+
+  // Auto-generate hashtags from caption text
+  const generateHashtags = async () => {
+    if (!newText.trim()) return
+    setGenHash(true)
+    try {
+      const res = await fetch('/api/generate/hashtags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: newText, platform: newSlot.platform }),
+      })
+      const data = await res.json()
+      if (data.success) setNewHashtags(data.data.hashtags)
+    } catch { /* ignore */ }
+    setGenHash(false)
+  }
+
+  // Drag & drop
   const [dragSlotId, setDragSlotId] = useState<string | null>(null)
   const [dragOverDate, setDragOverDate] = useState<string | null>(null)
 
@@ -152,28 +213,26 @@ export default function CalendarPage() {
     const slot = slots.find(s => s.id === dragSlotId)
     if (!slot || slot.date.startsWith(targetDate)) return
 
-    // Optimistic update
     setSlots(prev => prev.map(s =>
       s.id === dragSlotId ? { ...s, date: targetDate + 'T00:00:00.000Z' } : s
     ))
 
-    // Update calendar slot date
     try {
       const res = await fetch(`/api/posts/${slot.post?.id}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ date: targetDate, time: slot.time || '12:00' }),
       })
-      if (!(await res.json()).success) fetchSlots() // revert on failure
+      if (!(await res.json()).success) fetchSlots()
     } catch { fetchSlots() }
   }
 
-  // Slot chip component for reuse
   const SlotChip = ({ slot, compact = false }: { slot: CalendarSlot; compact?: boolean }) => {
     const style = getAccountStyle(slot.market, slot.platform)
     const variant = slot.post?.variants?.[0]
     const typeIcon = variant ? getPostTypeIcon(variant.notes) : ''
     const previewText = variant?.text?.split('\n')[0]?.substring(0, 40) || ''
+    const hasImage = !!variant?.imageUrl
 
     return (
       <button
@@ -189,6 +248,7 @@ export default function CalendarPage() {
       >
         <div className="flex items-center gap-1.5">
           <span className={`text-[9px] font-semibold ${style.text} whitespace-nowrap`}>{style.label}</span>
+          {hasImage && <span className="text-[8px] text-gm-cream/30">🖼</span>}
           {typeIcon && <span className="text-[8px] text-gm-cream/30">{typeIcon}</span>}
           {slot.time && <span className="text-[8px] text-gm-cream/20 ml-auto">{slot.time}</span>}
         </div>
@@ -216,7 +276,7 @@ export default function CalendarPage() {
               <Button variant="ghost" size="sm" onClick={() => setCurrentDate(new Date())}>Today</Button>
               <Button variant="ghost" size="sm" onClick={() => navigate(1)}>→</Button>
             </div>
-            <Button size="sm" onClick={() => openAddModal()}>Add Slot</Button>
+            <Button size="sm" onClick={() => openAddModal()}>+ New Post</Button>
           </div>
         }
       />
@@ -246,7 +306,6 @@ export default function CalendarPage() {
             <option value="facebook" className="bg-gm-dark">Facebook</option>
           </select>
         </div>
-        {/* Legend */}
         <div className="flex items-center gap-3 flex-wrap">
           {[
             { label: 'IG HQ', dot: 'bg-pink-400' },
@@ -260,9 +319,6 @@ export default function CalendarPage() {
               <span className="text-[9px] text-gm-cream/30">{l.label}</span>
             </div>
           ))}
-          <div className="flex items-center gap-2 ml-2 text-[9px] text-gm-cream/20">
-            <span>◫ carousel</span><span>▶ reel</span><span>○ story</span><span>■ post</span>
-          </div>
         </div>
       </div>
 
@@ -279,7 +335,6 @@ export default function CalendarPage() {
               const daySlots = getSlotsForDate(day)
               const inMonth = isSameMonth(day, currentDate)
               const today = isToday(day)
-
               const dayStr = format(day, 'yyyy-MM-dd')
               const isDropTarget = dragOverDate === dayStr
 
@@ -397,17 +452,96 @@ export default function CalendarPage() {
         open={!!selectedSlot}
         onClose={() => setSelectedSlot(null)}
         onUpdate={() => fetchSlots()}
+        onDelete={() => {
+          if (selectedSlot) deleteSlot(selectedSlot.id, selectedSlot.post?.id)
+        }}
       />
 
-      {/* Add Slot Modal */}
-      <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Add Calendar Slot" size="sm">
+      {/* Create Post Modal */}
+      <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title="Create Post" size="md">
         <div className="space-y-4">
-          <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
-          <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
-          <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
-          <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
-          <Input label="Notes" placeholder="Optional notes..." value={newSlot.notes} onChange={(e) => setNewSlot(p => ({ ...p, notes: e.target.value }))} />
-          <Button onClick={addSlot} className="w-full">Add to Calendar</Button>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+            <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
+            <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
+          </div>
+
+          {/* Image */}
+          <div>
+            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Image</label>
+            <input type="file" accept="image/*" id="new-post-img" className="hidden" onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) {
+                const r = new FileReader()
+                r.onload = (ev) => setNewImage(ev.target?.result as string)
+                r.readAsDataURL(f)
+              }
+            }} />
+            {newImage ? (
+              <div className="relative rounded-lg overflow-hidden cursor-pointer group" onClick={() => document.getElementById('new-post-img')?.click()}>
+                <img src={newImage} alt="" className="w-full max-h-48 object-cover" />
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span className="text-xs text-white">Change image</span>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-4 flex flex-col items-center gap-1">
+                <span className="text-xl opacity-30">+</span>
+                <span className="text-[10px] text-gm-cream/30">Click to add image</span>
+              </button>
+            )}
+          </div>
+
+          {/* Caption */}
+          <div>
+            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Caption</label>
+            <textarea
+              value={newText}
+              onChange={(e) => setNewText(e.target.value)}
+              placeholder="Write your caption..."
+              rows={4}
+              className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+            />
+          </div>
+
+          {/* Hashtags */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-medium text-gm-cream/60">Hashtags</label>
+              <button
+                onClick={generateHashtags}
+                disabled={genHash || !newText.trim()}
+                className="text-[10px] text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
+              >
+                {genHash ? 'Generating...' : 'Auto-generate'}
+              </button>
+            </div>
+            <textarea
+              value={newHashtags}
+              onChange={(e) => setNewHashtags(e.target.value)}
+              placeholder="#biophilicdesign #greenmood ..."
+              rows={2}
+              className="w-full px-3 py-2 text-xs bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+            />
+          </div>
+
+          {/* First Comment */}
+          <div>
+            <label className="text-xs font-medium text-gm-cream/60 block mb-1">First Comment <span className="text-gm-cream/20">(link for LinkedIn)</span></label>
+            <input
+              value={newFirstComment}
+              onChange={(e) => setNewFirstComment(e.target.value)}
+              placeholder="Link or additional context..."
+              className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+            />
+          </div>
+
+          <Button onClick={createPost} disabled={creating || !newText.trim()} className="w-full">
+            {creating ? 'Creating...' : 'Create Post'}
+          </Button>
         </div>
       </Modal>
     </>

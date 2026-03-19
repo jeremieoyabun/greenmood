@@ -50,3 +50,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     )
   }
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    // Delete in order: approval steps, variants, calendar slot, post
+    await prisma.approvalStep.deleteMany({ where: { postId: id } })
+    await prisma.postVariant.deleteMany({ where: { postId: id } })
+    await prisma.calendarSlot.deleteMany({ where: { postId: id } })
+    await prisma.post.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : 'Delete failed' },
+      { status: 500 }
+    )
+  }
+}
