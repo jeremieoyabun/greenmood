@@ -18,72 +18,66 @@ const TOUR_STEPS: TourStep[] = [
     title: 'Welcome to Greenmood Marketing OS',
     description: 'Your AI-powered marketing command center. Let me show you the key features in 60 seconds.',
     page: '/',
-    cardPosition: 'center',
   },
   {
     title: 'Sidebar Navigation',
-    description: 'Access all modules from here: Calendar, Composer, Assets, Approvals, Intelligence, Analytics, and Settings.',
-    tip: 'The green dot next to a menu item means there are pending actions.',
+    description: 'Access all modules from here: Calendar, Composer, Assets, Approvals, Intelligence, and Settings.',
+    tip: 'Each section is one click away. The sidebar is always visible.',
     page: '/',
-    selector: 'nav',
-    cardPosition: 'bottom-right',
+    selector: 'aside',
   },
   {
     title: 'Dashboard Overview',
-    description: 'Your daily command center. Pending approvals, scheduled posts, intelligence signals, and quick actions at a glance.',
+    description: 'Your daily command center. Pending approvals, scheduled posts, intelligence signals, and today\'s actions at a glance.',
     tip: 'Check this every morning. The AI agents populate it overnight with new content proposals.',
     page: '/',
-    selector: '.grid.grid-cols-5',
-    cardPosition: 'bottom-left',
+    selector: 'main',
   },
   {
     title: 'Editorial Calendar',
-    description: 'Your content planning hub. See all posts across every market and platform in month, week, or agenda view.',
-    tip: 'Drag and drop posts between days to reschedule instantly.',
+    description: 'Your content planning hub. See all posts across every market and platform. Month, week, or agenda view.',
+    tip: 'Drag and drop posts between days to reschedule. Green glow = scheduled and ready.',
     page: '/calendar',
-    selector: '.grid.grid-cols-7',
-    cardPosition: 'bottom-right',
+    selector: 'main',
   },
   {
-    title: 'Post Detail',
-    description: 'Click any post in the calendar to open it. Edit the caption, hashtags, first comment, change the image, adjust the schedule, or duplicate to another market.',
+    title: 'Click any post to edit',
+    description: 'Click any post in the calendar to open it. Edit caption, hashtags, first comment, change image, adjust schedule, or duplicate to another market.',
     tip: 'For LinkedIn, the link goes in the First Comment (not in the post body). The platform reminds you.',
     page: '/calendar',
-    cardPosition: 'center',
   },
   {
-    title: 'Approval Workflow',
-    description: 'Three simple actions for every post: Approve, Approve & Schedule, or Delete. Posts ready to publish appear with a green glow in the calendar.',
+    title: 'Approval Queue',
+    description: 'All your posts in one place. Three simple actions: Approve, Approve & Schedule, or Delete. Filter by market, status, or platform.',
+    tip: 'Posts ready to publish appear with a green border at the top of the list.',
     page: '/approvals',
-    selector: '.space-y-2',
-    cardPosition: 'bottom-right',
+    selector: 'main',
   },
   {
     title: 'Asset Library',
-    description: 'Your cloud media library powered by Cloudinary. Upload photos and videos, organized by product and project. AI auto-detects Greenmood products and tags them.',
+    description: 'Your cloud media library. Upload photos and videos, organized by product and project. AI auto-detects Greenmood products and tags them.',
     tip: 'The more assets you upload, the better the AI can suggest visuals for your posts.',
     page: '/assets',
-    cardPosition: 'center',
+    selector: 'main',
   },
   {
     title: 'Intelligence Hub',
-    description: 'Daily market signals about biophilic design trends, competitor moves, and content opportunities. Click "Create Posts" on any signal to turn it into content.',
+    description: 'Daily market signals: competitor moves, trends, content opportunities. Click "Create Posts" on any signal to turn it into content instantly.',
     tip: 'New signals every morning at 7h. Great for content inspiration.',
     page: '/intelligence',
-    cardPosition: 'center',
+    selector: 'main',
   },
   {
     title: 'AI Content Composer',
-    description: 'Write a brief like "Mario Pouf sustainable cork seating" and the AI generates post proposals for multiple platforms and markets, grounded in Greenmood product data.',
+    description: 'Write a brief like "Mario Pouf sustainable cork seating" and the AI generates post proposals for multiple platforms and markets, grounded in real Greenmood product data.',
     page: '/composer',
-    cardPosition: 'center',
+    selector: 'main',
   },
   {
     title: 'You\'re all set!',
-    description: 'Start by checking today\'s calendar, reviewing posts in Approvals, and uploading your best photos to the Asset Library. The AI agents handle the rest.',
+    description: 'Start by checking today\'s calendar, reviewing posts in Approvals, and uploading your best photos to Assets. The AI agents handle the rest.',
     tip: 'Click the "?" button at the bottom right to restart this tour anytime.',
     page: '/',
-    cardPosition: 'center',
   },
 ]
 
@@ -246,12 +240,12 @@ export function OnboardingTour() {
 
   return (
     <div className="fixed inset-0 z-[100]">
-      {/* SVG overlay with spotlight cutout */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-auto" onClick={complete}>
-        <defs>
-          <mask id="spotlight-mask">
-            <rect width="100%" height="100%" fill="white" />
-            {highlight && (
+      {/* Overlay: spotlight cutout when element found, light dim when not */}
+      {highlight ? (
+        <svg className="absolute inset-0 w-full h-full pointer-events-auto" onClick={complete}>
+          <defs>
+            <mask id="spotlight-mask">
+              <rect width="100%" height="100%" fill="white" />
               <rect
                 x={highlight.left - pad}
                 y={highlight.top - pad}
@@ -260,17 +254,14 @@ export function OnboardingTour() {
                 rx="16"
                 fill="black"
               />
-            )}
-          </mask>
-        </defs>
-        <rect
-          width="100%"
-          height="100%"
-          fill="rgba(0,0,0,0.65)"
-          mask="url(#spotlight-mask)"
-        />
-        {/* Highlight border */}
-        {highlight && (
+            </mask>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="rgba(0,0,0,0.55)"
+            mask="url(#spotlight-mask)"
+          />
           <rect
             x={highlight.left - pad}
             y={highlight.top - pad}
@@ -279,12 +270,13 @@ export function OnboardingTour() {
             rx="16"
             fill="none"
             stroke="#A8C49A"
-            strokeWidth="2"
-            strokeDasharray="6 3"
+            strokeWidth="2.5"
             className="animate-pulse"
           />
-        )}
-      </svg>
+        </svg>
+      ) : (
+        <div className="absolute inset-0 bg-black/30 pointer-events-auto" onClick={complete} />
+      )}
 
       {/* Arrow */}
       {arrowStyle && <div style={arrowStyle} className="pointer-events-none" />}
