@@ -207,6 +207,29 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
     setApproving(null)
   }
 
+  const [publishing, setPublishing] = useState(false)
+
+  const handlePublish = async () => {
+    if (!slot?.post?.id) return
+    if (!confirm('Publish this post now?')) return
+    setPublishing(true)
+    try {
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId: slot.post.id }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setLocalStatus('PUBLISHED')
+        onUpdate?.()
+      } else {
+        alert('Publish failed: ' + data.error)
+      }
+    } catch { alert('Publish failed') }
+    setPublishing(false)
+  }
+
   const analyzeImage = async (file: File) => {
     setAnalyzing(true)
     setImageAnalysis(null)
@@ -273,7 +296,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         actions.push({ action: 'APPROVE', label: 'Mark as Scheduled', variant: 'primary', nextStatus: 'SCHEDULED' })
         break
       case 'SCHEDULED':
-        actions.push({ action: 'APPROVE', label: 'Mark as Published', variant: 'primary', nextStatus: 'PUBLISHED' })
+        actions.push({ action: 'PUBLISH_NOW', label: 'Publish Now', variant: 'primary', nextStatus: 'PUBLISHED' })
         break
       case 'REJECTED':
         actions.push({ action: 'APPROVE', label: 'Move to Draft', variant: 'secondary', nextStatus: 'DRAFT' })
@@ -387,6 +410,8 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 onClick={() => {
                   if (action === 'REJECT' || action === 'REQUEST_CHANGES') {
                     setShowRejectInput(true)
+                  } else if (action === 'PUBLISH_NOW') {
+                    handlePublish()
                   } else {
                     handleApproval(action)
                   }
