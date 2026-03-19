@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface PostDetail {
   id: string
@@ -69,10 +69,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const [savingSchedule, setSavingSchedule] = useState(false)
 
   // Sync imageUrl from variant when slot changes
-  const variantImageUrl = slot?.post?.variants?.[0]?.imageUrl || null
-  if (variantImageUrl && !imageUrl) {
-    // Will be set on render
-  }
+  useEffect(() => {
+    const varImg = slot?.post?.variants?.[0]?.imageUrl || null
+    setImageUrl(varImg)
+  }, [slot?.id])
 
   const handleImageUpload = async (file: File) => {
     if (!slot?.post?.id) return
