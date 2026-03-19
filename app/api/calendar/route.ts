@@ -27,11 +27,14 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             status: true,
+            market: true,
+            platform: true,
             variants: {
               where: { isActive: true },
               orderBy: { version: 'desc' as const },
               take: 1,
-              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true, imageUrl: true },
+              // Don't load full imageUrl in list — can be MB of base64
+              select: { id: true, text: true, notes: true, timing: true },
             },
           },
         },
@@ -39,7 +42,28 @@ export async function GET(req: NextRequest) {
       orderBy: [{ date: 'asc' }, { time: 'asc' }],
     })
 
-    return NextResponse.json({ success: true, data: slots })
+    // Check which variants have images (without loading the actual data)
+    const variantIds = slots.flatMap(s => s.post?.variants?.map(v => v.id) || []).filter(Boolean)
+    const variantsWithImage = variantIds.length > 0
+      ? await prisma.postVariant.findMany({
+          where: { id: { in: variantIds }, imageUrl: { not: null } },
+          select: { id: true },
+        })
+      : []
+    const imageSet = new Set(variantsWithImage.map(v => v.id))
+
+    const slotsWithImageFlag = slots.map(slot => ({
+      ...slot,
+      post: slot.post ? {
+        ...slot.post,
+        variants: slot.post.variants.map(v => ({
+          ...v,
+          imageUrl: imageSet.has(v.id) ? 'HAS_IMAGE' : null,
+        })),
+      } : slot.post,
+    }))
+
+    return NextResponse.json({ success: true, data: slotsWithImageFlag })
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Database error' },
