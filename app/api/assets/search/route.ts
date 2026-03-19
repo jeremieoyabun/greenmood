@@ -10,25 +10,19 @@ export async function GET(req: NextRequest) {
 
     let result: any
 
+    // Build search expression
+    let expression = `folder:${folder}/*`
     if (q) {
-      // Use search API for text queries
-      result = await cloudinary.search
-        .expression(`folder:greenmood/* AND (tags:${q} OR filename:${q})`)
-        .sort_by('created_at', 'desc')
-        .max_results(Math.min(limit, 50))
-        .with_field('tags')
-        .with_field('context')
-        .execute()
-    } else {
-      // Browse by folder
-      result = await cloudinary.search
-        .expression(`folder:${folder}/*`)
-        .sort_by('created_at', 'desc')
-        .max_results(Math.min(limit, 50))
-        .with_field('tags')
-        .with_field('context')
-        .execute()
+      expression = `folder:greenmood/* AND (tags:${q} OR filename:*${q}*)`
     }
+
+    result = await cloudinary.search
+      .expression(expression)
+      .sort_by('created_at', 'desc')
+      .max_results(Math.min(limit, 50))
+      .with_field('tags')
+      .with_field('context')
+      .execute()
 
     const assets = (result.resources || []).map((r: any) => ({
       url: r.secure_url,
@@ -39,6 +33,8 @@ export async function GET(req: NextRequest) {
       bytes: r.bytes,
       tags: r.tags || [],
       context: r.context?.custom || {},
+      // Use original filename from context, or extract readable name from public_id
+      displayName: r.context?.custom?.originalName || r.filename || r.public_id.split('/').pop()?.replace(/[_]/g, ' '),
       createdAt: r.created_at,
       resourceType: r.resource_type,
     }))

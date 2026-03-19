@@ -18,6 +18,7 @@ interface Asset {
   createdAt: string
   resourceType?: string
   context?: Record<string, string>
+  displayName?: string
 }
 
 function AssetDetailModal({ asset, onClose, onDelete, onTagsUpdate }: {
@@ -138,25 +139,64 @@ function AssetDetailModal({ asset, onClose, onDelete, onTagsUpdate }: {
   )
 }
 
-const FOLDERS = [
-  { id: 'greenmood/products/ball-moss', label: 'Ball Moss' },
-  { id: 'greenmood/products/cork-tiles', label: 'Cork Tiles' },
-  { id: 'greenmood/products/g-circle', label: 'G-Circle' },
-  { id: 'greenmood/products/cascade', label: 'Cascade' },
-  { id: 'greenmood/products/hoverlight', label: 'Hoverlight' },
-  { id: 'greenmood/products/modulor', label: 'Modulor' },
-  { id: 'greenmood/products/framed', label: 'Framed' },
-  { id: 'greenmood/products/perspective-lines', label: 'Perspective Lines' },
-  { id: 'greenmood/products/rings', label: 'Rings' },
-  { id: 'greenmood/products/green-walls', label: 'Green Walls' },
-  { id: 'greenmood/projects', label: 'Projects' },
+interface FolderNode {
+  id: string
+  label: string
+  children?: FolderNode[]
+}
+
+const FOLDER_TREE: FolderNode[] = [
+  { id: 'greenmood', label: 'All Assets' },
+  { id: 'greenmood/products', label: 'Products', children: [
+    { id: 'greenmood/products/ball-moss', label: 'Ball Moss' },
+    { id: 'greenmood/products/cork-tiles', label: 'Cork Tiles' },
+    { id: 'greenmood/products/g-circle', label: 'G-Circle' },
+    { id: 'greenmood/products/cascade', label: 'Cascade' },
+    { id: 'greenmood/products/hoverlight', label: 'Hoverlight' },
+    { id: 'greenmood/products/modulor', label: 'Modulor' },
+    { id: 'greenmood/products/framed', label: 'Framed' },
+    { id: 'greenmood/products/moss-frames', label: 'Moss Frames' },
+    { id: 'greenmood/products/perspective-lines', label: 'Perspective Lines' },
+    { id: 'greenmood/products/rings', label: 'Rings' },
+    { id: 'greenmood/products/tail', label: 'Tail' },
+    { id: 'greenmood/products/belt', label: 'Belt' },
+    { id: 'greenmood/products/g-divider', label: 'G-Divider' },
+    { id: 'greenmood/products/planters', label: 'Planters' },
+    { id: 'greenmood/products/pouf', label: 'Pouf' },
+    { id: 'greenmood/products/green-walls', label: 'Green Walls' },
+    { id: 'greenmood/products/semi-natural-trees', label: 'Semi-natural Trees' },
+    { id: 'greenmood/products/custom-logos', label: 'Custom Logos' },
+    { id: 'greenmood/products/sample-box', label: 'Sample Box' },
+  ]},
+  { id: 'greenmood/projects', label: 'Projects', children: [
+    { id: 'greenmood/projects/cloud-ix-budapest', label: 'Cloud IX Budapest' },
+    { id: 'greenmood/projects/uc-davis', label: 'UC Davis' },
+    { id: 'greenmood/projects/loreal-paris', label: "L'Oreal Paris" },
+    { id: 'greenmood/projects/ap-rooftop-nj', label: 'AP Rooftop NJ' },
+    { id: 'greenmood/projects/ci3-yorkshire', label: 'Ci3 Yorkshire' },
+    { id: 'greenmood/projects/jll-brussels', label: 'JLL Brussels' },
+    { id: 'greenmood/projects/athora-brussels', label: 'Athora Brussels' },
+    { id: 'greenmood/projects/saltire-edinburgh', label: 'Saltire Court Edinburgh' },
+  ]},
   { id: 'greenmood/factory', label: 'Factory / Craft' },
-  { id: 'greenmood/events', label: 'Events' },
+  { id: 'greenmood/events', label: 'Events', children: [
+    { id: 'greenmood/events/neocon', label: 'NeoCon' },
+    { id: 'greenmood/events/workspace-expo', label: 'Workspace Expo' },
+    { id: 'greenmood/events/icff-2024', label: 'ICFF 2024' },
+  ]},
   { id: 'greenmood/team', label: 'Team' },
   { id: 'greenmood/showrooms', label: 'Showrooms' },
+  { id: 'greenmood/social', label: 'Social Media', children: [
+    { id: 'greenmood/social/instagram', label: 'Instagram' },
+    { id: 'greenmood/social/stories', label: 'Stories' },
+    { id: 'greenmood/social/linkedin', label: 'LinkedIn' },
+  ]},
   { id: 'greenmood/textures', label: 'Textures' },
-  { id: 'greenmood/social', label: 'Social Media' },
+  { id: 'greenmood/press-kit', label: 'Press Kit' },
 ]
+
+// Flatten for upload dropdown
+const ALL_FOLDERS = FOLDER_TREE.flatMap(f => f.children ? [f, ...f.children] : [f]).filter(f => f.id !== 'greenmood')
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([])
@@ -225,32 +265,61 @@ export default function AssetsPage() {
         }
       />
 
-      {/* Filters */}
-      <div className="flex items-center gap-4 mb-6">
-        {/* Search */}
-        <div className="flex-1 flex gap-2">
-          <input
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Search by tag, product, project..."
-            className="flex-1 px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-2 focus:ring-gm-sage/30"
-          />
-          <Button variant="secondary" onClick={handleSearch}>Search</Button>
+      {/* Layout: Sidebar + Grid */}
+      <div className="flex gap-6">
+        {/* Folder sidebar */}
+        <div className="w-56 shrink-0">
+          <div className="bg-white/[0.02] rounded-xl border border-white/[0.06] p-3 sticky top-24">
+            <p className="text-xs uppercase tracking-wider text-gm-cream/30 font-semibold mb-3 px-2">Folders</p>
+            <nav className="space-y-0.5">
+              {FOLDER_TREE.map(folder => (
+                <div key={folder.id}>
+                  <button
+                    onClick={() => setSelectedFolder(folder.id)}
+                    className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
+                      selectedFolder === folder.id
+                        ? 'bg-gm-sage/15 text-gm-sage font-medium'
+                        : 'text-gm-cream/50 hover:text-gm-cream/80 hover:bg-white/[0.03]'
+                    }`}
+                  >
+                    {folder.children ? '📁' : '📄'} {folder.label}
+                  </button>
+                  {folder.children && (
+                    <div className="ml-4 mt-0.5 space-y-0.5">
+                      {folder.children.map(child => (
+                        <button
+                          key={child.id}
+                          onClick={() => setSelectedFolder(child.id)}
+                          className={`w-full text-left px-3 py-1 rounded-lg text-xs transition-all ${
+                            selectedFolder === child.id
+                              ? 'bg-gm-sage/15 text-gm-sage font-medium'
+                              : 'text-gm-cream/35 hover:text-gm-cream/60 hover:bg-white/[0.02]'
+                          }`}
+                        >
+                          {child.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
         </div>
 
-        {/* Folder filter */}
-        <select
-          value={selectedFolder}
-          onChange={e => setSelectedFolder(e.target.value)}
-          className="px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream focus:outline-none [&>option]:bg-[#0f1a0f] [&>option]:text-gm-cream"
-        >
-          <option value="greenmood/">All Assets</option>
-          {FOLDERS.map(f => (
-            <option key={f.id} value={f.id}>{f.label}</option>
-          ))}
-        </select>
-      </div>
+        {/* Main content */}
+        <div className="flex-1">
+          {/* Search bar */}
+          <div className="flex gap-2 mb-5">
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="Search by tag, product, project..."
+              className="flex-1 px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-2 focus:ring-gm-sage/30"
+            />
+            <Button variant="secondary" onClick={handleSearch}>Search</Button>
+          </div>
 
       {/* Asset Grid */}
       {loading ? (
@@ -282,7 +351,7 @@ export default function AssetsPage() {
               </div>
               <div className="p-2.5 bg-white/[0.02]">
                 <p className="text-xs text-gm-cream/70 truncate font-medium">
-                  {asset.context?.originalName || asset.publicId.split('/').pop()?.replace(/[_-]/g, ' ')}
+                  {asset.displayName || asset.context?.originalName || asset.publicId.split('/').pop()?.replace(/[_-]/g, ' ')}
                 </p>
                 <p className="text-[10px] text-gm-cream/30 truncate mt-0.5">
                   {asset.width}x{asset.height} · {asset.format.toUpperCase()} · {asset.bytes < 1048576 ? `${(asset.bytes / 1024).toFixed(0)}KB` : `${(asset.bytes / 1048576).toFixed(1)}MB`}
@@ -301,6 +370,9 @@ export default function AssetsPage() {
       )}
 
       {/* Asset Detail Modal */}
+        </div>{/* end main content */}
+      </div>{/* end flex layout */}
+
       <AssetDetailModal
         asset={selectedAsset}
         onClose={() => setSelectedAsset(null)}
@@ -333,7 +405,7 @@ export default function AssetsPage() {
               onChange={e => setUploadFolder(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream focus:outline-none [&>option]:bg-[#0f1a0f] [&>option]:text-gm-cream"
             >
-              {FOLDERS.map(f => (
+              {ALL_FOLDERS.map(f => (
                 <option key={f.id} value={f.id}>{f.label}</option>
               ))}
             </select>
