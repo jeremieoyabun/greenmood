@@ -232,11 +232,6 @@ export default function CalendarPage() {
     const isPublished = postStatus === 'PUBLISHED'
     const isDraft = postStatus === 'DRAFT' || postStatus === 'AI_GENERATED'
 
-    const statusBorder = isPublished ? 'border-l-emerald-400 ring-1 ring-emerald-500/20' :
-      isScheduled ? 'border-l-gm-sage ring-1 ring-gm-sage/30 bg-gm-sage/[0.08]' :
-      isDraft ? `border-l-[3px] ${style.border}` :
-      `border-l-[3px] ${style.border}`
-
     return (
       <button
         draggable
@@ -247,18 +242,28 @@ export default function CalendarPage() {
         }}
         onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
         onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
-        className={`w-full text-left rounded-lg border-l-[3px] ${isScheduled || isPublished ? statusBorder : `${style.border} ${style.bg}`} px-2 py-1.5 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
+        className={`w-full text-left rounded-lg border-l-[3px] px-2 py-1.5 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
+          isPublished
+            ? 'border-l-emerald-500 bg-emerald-500/[0.06] opacity-50 hover:opacity-75'
+            : isScheduled
+            ? 'border-l-gm-sage bg-gm-sage/[0.15] ring-1 ring-gm-sage/40 shadow-sm shadow-gm-sage/10'
+            : `${style.border} ${style.bg} hover:brightness-125`
+        }`}
       >
+        {isPublished && (
+          <div className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest mb-0.5">Published</div>
+        )}
+        {isScheduled && (
+          <div className="text-[8px] font-bold text-gm-sage uppercase tracking-widest mb-0.5">Scheduled</div>
+        )}
         <div className="flex items-center gap-1.5">
           <span className="text-xs">{flag}</span>
           <SocialIcon platform={slot.platform} size="sm" />
-          {isScheduled && <span className="text-[9px] text-gm-sage font-semibold">READY</span>}
-          {isPublished && <span className="text-[9px] text-emerald-400 font-semibold">SENT</span>}
           {hasImage && <span className="text-[9px] text-gm-cream/30">🖼</span>}
           {slot.time && <span className="text-[10px] text-gm-cream/25 ml-auto">{slot.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className="text-[9px] text-gm-cream/35 truncate mt-0.5 group-hover:text-gm-cream/50">{previewText}</p>
+          <p className={`text-[9px] truncate mt-0.5 ${isPublished ? 'text-gm-cream/20 line-through' : 'text-gm-cream/35 group-hover:text-gm-cream/50'}`}>{previewText}</p>
         )}
       </button>
     )
