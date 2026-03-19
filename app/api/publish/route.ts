@@ -107,9 +107,8 @@ async function publishToInstagram(variant: any, type: string) {
   try {
     // If image is base64, serve it via our public API endpoint so Instagram can fetch it
     if (imageUrl.startsWith('data:')) {
-      // Use our own image proxy endpoint that serves the base64 from DB
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.greenmood.be'
-      imageUrl = `${appUrl}/api/image/${variant.id}`
+      imageUrl = `https://app.greenmood.be/api/image/${variant.id}`
+      console.log('Publish: converted base64 to proxy URL:', imageUrl)
     }
     // Step 1: Get Instagram user ID
     const meRes = await fetch(
