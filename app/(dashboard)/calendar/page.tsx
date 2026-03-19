@@ -29,7 +29,7 @@ interface CalendarSlot {
   post: {
     id: string
     status: string
-    variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null }[]
+    variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null; imageUrl: string | null }[]
   } | null
 }
 

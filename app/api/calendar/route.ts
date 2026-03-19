@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
               where: { isActive: true },
               orderBy: { version: 'desc' as const },
               take: 1,
-              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true },
+              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true, imageUrl: true },
             },
           },
         },

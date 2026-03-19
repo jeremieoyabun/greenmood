@@ -80,17 +80,37 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
   })
 
   const handleImageUpload = async (file: File) => {
-    // Convert to persistent data URL
-    const reader = new FileReader()
-    reader.onload = async (e) => {
-      const dataUrl = e.target?.result as string
-      setImagePreview(dataUrl)
-      // Persist to DB immediately
-      if (selectedPost?.variant) {
-        await saveImageUrl(dataUrl)
+    // Upload to Vercel Blob for persistent URL
+    const uploadData = new FormData()
+    uploadData.append('file', file)
+    if (selectedPost?.id) uploadData.append('postId', selectedPost.id)
+    try {
+      const uploadRes = await fetch('/api/assets/upload', { method: 'POST', body: uploadData })
+      const uploadJson = await uploadRes.json()
+      if (uploadJson.success) {
+        setImagePreview(uploadJson.data.url)
+        if (selectedPost?.variant) {
+          await saveImageUrl(uploadJson.data.url)
+        }
+      } else {
+        // Fallback to data URL
+        const reader = new FileReader()
+        reader.onload = async (e) => {
+          const dataUrl = e.target?.result as string
+          setImagePreview(dataUrl)
+          if (selectedPost?.variant) await saveImageUrl(dataUrl)
+        }
+        reader.readAsDataURL(file)
       }
+    } catch {
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string
+        setImagePreview(dataUrl)
+        if (selectedPost?.variant) await saveImageUrl(dataUrl)
+      }
+      reader.readAsDataURL(file)
     }
-    reader.readAsDataURL(file)
 
     // Analyze
     setAnalyzing(true)
@@ -246,21 +266,21 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       <div className="w-1/2 space-y-2">
         <div className="flex gap-2 mb-3 flex-wrap">
           <select value={filterMarket} onChange={e => setFilterMarket(e.target.value)}
-            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Markets</option>
             {markets.map(m => (
               <option key={m} value={m}>{MARKETS[m]?.emoji} {MARKETS[m]?.name || m}</option>
             ))}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Statuses</option>
             {statuses.map(s => (
               <option key={s} value={s}>{POST_STATUS_CONFIG[s as keyof typeof POST_STATUS_CONFIG]?.label || s}</option>
             ))}
           </select>
           <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)}
-            className="bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none">
+            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Platforms</option>
             {platforms.map(p => (
               <option key={p} value={p}>{p}</option>

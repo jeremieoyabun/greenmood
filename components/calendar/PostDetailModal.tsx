@@ -19,7 +19,7 @@ interface PostDetail {
   post: {
     id: string
     status: string
-    variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null }[]
+    variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null; imageUrl: string | null }[]
   } | null
 }
 
@@ -47,6 +47,40 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
   const [approving, setApproving] = useState<string | null>(null)
   const [rejectComment, setRejectComment] = useState('')
   const [showRejectInput, setShowRejectInput] = useState(false)
+
+  // Schedule edit state
+  const [editingSchedule, setEditingSchedule] = useState(false)
+  const [scheduleDate, setScheduleDate] = useState('')
+  const [scheduleTime, setScheduleTime] = useState('')
+  const [savingSchedule, setSavingSchedule] = useState(false)
+
+  const startEditingSchedule = () => {
+    setScheduleDate(slot?.date?.split('T')[0] || new Date().toISOString().split('T')[0])
+    setScheduleTime(slot?.time || '12:00')
+    setEditingSchedule(true)
+  }
+
+  const saveSchedule = async () => {
+    if (!slot?.post?.id) return
+    setSavingSchedule(true)
+    try {
+      const res = await fetch(`/api/posts/${slot.post.id}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: scheduleDate, time: scheduleTime }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setEditingSchedule(false)
+        onUpdate?.()
+      } else {
+        alert('Save failed: ' + (data.error || 'Unknown error'))
+      }
+    } catch {
+      alert('Save failed')
+    }
+    setSavingSchedule(false)
+  }
 
   const startEditing = () => {
     setEditText(variant?.text || '')
@@ -197,13 +231,47 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
           {meta.type && <Badge variant="info">{meta.type}</Badge>}
           {pillar && <Badge variant={pillar.color as any}>{pillar.label}</Badge>}
           <StatusDot status={postStatus} />
-          <span className="text-[10px] text-gm-cream/30 ml-auto">
-            {slot.date?.split('T')[0]} {slot.time || ''}
-          </span>
+          {editingSchedule ? (
+            <div className="flex items-center gap-2 ml-auto">
+              <input
+                type="date"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="bg-white/[0.05] text-xs text-gm-cream/90 rounded px-2 py-1 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none"
+              />
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                className="bg-white/[0.05] text-xs text-gm-cream/90 rounded px-2 py-1 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none"
+              />
+              <Button variant="primary" size="sm" loading={savingSchedule} onClick={saveSchedule}>Save</Button>
+              <Button variant="ghost" size="sm" onClick={() => setEditingSchedule(false)}>Cancel</Button>
+            </div>
+          ) : (
+            <button
+              onClick={startEditingSchedule}
+              className="text-[10px] text-gm-cream/30 ml-auto hover:text-gm-sage/60 transition-colors cursor-pointer"
+              title="Click to edit date/time"
+            >
+              {slot.date?.split('T')[0]} {slot.time || ''} ✎
+            </button>
+          )}
         </div>
 
         {slot.campaign && (
           <p className="text-[10px] text-gm-sage/50">Campaign: {slot.campaign.title}</p>
+        )}
+
+        {/* Post Image */}
+        {variant?.imageUrl && (
+          <div className="rounded-lg overflow-hidden border border-white/[0.08]">
+            <img
+              src={variant.imageUrl}
+              alt="Post image"
+              className="w-full max-h-72 object-cover"
+            />
+          </div>
         )}
 
         {/* Caption — View or Edit */}
