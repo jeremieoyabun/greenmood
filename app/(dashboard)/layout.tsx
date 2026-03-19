@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopBar } from '@/components/layout/TopBar'
+import { OnboardingTour } from '@/components/onboarding/OnboardingTour'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser()
@@ -16,6 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <div className="ml-60">
         <TopBar userName={user.name} userRole={user.role} />
         <main className="p-6">{children}</main>
+        <OnboardingTour />
       </div>
     </div>
   )
