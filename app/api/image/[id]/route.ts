@@ -35,7 +35,7 @@ export async function GET(
       .jpeg({ quality: 85 })
       .toBuffer()
 
-    return new NextResponse(jpegBuffer, {
+    return new NextResponse(new Uint8Array(jpegBuffer), {
       headers: {
         'Content-Type': 'image/jpeg',
         'Content-Length': jpegBuffer.length.toString(),
