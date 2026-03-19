@@ -59,6 +59,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
 
   // Approval state
   const [approving, setApproving] = useState<string | null>(null)
+  const [localStatus, setLocalStatus] = useState<string | null>(null)
+
+  // Reset local status when slot changes
+  useEffect(() => {
+    setLocalStatus(null)
+  }, [slot?.post?.id])
   const [rejectComment, setRejectComment] = useState('')
   const [showRejectInput, setShowRejectInput] = useState(false)
 
@@ -190,6 +196,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
       if (data.success) {
         setShowRejectInput(false)
         setRejectComment('')
+        setLocalStatus(data.data?.post?.status || null)
         onUpdate?.()
       } else {
         alert('Action failed: ' + (data.error || 'Unknown error'))
@@ -224,7 +231,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const postText = variant?.text || ''
   const hashtags = variant?.hashtags || ''
   const firstComment = variant?.firstComment || ''
-  const postStatus = slot.post?.status || slot.status
+  const postStatus = localStatus || slot.post?.status || slot.status
 
   let meta: any = {}
   try {
