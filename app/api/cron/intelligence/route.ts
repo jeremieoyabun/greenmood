@@ -69,8 +69,20 @@ export async function GET(req: NextRequest) {
       }, { status: 500 })
     }
 
-    // Extract signals from agent output
-    const signals = (result.data as any).signals || []
+    // Extract signals from agent output — handle rawResponse wrapping
+    let signals: any[] = []
+    const data = result.data as any
+    if (data.signals) {
+      signals = data.signals
+    } else if (data.rawResponse) {
+      // Parse JSON from rawResponse (may be wrapped in ```json blocks)
+      const raw = data.rawResponse
+      const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/)
+      try {
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[1] : raw)
+        signals = parsed.signals || []
+      } catch { /* parsing failed */ }
+    }
     const storedSignals: string[] = []
 
     // Look up competitor entities for linking

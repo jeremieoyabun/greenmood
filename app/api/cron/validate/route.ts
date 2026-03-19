@@ -95,16 +95,22 @@ export async function GET(req: NextRequest) {
         })
 
         if (factResult.success && factResult.data) {
-          const data = factResult.data as any
+          let data = factResult.data as any
+          // Handle rawResponse wrapping
+          if (data.rawResponse && !data.status) {
+            const raw = data.rawResponse
+            const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/)
+            try { data = JSON.parse(jsonMatch ? jsonMatch[1] : raw) } catch { /* keep original */ }
+          }
           factCheckStatus = data.status || 'pass'
 
           if (data.status === 'fail' || data.status === 'warning') {
             const issues = data.issues || []
             for (const issue of issues) {
               if (issue.severity === 'critical') {
-                allIssues.push(`[FACT] ${issue.type}: ${issue.explanation}`)
+                allIssues.push(`[FACT] ${issue.type}: ${issue.detail || issue.explanation}`)
               } else {
-                allIssues.push(`[FACT-WARN] ${issue.type}: ${issue.explanation}`)
+                allIssues.push(`[FACT-WARN] ${issue.type}: ${issue.detail || issue.explanation}`)
               }
             }
           }
@@ -147,16 +153,22 @@ export async function GET(req: NextRequest) {
         })
 
         if (brandResult.success && brandResult.data) {
-          const data = brandResult.data as any
+          let data = brandResult.data as any
+          // Handle rawResponse wrapping
+          if (data.rawResponse && !data.status) {
+            const raw = data.rawResponse
+            const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/)
+            try { data = JSON.parse(jsonMatch ? jsonMatch[1] : raw) } catch { /* keep original */ }
+          }
           brandCheckStatus = data.status || 'pass'
 
-          if (data.status === 'needs_revision') {
+          if (data.status === 'needs_revision' || data.status === 'fail') {
             const issues = data.issues || []
             for (const issue of issues) {
               if (issue.severity === 'critical') {
-                allIssues.push(`[BRAND] ${issue.type}: ${issue.explanation}`)
+                allIssues.push(`[BRAND] ${issue.type}: ${issue.detail || issue.explanation}`)
               } else {
-                allIssues.push(`[BRAND-SUGGEST] ${issue.type}: ${issue.explanation}`)
+                allIssues.push(`[BRAND-SUGGEST] ${issue.type}: ${issue.detail || issue.explanation}`)
               }
             }
           }

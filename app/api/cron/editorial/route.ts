@@ -117,7 +117,25 @@ For each slot, pick the best market and platform combination.`,
 
     // ─── 3. Generate content for each proposed slot ───
 
-    const proposedSlots = (strategyResult.data as any).slots || []
+    // Parse slots from agent output — handle rawResponse wrapping
+    let proposedSlots: any[] = []
+    let theme: string | null = null
+    let reasoning: string | null = null
+    const stratData = strategyResult.data as any
+    if (stratData.slots) {
+      proposedSlots = stratData.slots
+      theme = stratData.theme || null
+      reasoning = stratData.reasoning || null
+    } else if (stratData.rawResponse) {
+      const raw = stratData.rawResponse
+      const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/)
+      try {
+        const parsed = JSON.parse(jsonMatch ? jsonMatch[1] : raw)
+        proposedSlots = parsed.slots || []
+        theme = parsed.theme || null
+        reasoning = parsed.reasoning || null
+      } catch { /* parsing failed */ }
+    }
     const createdPosts: Array<{
       postId: string
       slotId: string
@@ -238,7 +256,7 @@ For each slot, pick the best market and platform combination.`,
       proposedSlots: proposedSlots.length,
       postsCreated: createdPosts.length,
       posts: createdPosts,
-      theme: (strategyResult.data as any).theme || null,
+      theme,
       reasoning: (strategyResult.data as any).reasoning || null,
       durationMs: Date.now() - startTime,
     })
