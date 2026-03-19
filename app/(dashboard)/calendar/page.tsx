@@ -141,6 +141,33 @@ export default function CalendarPage() {
     setShowAddModal(true)
   }
 
+  // Drag & drop state
+  const [dragSlotId, setDragSlotId] = useState<string | null>(null)
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null)
+
+  const handleDrop = async (targetDate: string) => {
+    if (!dragSlotId) return
+    setDragOverDate(null)
+    setDragSlotId(null)
+    const slot = slots.find(s => s.id === dragSlotId)
+    if (!slot || slot.date.startsWith(targetDate)) return
+
+    // Optimistic update
+    setSlots(prev => prev.map(s =>
+      s.id === dragSlotId ? { ...s, date: targetDate + 'T00:00:00.000Z' } : s
+    ))
+
+    // Update calendar slot date
+    try {
+      const res = await fetch(`/api/posts/${slot.post?.id}/schedule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: targetDate, time: slot.time || '12:00' }),
+      })
+      if (!(await res.json()).success) fetchSlots() // revert on failure
+    } catch { fetchSlots() }
+  }
+
   // Slot chip component for reuse
   const SlotChip = ({ slot, compact = false }: { slot: CalendarSlot; compact?: boolean }) => {
     const style = getAccountStyle(slot.market, slot.platform)
@@ -150,8 +177,15 @@ export default function CalendarPage() {
 
     return (
       <button
+        draggable
+        onDragStart={(e) => {
+          setDragSlotId(slot.id)
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('text/plain', slot.id)
+        }}
+        onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
         onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
-        className={`w-full text-left rounded-md border-l-[3px] ${style.border} ${style.bg} px-2 py-1 hover:brightness-125 transition-all group`}
+        className={`w-full text-left rounded-md border-l-[3px] ${style.border} ${style.bg} px-2 py-1 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
       >
         <div className="flex items-center gap-1.5">
           <span className={`text-[9px] font-semibold ${style.text} whitespace-nowrap`}>{style.label}</span>
@@ -246,11 +280,17 @@ export default function CalendarPage() {
               const inMonth = isSameMonth(day, currentDate)
               const today = isToday(day)
 
+              const dayStr = format(day, 'yyyy-MM-dd')
+              const isDropTarget = dragOverDate === dayStr
+
               return (
                 <div
                   key={i}
-                  className={`min-h-[110px] border-b border-r border-white/[0.04] p-1 cursor-pointer transition-colors hover:bg-white/[0.02] ${!inMonth ? 'opacity-25' : ''}`}
+                  className={`min-h-[110px] border-b border-r border-white/[0.04] p-1 cursor-pointer transition-colors hover:bg-white/[0.02] ${!inMonth ? 'opacity-25' : ''} ${isDropTarget ? 'bg-gm-sage/10 ring-1 ring-inset ring-gm-sage/30' : ''}`}
                   onClick={() => openAddModal(day)}
+                  onDragOver={(e) => { e.preventDefault(); setDragOverDate(dayStr) }}
+                  onDragLeave={() => setDragOverDate(null)}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(dayStr) }}
                 >
                   <div className="flex items-center justify-between mb-1 px-0.5">
                     <span className={`text-[11px] font-medium w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-gm-sage text-gm-dark' : 'text-gm-cream/50'}`}>
@@ -282,6 +322,8 @@ export default function CalendarPage() {
             {weekDays.map((day, i) => {
               const daySlots = getSlotsForDate(day)
               const today = isToday(day)
+              const dayStr = format(day, 'yyyy-MM-dd')
+              const isDropTarget = dragOverDate === dayStr
 
               return (
                 <div key={i} className="border-r border-white/[0.04] last:border-r-0">
@@ -289,7 +331,12 @@ export default function CalendarPage() {
                     <p className="text-[10px] text-gm-cream/40 uppercase">{format(day, 'EEE')}</p>
                     <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gm-cream/60'}`}>{format(day, 'd')}</p>
                   </div>
-                  <div className="min-h-[400px] p-1.5 space-y-1">
+                  <div
+                    className={`min-h-[400px] p-1.5 space-y-1 ${isDropTarget ? 'bg-gm-sage/10' : ''}`}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverDate(dayStr) }}
+                    onDragLeave={() => setDragOverDate(null)}
+                    onDrop={(e) => { e.preventDefault(); handleDrop(dayStr) }}
+                  >
                     {daySlots.map(slot => <SlotChip key={slot.id} slot={slot} />)}
                     <button
                       onClick={() => openAddModal(day)}

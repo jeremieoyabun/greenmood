@@ -34,7 +34,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
   const [copied, setCopied] = useState('')
   const [imageAnalysis, setImageAnalysis] = useState<any>(null)
   const [analyzing, setAnalyzing] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
 
   // Edit state
   const [editing, setEditing] = useState(false)
@@ -53,6 +56,37 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
   const [scheduleDate, setScheduleDate] = useState('')
   const [scheduleTime, setScheduleTime] = useState('')
   const [savingSchedule, setSavingSchedule] = useState(false)
+
+  // Sync imageUrl from variant when slot changes
+  const variantImageUrl = slot?.post?.variants?.[0]?.imageUrl || null
+  if (variantImageUrl && !imageUrl) {
+    // Will be set on render
+  }
+
+  const handleImageUpload = async (file: File) => {
+    if (!slot?.post?.id) return
+    setUploading(true)
+    const variant = slot.post.variants?.[0]
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('postId', slot.post.id)
+      const res = await fetch('/api/assets/upload', { method: 'POST', body: formData })
+      const data = await res.json()
+      if (data.success && variant) {
+        const url = data.data.url
+        setImageUrl(url)
+        // Save to DB
+        await fetch(`/api/posts/${slot.post.id}/variant`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
+        })
+        onUpdate?.()
+      }
+    } catch { /* fallback silently */ }
+    setUploading(false)
+  }
 
   const startEditingSchedule = () => {
     setScheduleDate(slot?.date?.split('T')[0] || new Date().toISOString().split('T')[0])
@@ -263,16 +297,50 @@ export function PostDetailModal({ slot, open, onClose, onUpdate }: PostDetailMod
           <p className="text-[10px] text-gm-sage/50">Campaign: {slot.campaign.title}</p>
         )}
 
-        {/* Post Image */}
-        {variant?.imageUrl && (
-          <div className="rounded-lg overflow-hidden border border-white/[0.08]">
-            <img
-              src={variant.imageUrl}
-              alt="Post image"
-              className="w-full max-h-72 object-cover"
-            />
-          </div>
-        )}
+        {/* Post Image — upload or display */}
+        <div className="relative">
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
+          />
+          {(imageUrl || variant?.imageUrl) ? (
+            <div
+              className="rounded-lg overflow-hidden border border-white/[0.08] cursor-pointer group relative"
+              onClick={() => imageInputRef.current?.click()}
+            >
+              <img
+                src={imageUrl || variant?.imageUrl || ''}
+                alt="Post image"
+                className="w-full max-h-72 object-cover"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-xs text-white font-medium">Click to change image</span>
+              </div>
+              {uploading && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <span className="text-xs text-white animate-pulse">Uploading...</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => imageInputRef.current?.click()}
+              className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-6 flex flex-col items-center gap-2 cursor-pointer"
+            >
+              {uploading ? (
+                <span className="text-xs text-gm-cream/40 animate-pulse">Uploading...</span>
+              ) : (
+                <>
+                  <span className="text-2xl opacity-30">+</span>
+                  <span className="text-xs text-gm-cream/30">Click to add image</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
 
         {/* Caption — View or Edit */}
         {editing ? (
