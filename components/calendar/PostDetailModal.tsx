@@ -365,6 +365,32 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           )}
         </div>
 
+        {/* Quick Approval Actions — always visible at top */}
+        {!editing && availableActions.length > 0 && (
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <span className="text-xs text-gm-cream/40 mr-2">Status:</span>
+            <Badge variant="info" size="sm">{postStatus?.replace(/_/g, ' ')}</Badge>
+            <span className="text-gm-cream/20 mx-1">→</span>
+            {availableActions.map(({ action, label, variant: btnVariant }) => (
+              <Button
+                key={action + '-top'}
+                variant={btnVariant}
+                size="sm"
+                loading={approving === action}
+                onClick={() => {
+                  if (action === 'REJECT' || action === 'REQUEST_CHANGES') {
+                    setShowRejectInput(true)
+                  } else {
+                    handleApproval(action)
+                  }
+                }}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {slot.campaign && (
           <p className="text-[10px] text-gm-sage/50">Campaign: {slot.campaign.title}</p>
         )}
