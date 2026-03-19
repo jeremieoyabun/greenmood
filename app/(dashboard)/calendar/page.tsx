@@ -227,6 +227,15 @@ export default function CalendarPage() {
     const previewText = variant?.text?.split('\n')[0]?.substring(0, 40) || ''
     const hasImage = !!variant?.imageUrl
     const flag = MARKET_FLAGS[slot.market] || '🌐'
+    const postStatus = slot.post?.status || ''
+    const isScheduled = postStatus === 'SCHEDULED' || postStatus === 'READY_TO_SCHEDULE'
+    const isPublished = postStatus === 'PUBLISHED'
+    const isDraft = postStatus === 'DRAFT' || postStatus === 'AI_GENERATED'
+
+    const statusBorder = isPublished ? 'border-l-emerald-400 ring-1 ring-emerald-500/20' :
+      isScheduled ? 'border-l-gm-sage ring-1 ring-gm-sage/30 bg-gm-sage/[0.08]' :
+      isDraft ? `border-l-[3px] ${style.border}` :
+      `border-l-[3px] ${style.border}`
 
     return (
       <button
@@ -238,11 +247,13 @@ export default function CalendarPage() {
         }}
         onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
         onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
-        className={`w-full text-left rounded-lg border-l-[3px] ${style.border} ${style.bg} px-2 py-1.5 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
+        className={`w-full text-left rounded-lg border-l-[3px] ${isScheduled || isPublished ? statusBorder : `${style.border} ${style.bg}`} px-2 py-1.5 hover:brightness-125 transition-all group ${dragSlotId === slot.id ? 'opacity-40' : ''} cursor-grab active:cursor-grabbing`}
       >
         <div className="flex items-center gap-1.5">
           <span className="text-xs">{flag}</span>
           <SocialIcon platform={slot.platform} size="sm" />
+          {isScheduled && <span className="text-[9px] text-gm-sage font-semibold">READY</span>}
+          {isPublished && <span className="text-[9px] text-emerald-400 font-semibold">SENT</span>}
           {hasImage && <span className="text-[9px] text-gm-cream/30">🖼</span>}
           {slot.time && <span className="text-[10px] text-gm-cream/25 ml-auto">{slot.time}</span>}
         </div>
