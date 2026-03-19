@@ -72,12 +72,20 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
   const statuses = Array.from(new Set(posts.map(p => p.status)))
   const platforms = Array.from(new Set(posts.map(p => p.platform)))
 
-  const filteredPosts = posts.filter(p => {
-    if (filterMarket !== 'all' && p.market !== filterMarket) return false
-    if (filterStatus !== 'all' && p.status !== filterStatus) return false
-    if (filterPlatform !== 'all' && p.platform !== filterPlatform) return false
-    return true
-  })
+  // Priority order: ready to publish first, then by status
+  const STATUS_PRIORITY: Record<string, number> = {
+    SCHEDULED: 0, READY_TO_SCHEDULE: 1, BRAND_APPROVED: 2,
+    FACT_CHECKED: 3, DRAFT: 4, AI_GENERATED: 5, REJECTED: 6,
+  }
+
+  const filteredPosts = posts
+    .filter(p => {
+      if (filterMarket !== 'all' && p.market !== filterMarket) return false
+      if (filterStatus !== 'all' && p.status !== filterStatus) return false
+      if (filterPlatform !== 'all' && p.platform !== filterPlatform) return false
+      return true
+    })
+    .sort((a, b) => (STATUS_PRIORITY[a.status] ?? 9) - (STATUS_PRIORITY[b.status] ?? 9))
 
   const handleImageUpload = async (file: File) => {
     // Upload to Vercel Blob for persistent URL
@@ -303,7 +311,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
               <Card
                 key={post.id}
                 hover
-                className={`cursor-pointer transition-all ${isSelected ? 'ring-1 ring-gm-sage/30 bg-white/[0.03]' : ''}`}
+                className={`cursor-pointer transition-all ${isSelected ? 'ring-1 ring-gm-sage/30 bg-white/[0.03]' : ''} ${post.status === 'SCHEDULED' || post.status === 'READY_TO_SCHEDULE' ? 'border-l-2 border-l-gm-sage' : ''}`}
                 onClick={() => { setSelectedPost(post); setEditing(false); setShowReject(false); setShowScheduler(false); setImagePreview(post.variant?.imageUrl || null); setImageAnalysis(null) }}
               >
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
