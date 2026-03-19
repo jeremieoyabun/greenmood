@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { AddCompetitorButton } from '@/components/intelligence/AddCompetitorButton'
 
 async function getIntelData() {
   const [competitors, signals, sources] = await Promise.all([
@@ -44,6 +45,7 @@ export default async function IntelligencePage() {
       <PageHeader
         title="Intelligence Hub"
         description={`${signals.length} signals from ${sources.length} sources — ${competitors.length} competitors tracked`}
+        actions={<AddCompetitorButton />}
       />
 
       {/* Top Insights Summary */}
