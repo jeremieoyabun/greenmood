@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { put } from '@vercel/blob'
 import { prisma } from '@/lib/db'
 
 /**
@@ -101,10 +102,29 @@ async function publishToInstagram(variant: any, type: string) {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN
   if (!token) return { success: false, error: 'No Instagram access token configured' }
 
-  const imageUrl = variant.imageUrl
+  let imageUrl = variant.imageUrl
   if (!imageUrl) return { success: false, error: 'No image URL — Instagram requires an image to publish' }
 
   try {
+    // Convert base64 data URL to public Blob URL (Instagram needs a public URL)
+    if (imageUrl.startsWith('data:')) {
+      const [header, base64Data] = imageUrl.split(',')
+      const mimeMatch = header.match(/data:(.*?);/)
+      const mime = mimeMatch?.[1] || 'image/png'
+      const ext = mime.split('/')[1] || 'png'
+      const buffer = Buffer.from(base64Data, 'base64')
+      const blob = await put(`publish/${Date.now()}.${ext}`, buffer, {
+        access: 'public',
+        contentType: mime,
+        addRandomSuffix: true,
+      })
+      imageUrl = blob.url
+      // Save the public URL back to the variant so we don't convert again
+      await prisma.postVariant.update({
+        where: { id: variant.id },
+        data: { imageUrl: blob.url },
+      })
+    }
     // Step 1: Get Instagram user ID
     const meRes = await fetch(
       `https://graph.instagram.com/v25.0/me?fields=user_id&access_token=${token}`
