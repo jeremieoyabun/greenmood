@@ -8,8 +8,8 @@ export function Card({ className, hover, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-xl bg-white/[0.035] border border-white/[0.08] p-5',
-        hover && 'hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-150 cursor-pointer',
+        'rounded-2xl bg-[#1a2a1a]/80 border border-white/[0.06] p-6 backdrop-blur-sm',
+        hover && 'hover:bg-[#1e2e1e] hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20 transition-all duration-200 cursor-pointer',
         className
       )}
       {...props}
@@ -21,7 +21,7 @@ export function Card({ className, hover, children, ...props }: CardProps) {
 
 export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('flex items-center justify-between mb-4', className)} {...props}>
+    <div className={cn('flex items-center justify-between mb-5 pb-3 border-b border-white/[0.06]', className)} {...props}>
       {children}
     </div>
   )
@@ -29,7 +29,7 @@ export function CardHeader({ className, children, ...props }: React.HTMLAttribut
 
 export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-sm font-semibold text-gm-cream', className)} {...props}>
+    <h3 className={cn('text-base font-semibold text-gm-cream tracking-tight', className)} {...props}>
       {children}
     </h3>
   )
@@ -37,7 +37,7 @@ export function CardTitle({ className, children, ...props }: React.HTMLAttribute
 
 export function CardContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('text-sm text-gm-cream/70', className)} {...props}>
+    <div className={cn('text-sm text-gm-cream/80', className)} {...props}>
       {children}
     </div>
   )

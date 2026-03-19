@@ -36,22 +36,22 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
   const filteredItems = NAV_ITEMS.filter((item) => item.roles.includes(userRole))
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 bg-gm-dark/80 border-r border-white/[0.06] flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-screen w-60 bg-[#0a140a] border-r border-white/[0.06] flex flex-col z-40">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/[0.06]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gm-sage/20 flex items-center justify-center">
-            <span className="text-gm-sage text-sm font-bold">G</span>
+      <div className="px-6 py-6 border-b border-white/[0.08]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gm-sage/20 flex items-center justify-center shadow-inner">
+            <span className="text-gm-sage text-base font-bold">G</span>
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-gm-cream tracking-tight">Greenmood</h1>
-            <p className="text-xs text-gm-cream/40 font-medium">Marketing OS</p>
+            <h1 className="text-base font-bold text-gm-cream tracking-tight">Greenmood</h1>
+            <p className="text-xs text-gm-cream/35 font-medium">Marketing OS</p>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
         {filteredItems.map((item) => {
           const Icon = iconMap[item.icon]
           const isActive =
@@ -62,30 +62,30 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-gm-sage/15 text-gm-sage'
-                  : 'text-gm-cream/50 hover:text-gm-cream/80 hover:bg-white/[0.03]'
+                  ? 'bg-gm-sage/15 text-gm-sage shadow-sm shadow-gm-sage/5 border border-gm-sage/10'
+                  : 'text-gm-cream/45 hover:text-gm-cream/80 hover:bg-white/[0.04]'
               )}
             >
-              {Icon && <Icon className="w-4 h-4" />}
+              {Icon && <Icon className={cn('w-[18px] h-[18px]', isActive ? 'text-gm-sage' : '')} />}
               {item.label}
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer — User info */}
-      <div className="px-4 py-3 border-t border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gm-copper/30 flex items-center justify-center">
-            <span className="text-[10px] text-gm-copper font-semibold">
+      {/* Footer */}
+      <div className="px-5 py-4 border-t border-white/[0.08]">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gm-copper/20 border border-gm-copper/20 flex items-center justify-center">
+            <span className="text-xs text-gm-copper font-semibold">
               {userName.split(' ').map(n => n[0]).join('').substring(0, 2)}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-gm-cream/70 font-medium truncate">{userName}</p>
-            <p className="text-xs text-gm-cream/30">{userRole.toLowerCase()}</p>
+            <p className="text-sm text-gm-cream/80 font-medium truncate">{userName}</p>
+            <p className="text-xs text-gm-cream/30 capitalize">{userRole.toLowerCase()}</p>
           </div>
         </div>
       </div>
