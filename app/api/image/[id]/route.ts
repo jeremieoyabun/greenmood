@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import sharp from 'sharp'
 
 /**
- * Serves a post variant image as a public URL.
- * Instagram API needs a publicly accessible image URL to publish.
- * This endpoint reads base64 image data from DB and serves it as binary.
+ * Serves a post variant image as a public JPEG URL.
+ * Instagram API needs a publicly accessible image URL.
+ * Converts PNG/base64 to optimized JPEG for fast delivery.
  */
 export async function GET(
   req: NextRequest,
@@ -23,17 +24,21 @@ export async function GET(
 
   const imageUrl = variant.imageUrl
 
-  // If it's a base64 data URL, decode and serve as binary
+  // If it's a base64 data URL, decode, convert to JPEG, and serve
   if (imageUrl.startsWith('data:')) {
-    const [header, base64Data] = imageUrl.split(',')
-    const mimeMatch = header.match(/data:(.*?);/)
-    const mime = mimeMatch?.[1] || 'image/png'
-    const buffer = Buffer.from(base64Data, 'base64')
+    const base64Data = imageUrl.split(',')[1]
+    const rawBuffer = Buffer.from(base64Data, 'base64')
 
-    return new NextResponse(buffer, {
+    // Convert to JPEG, resize if too large, optimize quality
+    const jpegBuffer = await sharp(rawBuffer)
+      .resize(1080, 1350, { fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: 85 })
+      .toBuffer()
+
+    return new NextResponse(jpegBuffer, {
       headers: {
-        'Content-Type': mime,
-        'Content-Length': buffer.length.toString(),
+        'Content-Type': 'image/jpeg',
+        'Content-Length': jpegBuffer.length.toString(),
         'Cache-Control': 'public, max-age=86400',
       },
     })
