@@ -21,10 +21,16 @@ export async function POST(req: NextRequest) {
     const isVideo = file.type.startsWith('video/')
     const resourceType = isVideo ? 'video' as const : 'image' as const
 
-    // Build tags
+    // Build tags from filename + folder + manual tags
     const tags: string[] = []
     if (tagsStr) tags.push(...tagsStr.split(',').map(t => t.trim()))
     if (postId) tags.push(`post:${postId}`)
+    // Auto-tag from filename (e.g., "Hoverlight-03.png" → "hoverlight")
+    const nameTag = file.name.replace(/\.[^.]+$/, '').replace(/[-_\d]+/g, ' ').trim().toLowerCase()
+    if (nameTag && nameTag.length > 2) tags.push(nameTag)
+    // Auto-tag from folder (e.g., "greenmood/products/ball-moss" → "ball-moss")
+    const folderTag = (folder || '').split('/').pop()
+    if (folderTag && folderTag !== 'unlinked' && folderTag !== 'posts') tags.push(folderTag)
 
     // Upload to Cloudinary with auto-tagging
     const result = await uploadToCloudinary(buffer, {

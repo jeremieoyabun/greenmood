@@ -37,8 +37,8 @@ export async function uploadToCloudinary(
     const uploadOptions: any = {
       folder,
       resource_type: resourceType,
-      categorization: 'google_tagging',
-      auto_tagging: 0.6, // confidence threshold
+      // Note: Google auto-tagging requires paid Cloudinary add-on
+      // We use Claude for AI tagging instead (see upload API)
       tags: options.tags || [],
       context: options.context ? Object.entries(options.context).map(([k, v]) => `${k}=${v}`).join('|') : undefined,
     }

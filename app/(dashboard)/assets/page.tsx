@@ -281,15 +281,19 @@ export default function AssetsPage() {
                 )}
               </div>
               <div className="p-2.5 bg-white/[0.02]">
-                <p className="text-xs text-gm-cream/50 truncate">{asset.publicId.split('/').pop()}</p>
-                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  {asset.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-gm-sage/10 text-gm-sage/60">{tag}</span>
-                  ))}
-                  {asset.tags.length > 3 && (
-                    <span className="text-[10px] text-gm-cream/20">+{asset.tags.length - 3}</span>
-                  )}
-                </div>
+                <p className="text-xs text-gm-cream/70 truncate font-medium">
+                  {asset.context?.originalName || asset.publicId.split('/').pop()?.replace(/[_-]/g, ' ')}
+                </p>
+                <p className="text-[10px] text-gm-cream/30 truncate mt-0.5">
+                  {asset.width}x{asset.height} · {asset.format.toUpperCase()} · {asset.bytes < 1048576 ? `${(asset.bytes / 1024).toFixed(0)}KB` : `${(asset.bytes / 1048576).toFixed(1)}MB`}
+                </p>
+                {asset.tags.filter(t => !t.startsWith('post:')).length > 0 && (
+                  <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                    {asset.tags.filter(t => !t.startsWith('post:')).slice(0, 3).map(tag => (
+                      <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded bg-gm-sage/10 text-gm-sage/60">{tag}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
