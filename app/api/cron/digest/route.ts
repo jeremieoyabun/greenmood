@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     // Recent agent runs (last 24h)
     const recentRuns = await prisma.agentRun.findMany({
-      where: { detectedAt: { gte: yesterday } },
+      where: { createdAt: { gte: yesterday } },
       select: { agentType: true, status: true },
     })
     const completedRuns = recentRuns.filter(r => r.status === 'COMPLETED').length
