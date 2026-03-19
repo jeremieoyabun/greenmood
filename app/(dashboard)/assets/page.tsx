@@ -13,8 +13,129 @@ interface Asset {
   width: number
   height: number
   format: string
+  bytes: number
   tags: string[]
   createdAt: string
+  resourceType?: string
+  context?: Record<string, string>
+}
+
+function AssetDetailModal({ asset, onClose, onDelete, onTagsUpdate }: {
+  asset: Asset | null
+  onClose: () => void
+  onDelete: (publicId: string) => Promise<void>
+  onTagsUpdate: (publicId: string, tags: string[]) => Promise<void>
+}) {
+  const [editingTags, setEditingTags] = useState(false)
+  const [tagInput, setTagInput] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [deleting, setDeleting] = useState(false)
+  const [savingTags, setSavingTags] = useState(false)
+
+  useEffect(() => {
+    if (asset) {
+      setTags(asset.tags || [])
+      setTagInput((asset.tags || []).join(', '))
+      setEditingTags(false)
+    }
+  }, [asset?.publicId])
+
+  if (!asset) return null
+
+  const filename = asset.publicId.split('/').pop() || ''
+  const folder = asset.publicId.split('/').slice(0, -1).join('/')
+  const isVideo = asset.format === 'mp4' || asset.format === 'mov' || asset.format === 'webm'
+  const sizeStr = asset.bytes ? (asset.bytes < 1048576 ? `${(asset.bytes / 1024).toFixed(0)}KB` : `${(asset.bytes / 1048576).toFixed(1)}MB`) : ''
+
+  return (
+    <Modal open={true} onClose={onClose} title="" size="xl">
+      <div className="grid grid-cols-5 gap-8">
+        {/* Left — Preview */}
+        <div className="col-span-3 rounded-xl overflow-hidden bg-black/30 flex items-center justify-center">
+          {isVideo ? (
+            <video src={asset.url} className="w-full max-h-[70vh] object-contain" controls />
+          ) : (
+            <img src={asset.url} alt={filename} className="w-full max-h-[70vh] object-contain" />
+          )}
+        </div>
+
+        {/* Right — Info */}
+        <div className="col-span-2 space-y-5">
+          <div>
+            <h3 className="text-lg font-bold text-gm-cream mb-1">{filename}</h3>
+            <p className="text-sm text-gm-cream/40">{folder}</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-gm-cream">{asset.width}</p>
+              <p className="text-xs text-gm-cream/30">Width</p>
+            </div>
+            <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-gm-cream">{asset.height}</p>
+              <p className="text-xs text-gm-cream/30">Height</p>
+            </div>
+            <div className="bg-white/[0.03] rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-gm-cream">{sizeStr}</p>
+              <p className="text-xs text-gm-cream/30">Size</p>
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Tags</span>
+              <Button variant="ghost" size="sm" onClick={() => setEditingTags(!editingTags)}>
+                {editingTags ? 'Cancel' : 'Edit'}
+              </Button>
+            </div>
+            {editingTags ? (
+              <div className="space-y-2">
+                <textarea
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  placeholder="moss, ball-moss, office, green-wall..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+                />
+                <Button variant="primary" size="sm" loading={savingTags} onClick={async () => {
+                  setSavingTags(true)
+                  const newTags = tagInput.split(',').map(t => t.trim()).filter(Boolean)
+                  await onTagsUpdate(asset.publicId, newTags)
+                  setTags(newTags)
+                  setEditingTags(false)
+                  setSavingTags(false)
+                }}>Save Tags</Button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {tags.length > 0 ? tags.map(tag => (
+                  <Badge key={tag} variant="default" size="sm">{tag}</Badge>
+                )) : (
+                  <span className="text-xs text-gm-cream/25 italic">No tags. Click Edit to add.</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">URL</span>
+            <div className="flex gap-2">
+              <input value={asset.url} readOnly className="flex-1 px-3 py-2 text-xs bg-white/[0.04] border border-white/[0.06] rounded-lg text-gm-cream/40 truncate" />
+              <Button variant="outline" size="sm" onClick={() => navigator.clipboard.writeText(asset.url)}>Copy</Button>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-white/[0.06] flex gap-2">
+            <Button variant="danger" size="sm" loading={deleting} onClick={async () => {
+              if (!confirm('Delete this asset permanently?')) return
+              setDeleting(true)
+              await onDelete(asset.publicId)
+            }}>Delete Asset</Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  )
 }
 
 const FOLDERS = [
@@ -176,55 +297,27 @@ export default function AssetsPage() {
       )}
 
       {/* Asset Detail Modal */}
-      <Modal open={!!selectedAsset} onClose={() => setSelectedAsset(null)} title="Asset Detail" size="lg">
-        {selectedAsset && (
-          <div className="grid grid-cols-2 gap-6">
-            <div className="rounded-xl overflow-hidden bg-black/20">
-              {selectedAsset.format === 'mp4' || selectedAsset.format === 'mov' ? (
-                <video src={selectedAsset.url} className="w-full" controls />
-              ) : (
-                <img src={selectedAsset.url} alt="" className="w-full" />
-              )}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">File</span>
-                <p className="text-sm text-gm-cream/80">{selectedAsset.publicId.split('/').pop()}</p>
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Dimensions</span>
-                <p className="text-sm text-gm-cream/80">{selectedAsset.width} x {selectedAsset.height}</p>
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Format</span>
-                <p className="text-sm text-gm-cream/80">{selectedAsset.format.toUpperCase()}</p>
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Folder</span>
-                <p className="text-sm text-gm-cream/80">{selectedAsset.publicId.split('/').slice(0, -1).join('/')}</p>
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Tags</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedAsset.tags.map(tag => (
-                    <Badge key={tag} variant="default" size="sm">{tag}</Badge>
-                  ))}
-                  {selectedAsset.tags.length === 0 && (
-                    <span className="text-xs text-gm-cream/25 italic">No tags yet</span>
-                  )}
-                </div>
-              </div>
-              <div>
-                <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">URL</span>
-                <div className="flex gap-2">
-                  <input value={selectedAsset.url} readOnly className="flex-1 px-3 py-2 text-xs bg-white/[0.04] border border-white/[0.06] rounded-lg text-gm-cream/50" />
-                  <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(selectedAsset.url) }}>Copy</Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
+      <AssetDetailModal
+        asset={selectedAsset}
+        onClose={() => setSelectedAsset(null)}
+        onDelete={async (publicId) => {
+          await fetch('/api/assets/search', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicId }),
+          })
+          setSelectedAsset(null)
+          fetchAssets()
+        }}
+        onTagsUpdate={async (publicId, tags) => {
+          await fetch('/api/assets/search', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ publicId, tags }),
+          })
+          fetchAssets()
+        }}
+      />
 
       {/* Upload Modal */}
       <Modal open={showUpload} onClose={() => setShowUpload(false)} title="Upload Assets" size="md">
