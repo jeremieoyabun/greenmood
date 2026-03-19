@@ -78,24 +78,36 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
     if (!slot?.post?.id) return
     setUploading(true)
     const variant = slot.post.variants?.[0]
+    if (!variant) { setUploading(false); return }
+
+    let url: string | null = null
+
+    // Try Vercel Blob first
     try {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('postId', slot.post.id)
       const res = await fetch('/api/assets/upload', { method: 'POST', body: formData })
       const data = await res.json()
-      if (data.success && variant) {
-        const url = data.data.url
-        setImageUrl(url)
-        // Save to DB
-        await fetch(`/api/posts/${slot.post.id}/variant`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
-        })
-        onUpdate?.()
-      }
-    } catch { /* fallback silently */ }
+      if (data.success) url = data.data.url
+    } catch { /* Blob failed */ }
+
+    // Fallback to data URL
+    if (!url) {
+      url = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target?.result as string)
+        reader.readAsDataURL(file)
+      })
+    }
+
+    setImageUrl(url)
+    await fetch(`/api/posts/${slot.post.id}/variant`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
+    })
+    onUpdate?.()
     setUploading(false)
   }
 

@@ -112,21 +112,20 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       reader.readAsDataURL(file)
     }
 
-    // Analyze
+    // Analyze in background (non-blocking — image is already saved)
     setAnalyzing(true)
     setImageAnalysis(null)
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-      if (selectedPost?.id) formData.append('postId', selectedPost.id)
-      const res = await fetch('/api/assets/analyze', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (data.success) setImageAnalysis(data.data)
-      else setImageAnalysis({ status: 'error', summary: data.error })
-    } catch {
-      setImageAnalysis({ status: 'error', summary: 'Analysis failed' })
-    }
-    setAnalyzing(false)
+    const analyzeData = new FormData()
+    analyzeData.append('file', file)
+    if (selectedPost?.id) analyzeData.append('postId', selectedPost.id)
+    fetch('/api/assets/analyze', { method: 'POST', body: analyzeData })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setImageAnalysis(data.data)
+        else setImageAnalysis({ status: 'info', summary: 'Image saved. AI analysis unavailable.' })
+      })
+      .catch(() => setImageAnalysis({ status: 'info', summary: 'Image saved. AI analysis unavailable.' }))
+      .finally(() => setAnalyzing(false))
   }
 
   const copy = (text: string, key: string) => {
