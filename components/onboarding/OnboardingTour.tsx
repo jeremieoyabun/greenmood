@@ -180,25 +180,46 @@ export function OnboardingTour() {
   const isCenter = !highlight || currentStep.cardPosition === 'center'
   const pad = 12
 
-  // Calculate card position relative to highlighted element
+  // Calculate card position — always clamped to viewport
+  const cardWidth = 420
+  const cardHeight = 320
+  const margin = 20
+
   const getCardStyle = (): React.CSSProperties => {
     if (isCenter) {
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }
     }
     const h = highlight!
-    const pos = currentStep.cardPosition || 'bottom-right'
-    switch (pos) {
-      case 'bottom-right':
-        return { top: h.bottom + pad + 12, left: Math.min(h.left, window.innerWidth - 440) }
-      case 'bottom-left':
-        return { top: h.bottom + pad + 12, left: Math.max(h.left - 400, 20) }
-      case 'top-right':
-        return { bottom: window.innerHeight - h.top + pad + 12, left: h.left }
-      case 'top-left':
-        return { bottom: window.innerHeight - h.top + pad + 12, right: window.innerWidth - h.right }
-      default:
-        return { top: h.bottom + pad + 12, left: h.left }
+    const vw = typeof window !== 'undefined' ? window.innerWidth : 1200
+    const vh = typeof window !== 'undefined' ? window.innerHeight : 800
+
+    let top = h.bottom + pad + 16
+    let left = h.left + h.width / 2 - cardWidth / 2
+
+    // If card would go below viewport, position it above the element
+    if (top + cardHeight > vh - margin) {
+      top = h.top - pad - cardHeight - 16
     }
+    // If still below, just center vertically
+    if (top < margin) {
+      top = Math.max(margin, (vh - cardHeight) / 2)
+    }
+
+    // Clamp horizontally
+    left = Math.max(margin, Math.min(left, vw - cardWidth - margin))
+
+    // For sidebar (narrow element on left), position card to the right
+    if (h.width < 250 && h.left < 100) {
+      left = h.right + pad + 16
+      top = Math.max(margin, h.top)
+      // If that overflows right, center it
+      if (left + cardWidth > vw - margin) {
+        left = (vw - cardWidth) / 2
+        top = h.bottom + pad + 16
+      }
+    }
+
+    return { top, left }
   }
 
   // Arrow pointing from card to highlighted element
