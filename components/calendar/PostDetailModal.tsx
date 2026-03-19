@@ -308,27 +308,149 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const availableActions = getAvailableActions()
 
   return (
-    <Modal open={open} onClose={() => { setEditing(false); setShowRejectInput(false); onClose() }} title="Post Detail" size="lg">
-      <div className="space-y-5">
-        {/* Header */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-lg">{market?.emoji}</span>
-          <span className="text-sm font-medium text-gm-cream">{market?.name}</span>
-          <Badge variant="default">{slot.platform}</Badge>
-          {meta.type && <Badge variant="info">{meta.type}</Badge>}
-          {pillar && <Badge variant={pillar.color as any}>{pillar.label}</Badge>}
-          <StatusDot status={postStatus} />
-          <div className="flex items-center gap-3 ml-auto">
-            {/* Duplicate to other market */}
-            <div className="relative">
-              <button
-                onClick={() => setShowDuplicate(!showDuplicate)}
-                className="text-xs text-gm-sage/60 hover:text-gm-sage transition-colors"
+    <Modal open={open} onClose={() => { setEditing(false); setShowRejectInput(false); onClose() }} title="" size="xl">
+      {/* Status Bar — prominent at top */}
+      {!editing && availableActions.length > 0 && (
+        <div className="flex items-center gap-3 p-4 -mx-8 -mt-8 mb-6 bg-white/[0.03] border-b border-white/[0.08]">
+          <Badge variant="info" size="md">{postStatus?.replace(/_/g, ' ')}</Badge>
+          <span className="text-gm-cream/20">→</span>
+          <div className="flex items-center gap-2 ml-auto">
+            {availableActions.map(({ action, label, variant: btnVariant }) => (
+              <Button
+                key={action + '-top'}
+                variant={btnVariant}
+                size="md"
+                loading={approving === action || (action === 'PUBLISH_NOW' && publishing)}
+                onClick={() => {
+                  if (action === 'REJECT' || action === 'REQUEST_CHANGES') {
+                    setShowRejectInput(true)
+                  } else if (action === 'PUBLISH_NOW') {
+                    handlePublish()
+                  } else {
+                    handleApproval(action)
+                  }
+                }}
               >
-                Duplicate to...
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-5 gap-8">
+        {/* LEFT COLUMN — Media (2/5) */}
+        <div className="col-span-2 space-y-5">
+          {/* Media */}
+          <div>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*,video/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
+            />
+            {(imageUrl || variant?.imageUrl) ? (() => {
+              const mediaUrl = imageUrl || variant?.imageUrl || ''
+              const isVideo = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
+              return (
+              <div
+                className="rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer group relative aspect-[4/5] bg-black/20"
+                onClick={() => imageInputRef.current?.click()}
+              >
+                {isVideo ? (
+                  <video src={mediaUrl} className="w-full h-full object-cover" controls muted />
+                ) : (
+                  <img src={mediaUrl} alt="Post media" className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change media</span>
+                </div>
+                {uploading && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-sm text-white animate-pulse">Uploading...</span>
+                  </div>
+                )}
+              </div>
+              )})() : (
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                className="w-full aspect-[4/5] rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/[0.02]"
+              >
+                {uploading ? (
+                  <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
+                ) : (
+                  <>
+                    <span className="text-4xl opacity-15">+</span>
+                    <span className="text-sm text-gm-cream/25">Add image or video</span>
+                  </>
+                )}
               </button>
+            )}
+          </div>
+
+          {/* Schedule + Meta Info */}
+          <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wider text-gm-cream/35 font-semibold">Schedule</span>
+              {!editingSchedule && (
+                <button onClick={startEditingSchedule} className="text-xs text-gm-sage/50 hover:text-gm-sage transition-colors">Edit</button>
+              )}
+            </div>
+            {editingSchedule ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)}
+                    className="bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                  <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}
+                    className="bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="primary" size="sm" loading={savingSchedule} onClick={saveSchedule}>Save</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setEditingSchedule(false)}>Cancel</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div>
+                  <p className="text-lg font-semibold text-gm-cream">{slot.date?.split('T')[0]}</p>
+                  <p className="text-sm text-gm-cream/50">{slot.time || 'No time set'}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-white/[0.06] pt-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gm-cream/30 w-16">Market</span>
+                <span className="text-sm text-gm-cream/80">{market?.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gm-cream/30 w-16">Platform</span>
+                <Badge variant="default">{slot.platform}</Badge>
+              </div>
+              {meta.type && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gm-cream/30 w-16">Format</span>
+                  <Badge variant="info">{meta.type}</Badge>
+                </div>
+              )}
+              {slot.campaign && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gm-cream/30 w-16">Campaign</span>
+                  <span className="text-sm text-gm-sage/60">{slot.campaign.title}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <Button variant="outline" size="sm" onClick={() => setShowDuplicate(!showDuplicate)}>
+                Duplicate to...
+              </Button>
               {showDuplicate && (
-                <div className="absolute top-6 right-0 z-50 bg-gm-dark border border-white/[0.1] rounded-lg shadow-xl py-1 min-w-[140px]">
+                <div className="absolute top-10 left-0 z-50 bg-[#0f1a0f] border border-white/[0.1] rounded-xl shadow-2xl py-2 min-w-[160px]">
                   {DUPLICATE_TARGETS
                     .filter(t => t.market !== slot.market)
                     .map(t => (
@@ -355,7 +477,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                           } catch { alert('Duplicate failed') }
                           setDuplicating(null)
                         }}
-                        className="w-full text-left px-3 py-1.5 text-sm text-gm-cream/70 hover:bg-white/[0.05] hover:text-gm-cream transition-colors disabled:opacity-40"
+                        className="w-full text-left px-4 py-2 text-sm text-gm-cream/70 hover:bg-white/[0.05] hover:text-gm-cream transition-colors disabled:opacity-40"
                       >
                         {duplicating === t.market ? 'Duplicating...' : t.label}
                       </button>
@@ -364,116 +486,13 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               )}
             </div>
             {onDelete && (
-              <button onClick={onDelete} className="text-xs text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
+              <Button variant="danger" size="sm" onClick={onDelete}>Delete</Button>
             )}
           </div>
-          {editingSchedule ? (
-            <div className="flex items-center gap-2 ml-auto">
-              <input
-                type="date"
-                value={scheduleDate}
-                onChange={(e) => setScheduleDate(e.target.value)}
-                className="bg-white/[0.05] text-xs text-gm-cream/90 rounded px-2 py-1 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none"
-              />
-              <input
-                type="time"
-                value={scheduleTime}
-                onChange={(e) => setScheduleTime(e.target.value)}
-                className="bg-white/[0.05] text-xs text-gm-cream/90 rounded px-2 py-1 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none"
-              />
-              <Button variant="primary" size="sm" loading={savingSchedule} onClick={saveSchedule}>Save</Button>
-              <Button variant="ghost" size="sm" onClick={() => setEditingSchedule(false)}>Cancel</Button>
-            </div>
-          ) : (
-            <button
-              onClick={startEditingSchedule}
-              className="text-xs text-gm-cream/30 ml-auto hover:text-gm-sage/60 transition-colors cursor-pointer"
-              title="Click to edit date/time"
-            >
-              {slot.date?.split('T')[0]} {slot.time || ''} ✎
-            </button>
-          )}
         </div>
 
-        {/* Quick Approval Actions — always visible at top */}
-        {!editing && availableActions.length > 0 && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            <span className="text-xs text-gm-cream/40 mr-2">Status:</span>
-            <Badge variant="info" size="sm">{postStatus?.replace(/_/g, ' ')}</Badge>
-            <span className="text-gm-cream/20 mx-1">→</span>
-            {availableActions.map(({ action, label, variant: btnVariant }) => (
-              <Button
-                key={action + '-top'}
-                variant={btnVariant}
-                size="sm"
-                loading={approving === action}
-                onClick={() => {
-                  if (action === 'REJECT' || action === 'REQUEST_CHANGES') {
-                    setShowRejectInput(true)
-                  } else if (action === 'PUBLISH_NOW') {
-                    handlePublish()
-                  } else {
-                    handleApproval(action)
-                  }
-                }}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        )}
-
-        {slot.campaign && (
-          <p className="text-xs text-gm-sage/50">Campaign: {slot.campaign.title}</p>
-        )}
-
-        {/* Post Image — upload or display */}
-        <div className="relative">
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/*,video/*"
-            className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
-          />
-          {(imageUrl || variant?.imageUrl) ? (() => {
-            const mediaUrl = imageUrl || variant?.imageUrl || ''
-            const isVideo = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
-            return (
-            <div
-              className="rounded-lg overflow-hidden border border-white/[0.08] cursor-pointer group relative"
-              onClick={() => imageInputRef.current?.click()}
-            >
-              {isVideo ? (
-                <video src={mediaUrl} className="w-full max-h-72 object-cover" controls muted />
-              ) : (
-                <img src={mediaUrl} alt="Post media" className="w-full max-h-72 object-cover" />
-              )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                <span className="text-xs text-white font-medium">Click to change</span>
-              </div>
-              {uploading && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <span className="text-xs text-white animate-pulse">Uploading...</span>
-                </div>
-              )}
-            </div>
-            )})() : (
-            <button
-              onClick={() => imageInputRef.current?.click()}
-              className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-6 flex flex-col items-center gap-2 cursor-pointer"
-            >
-              {uploading ? (
-                <span className="text-xs text-gm-cream/40 animate-pulse">Uploading...</span>
-              ) : (
-                <>
-                  <span className="text-2xl opacity-30">+</span>
-                  <span className="text-xs text-gm-cream/30">Click to add image or video</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
+        {/* RIGHT COLUMN — Content (3/5) */}
+        <div className="col-span-3 space-y-5">
 
         {/* Caption — View or Edit */}
         {editing ? (
@@ -709,72 +728,31 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           </div>
         )}
 
-        {/* Approval Actions */}
-        {!editing && availableActions.length > 0 && (
-          <div className="pt-4 border-t border-white/[0.06]">
-            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-3">Approval Actions</span>
-
-            {showRejectInput && (
-              <div className="mb-3">
-                <textarea
-                  value={rejectComment}
-                  onChange={(e) => setRejectComment(e.target.value)}
-                  placeholder="Reason for rejection (required)..."
-                  rows={2}
-                  className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
-                />
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    loading={approving === 'REJECT'}
-                    onClick={() => {
-                      if (!rejectComment.trim()) { alert('Comment is required'); return }
-                      handleApproval('REJECT', rejectComment)
-                    }}
-                  >
-                    Confirm Rejection
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => { setShowRejectInput(false); setRejectComment('') }}>Cancel</Button>
-                </div>
-              </div>
-            )}
-
-            {!showRejectInput && (
-              <div className="flex flex-wrap gap-2">
-                {availableActions.map(({ action, label, variant: btnVariant }) => (
-                  <Button
-                    key={action}
-                    variant={btnVariant}
-                    size="sm"
-                    loading={approving === action}
-                    onClick={() => {
-                      if (action === 'REJECT' || action === 'REQUEST_CHANGES') {
-                        setShowRejectInput(true)
-                      } else {
-                        handleApproval(action)
-                      }
-                    }}
-                  >
-                    {label}
-                  </Button>
-                ))}
-              </div>
-            )}
+        {/* Reject input */}
+        {showRejectInput && (
+          <div className="bg-red-500/5 border border-red-500/15 rounded-xl p-4">
+            <textarea
+              value={rejectComment}
+              onChange={(e) => setRejectComment(e.target.value)}
+              placeholder="Reason for rejection (required)..."
+              rows={2}
+              className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
+            />
+            <div className="flex gap-2 mt-3">
+              <Button variant="danger" size="sm" loading={approving === 'REJECT'}
+                onClick={() => { if (!rejectComment.trim()) { alert('Comment is required'); return }; handleApproval('REJECT', rejectComment) }}>
+                Confirm Rejection
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { setShowRejectInput(false); setRejectComment('') }}>Cancel</Button>
+            </div>
           </div>
         )}
 
-        {/* Copy All Button */}
+        {/* Copy All */}
         {!editing && (
-          <div className="pt-3 border-t border-white/[0.06] flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => {
-                const full = [postText, hashtags ? `\n.\n.\n.\n${hashtags}` : ''].filter(Boolean).join('')
-                copy(full, 'all')
-              }}
-            >
+          <div className="flex gap-2 pt-4 border-t border-white/[0.06]">
+            <Button variant="secondary" size="sm"
+              onClick={() => { const full = [postText, hashtags ? `\n.\n.\n.\n${hashtags}` : ''].filter(Boolean).join(''); copy(full, 'all') }}>
               {copied === 'all' ? 'Copied!' : 'Copy Caption + Hashtags'}
             </Button>
             {firstComment && (
@@ -784,7 +762,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
             )}
           </div>
         )}
-      </div>
+
+        </div>{/* end right column */}
+      </div>{/* end grid */}
     </Modal>
   )
 }
