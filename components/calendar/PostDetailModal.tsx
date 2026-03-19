@@ -144,19 +144,35 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
 
   const isStory = slot?.platform === 'stories'
 
-  // Sync imageUrl from variant + fetch multi-media
+  // Fetch real imageUrl + multi-media when opening a post
   useEffect(() => {
-    const varImg = slot?.post?.variants?.[0]?.imageUrl || null
-    setImageUrl(varImg)
-    // Fetch multi-media items
-    if (slot?.post?.id) {
-      fetch(`/api/posts/${slot.post.id}/media`)
+    setImageUrl(null)
+    setMediaItems([])
+    if (!slot?.post?.id) return
+
+    const variantId = slot.post.variants?.[0]?.id
+    const hasImageFlag = slot.post.variants?.[0]?.imageUrl
+
+    // If calendar API returned HAS_IMAGE flag, fetch the real URL
+    if (hasImageFlag && variantId) {
+      fetch(`/api/posts/${slot.post.id}/variant?variantId=${variantId}`)
         .then(r => r.json())
-        .then(d => { if (d.success) setMediaItems(d.data || []) })
+        .then(d => {
+          if (d.success && d.data?.imageUrl) {
+            setImageUrl(d.data.imageUrl)
+          }
+        })
         .catch(() => {})
-    } else {
-      setMediaItems([])
+    } else if (hasImageFlag && hasImageFlag !== 'HAS_IMAGE') {
+      // It's an actual URL (not the flag)
+      setImageUrl(hasImageFlag)
     }
+
+    // Fetch multi-media items
+    fetch(`/api/posts/${slot.post.id}/media`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setMediaItems(d.data || []) })
+      .catch(() => {})
   }, [slot?.id, slot?.post?.id])
 
   const handleImageUpload = async (file: File) => {

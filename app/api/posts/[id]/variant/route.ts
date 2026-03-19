@@ -1,6 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id: postId } = await params
+    const { searchParams } = new URL(req.url)
+    const variantId = searchParams.get('variantId')
+
+    const where: any = { postId, isActive: true }
+    if (variantId) where.id = variantId
+
+    const variant = await prisma.postVariant.findFirst({
+      where,
+      orderBy: { version: 'desc' },
+      select: { id: true, text: true, hashtags: true, firstComment: true, imageUrl: true, notes: true, timing: true },
+    })
+
+    if (!variant) {
+      return NextResponse.json({ success: false, error: 'Variant not found' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, data: variant })
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Error' }, { status: 500 })
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: postId } = await params
