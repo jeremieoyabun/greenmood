@@ -5,13 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AddCompetitorButton } from '@/components/intelligence/AddCompetitorButton'
+import { SignalActions } from '@/components/intelligence/SignalActions'
 
 async function getIntelData() {
   const [competitors, signals, sources] = await Promise.all([
     prisma.competitorEntity.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
     prisma.intelligenceSignal.findMany({
       where: { isDuplicate: false },
-      include: { competitor: { select: { name: true } }, source: { select: { name: true } } },
+      include: { competitor: { select: { name: true, website: true } }, source: { select: { name: true, url: true } } },
       orderBy: [{ score: 'desc' }, { detectedAt: 'desc' }],
       take: 30,
     }),
@@ -182,6 +183,19 @@ export default async function IntelligencePage() {
                           {signal.detectedAt ? new Date(signal.detectedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}
                         </span>
                       </div>
+
+                      {/* Actions */}
+                      <SignalActions
+                        signalId={signal.id}
+                        title={signal.title}
+                        summary={signal.summary}
+                        whyItMatters={signal.whyItMatters}
+                        recommendedAction={signal.recommendedAction}
+                        recommendedFormat={signal.recommendedFormat}
+                        recommendedChannel={signal.recommendedChannel}
+                        sourceUrl={signal.source?.url || signal.competitor?.website || null}
+                        country={signal.country}
+                      />
                     </div>
                   </div>
                 </Card>
