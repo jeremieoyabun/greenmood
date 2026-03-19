@@ -44,6 +44,8 @@ const agentRegistry: Record<AgentType, () => BaseAgent> = {
   SCHEDULER: () => new SchedulerAgent(),
   PERFORMANCE_ANALYST: () => new PerformanceAnalystAgent(),
   MARKET_INTELLIGENCE: () => new MarketIntelligenceAgent(),
+  COMMENT_MONITOR: () => new MarketIntelligenceAgent(), // Comment monitor runs inline in cron
+  REPURPOSE_AGENT: () => new ContentGeneratorAgent(), // Repurpose runs inline in cron
 }
 
 /**

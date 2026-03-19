@@ -317,6 +317,8 @@ enum AgentType {
   SCHEDULER
   PERFORMANCE_ANALYST
   MARKET_INTELLIGENCE
+  COMMENT_MONITOR
+  REPURPOSE_AGENT
 }
 
 enum AgentRunStatus {
@@ -354,6 +356,7 @@ enum KBCategory {
   PLATFORM_RULE
   RESOURCE_LINK
   COLOR_PALETTE
+  PERFORMANCE_INSIGHT
 }
 
 // ─── PROMPT TEMPLATES ───
@@ -426,6 +429,7 @@ model IntelligenceSignal {
   recommendedChannel String? @map("recommended_channel")
   score             Float    @default(0)
   isDuplicate       Boolean  @default(false) @map("is_duplicate")
+  metadata          Json?
   detectedAt        DateTime @default(now()) @map("detected_at")
   expiresAt         DateTime? @map("expires_at")
 
