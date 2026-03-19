@@ -186,6 +186,10 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
 
   const getActions = (status: string) => {
     switch (status) {
+      case 'DRAFT': return [
+        { action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
+      ]
       case 'AI_GENERATED': return [
         { action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary' as const },
         { action: 'DELETE', label: 'Delete', variant: 'danger' as const },

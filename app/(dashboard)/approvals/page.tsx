@@ -14,7 +14,7 @@ async function getApprovalData() {
   const posts = await prisma.post.findMany({
     where: {
       workspaceId,
-      status: { in: ['AI_GENERATED', 'FACT_CHECKED', 'BRAND_APPROVED', 'READY_TO_SCHEDULE', 'SCHEDULED', 'REJECTED'] },
+      status: { in: ['DRAFT', 'AI_GENERATED', 'FACT_CHECKED', 'BRAND_APPROVED', 'READY_TO_SCHEDULE', 'SCHEDULED', 'REJECTED'] },
     },
     include: {
       campaign: { select: { title: true } },
