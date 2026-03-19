@@ -45,6 +45,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const [analyzing, setAnalyzing] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [mediaItems, setMediaItems] = useState<Array<{ id: string; url: string; media_type: string; sort_order: number }>>([])
   const [showDuplicate, setShowDuplicate] = useState(false)
   const [duplicating, setDuplicating] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -74,11 +75,22 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const [scheduleTime, setScheduleTime] = useState('')
   const [savingSchedule, setSavingSchedule] = useState(false)
 
-  // Sync imageUrl from variant when slot changes
+  const isStory = slot?.platform === 'stories'
+
+  // Sync imageUrl from variant + fetch multi-media
   useEffect(() => {
     const varImg = slot?.post?.variants?.[0]?.imageUrl || null
     setImageUrl(varImg)
-  }, [slot?.id])
+    // Fetch multi-media items
+    if (slot?.post?.id) {
+      fetch(`/api/posts/${slot.post.id}/media`)
+        .then(r => r.json())
+        .then(d => { if (d.success) setMediaItems(d.data || []) })
+        .catch(() => {})
+    } else {
+      setMediaItems([])
+    }
+  }, [slot?.id, slot?.post?.id])
 
   const handleImageUpload = async (file: File) => {
     if (!slot?.post?.id) return
@@ -116,6 +128,57 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
     onUpdate?.()
     setUploading(false)
   }
+
+  const handleMultiUpload = async (files: FileList) => {
+    if (!slot?.post?.id) return
+    setUploading(true)
+    for (const file of Array.from(files)) {
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('postId', slot.post.id)
+        const uploadRes = await fetch('/api/assets/upload', { method: 'POST', body: formData })
+        const uploadData = await uploadRes.json()
+        const url = uploadData.success ? uploadData.data.url : null
+        if (!url) {
+          // Fallback to data URL
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader()
+            reader.onload = (e) => resolve(e.target?.result as string)
+            reader.readAsDataURL(file)
+          })
+          await fetch(`/api/posts/${slot.post.id}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: dataUrl, mediaType: file.type.startsWith('video') ? 'video' : 'image' }),
+          })
+        } else {
+          await fetch(`/api/posts/${slot.post.id}/media`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, mediaType: file.type.startsWith('video') ? 'video' : 'image' }),
+          })
+        }
+      } catch { /* continue */ }
+    }
+    // Refresh media list
+    const res = await fetch(`/api/posts/${slot.post.id}/media`)
+    const data = await res.json()
+    if (data.success) setMediaItems(data.data || [])
+    setUploading(false)
+  }
+
+  const removeMedia = async (mediaId: string) => {
+    if (!slot?.post?.id) return
+    await fetch(`/api/posts/${slot.post.id}/media`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mediaId }),
+    })
+    setMediaItems(prev => prev.filter(m => m.id !== mediaId))
+  }
+
+  const multiInputRef = useRef<HTMLInputElement>(null)
 
   const startEditingSchedule = () => {
     setScheduleDate(slot?.date?.split('T')[0] || new Date().toISOString().split('T')[0])
@@ -341,53 +404,105 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
       <div className="grid grid-cols-5 gap-8">
         {/* LEFT COLUMN — Media (2/5) */}
         <div className="col-span-2 space-y-5">
-          {/* Media */}
-          <div>
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*,video/*"
-              className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
-            />
-            {(imageUrl || variant?.imageUrl) ? (() => {
-              const mediaUrl = imageUrl || variant?.imageUrl || ''
-              const isVideo = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
-              return (
-              <div
-                className="rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer group relative aspect-[4/5] bg-black/20"
-                onClick={() => imageInputRef.current?.click()}
-              >
-                {isVideo ? (
-                  <video src={mediaUrl} className="w-full h-full object-cover" controls muted />
-                ) : (
-                  <img src={mediaUrl} alt="Post media" className="w-full h-full object-cover" />
-                )}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                  <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change media</span>
-                </div>
-                {uploading && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-sm text-white animate-pulse">Uploading...</span>
-                  </div>
-                )}
+          {/* Media — single for posts, multi for stories */}
+          <input ref={imageInputRef} type="file" accept="image/*,video/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
+          <input ref={multiInputRef} type="file" accept="image/*,video/*" multiple className="hidden"
+            onChange={(e) => { if (e.target.files?.length) handleMultiUpload(e.target.files) }} />
+
+          {isStory ? (
+            /* STORIES: Multi-media grid */
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-wider text-gm-cream/35 font-semibold">Story Slides ({mediaItems.length})</span>
+                <Button variant="outline" size="sm" onClick={() => multiInputRef.current?.click()}>
+                  + Add slides
+                </Button>
               </div>
-              )})() : (
-              <button
-                onClick={() => imageInputRef.current?.click()}
-                className="w-full aspect-[4/5] rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/[0.02]"
-              >
-                {uploading ? (
-                  <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
-                ) : (
-                  <>
-                    <span className="text-4xl opacity-15">+</span>
-                    <span className="text-sm text-gm-cream/25">Add image or video</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+              {mediaItems.length > 0 ? (
+                <div className="grid grid-cols-3 gap-2">
+                  {mediaItems.map((m, i) => (
+                    <div key={m.id} className="relative rounded-lg overflow-hidden border border-white/[0.08] aspect-[9/16] bg-black/20 group">
+                      <div className="absolute top-1 left-1 z-10 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-[10px] text-white font-bold">{i + 1}</div>
+                      {m.media_type === 'video' ? (
+                        <video src={m.url} className="w-full h-full object-cover" muted />
+                      ) : (
+                        <img src={m.url} alt={`Slide ${i + 1}`} className="w-full h-full object-cover" />
+                      )}
+                      <button
+                        onClick={() => removeMedia(m.id)}
+                        className="absolute top-1 right-1 z-10 w-5 h-5 rounded-full bg-red-500/80 flex items-center justify-center text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      >×</button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => multiInputRef.current?.click()}
+                    className="rounded-lg border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 aspect-[9/16] flex flex-col items-center justify-center gap-1 cursor-pointer hover:bg-white/[0.02] transition-all"
+                  >
+                    <span className="text-xl opacity-20">+</span>
+                    <span className="text-[10px] text-gm-cream/20">Add</span>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => multiInputRef.current?.click()}
+                  className="w-full aspect-[9/16] max-h-64 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-white/[0.02] transition-all"
+                >
+                  {uploading ? (
+                    <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
+                  ) : (
+                    <>
+                      <span className="text-3xl opacity-15">+</span>
+                      <span className="text-sm text-gm-cream/25">Add story slides</span>
+                      <span className="text-xs text-gm-cream/15">Images & videos</span>
+                    </>
+                  )}
+                </button>
+              )}
+              {uploading && <p className="text-xs text-gm-cream/40 animate-pulse text-center">Uploading...</p>}
+            </div>
+          ) : (
+            /* REGULAR POST: Single media, smaller preview */
+            <div>
+              {(imageUrl || variant?.imageUrl) ? (() => {
+                const mediaUrl = imageUrl || variant?.imageUrl || ''
+                const isVideoFile = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
+                return (
+                <div
+                  className="rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer group relative bg-black/20"
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  {isVideoFile ? (
+                    <video src={mediaUrl} className="w-full max-h-56 object-contain bg-black" controls muted />
+                  ) : (
+                    <img src={mediaUrl} alt="Post media" className="w-full max-h-56 object-contain bg-black/40" />
+                  )}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change</span>
+                  </div>
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <span className="text-sm text-white animate-pulse">Uploading...</span>
+                    </div>
+                  )}
+                </div>
+                )})() : (
+                <button
+                  onClick={() => imageInputRef.current?.click()}
+                  className="w-full h-40 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
+                >
+                  {uploading ? (
+                    <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
+                  ) : (
+                    <>
+                      <span className="text-2xl opacity-15">+</span>
+                      <span className="text-xs text-gm-cream/25">Add image or video</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Schedule + Meta Info */}
           <div className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06] space-y-3">
