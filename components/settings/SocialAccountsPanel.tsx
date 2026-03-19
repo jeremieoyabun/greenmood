@@ -62,11 +62,18 @@ export function SocialAccountsPanel() {
   const saveToken = async () => {
     if (!tokenInput.trim() || !tokenModal) return
     setSavingToken(true)
+    const account = accounts.find(a => a.id === tokenModal)
+    // Map account ID to market code
+    const marketMap: Record<string, string> = {
+      '1': 'hq', '2': 'us', '3': 'uk', '4': 'ae', '5': 'fr', '6': 'pl', '7': 'linkedin-hq',
+    }
+    const market = account?.market || marketMap[tokenModal] || 'hq'
+    const platform = account?.platform || 'instagram'
     try {
       const res = await fetch('/api/auth/save-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountId: tokenModal, token: tokenInput }),
+        body: JSON.stringify({ token: tokenInput, market, platform }),
       })
       const data = await res.json()
       if (data.success) {
