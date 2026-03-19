@@ -510,24 +510,20 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   }
   const pillar = pillars[meta.contentPillar]
 
-  // Determine available actions based on status
+  // Determine available actions based on status — simplified flow
   const getAvailableActions = () => {
     const actions: { action: string; label: string; variant: 'primary' | 'secondary' | 'danger' | 'outline'; nextStatus: string }[] = []
     switch (postStatus) {
+      case 'DRAFT':
       case 'AI_GENERATED':
-        actions.push({ action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary', nextStatus: 'FACT_CHECKED' })
-        actions.push({ action: 'REJECT', label: 'Reject', variant: 'danger', nextStatus: 'REJECTED' })
-        break
       case 'FACT_CHECKED':
-        actions.push({ action: 'APPROVE', label: 'Brand Approve', variant: 'primary', nextStatus: 'BRAND_APPROVED' })
-        actions.push({ action: 'REJECT', label: 'Reject', variant: 'danger', nextStatus: 'REJECTED' })
-        break
       case 'BRAND_APPROVED':
-        actions.push({ action: 'APPROVE', label: 'Ready to Schedule', variant: 'primary', nextStatus: 'READY_TO_SCHEDULE' })
-        actions.push({ action: 'REJECT', label: 'Reject', variant: 'danger', nextStatus: 'REJECTED' })
+        actions.push({ action: 'APPROVE', label: 'Approve', variant: 'primary', nextStatus: 'READY_TO_SCHEDULE' })
+        actions.push({ action: 'SCHEDULE', label: 'Approve & Schedule', variant: 'primary', nextStatus: 'SCHEDULED' })
+        actions.push({ action: 'DELETE', label: 'Delete', variant: 'danger', nextStatus: 'DELETED' })
         break
       case 'READY_TO_SCHEDULE':
-        actions.push({ action: 'APPROVE', label: 'Mark as Scheduled', variant: 'primary', nextStatus: 'SCHEDULED' })
+        actions.push({ action: 'APPROVE', label: 'Schedule', variant: 'primary', nextStatus: 'SCHEDULED' })
         break
       case 'SCHEDULED':
         actions.push({ action: 'PUBLISH_NOW', label: 'Publish Now', variant: 'primary', nextStatus: 'PUBLISHED' })

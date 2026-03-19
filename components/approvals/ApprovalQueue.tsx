@@ -194,30 +194,25 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
 
   const getActions = (status: string) => {
     switch (status) {
-      case 'DRAFT': return [
-        { action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
-      case 'AI_GENERATED': return [
-        { action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
-      case 'FACT_CHECKED': return [
-        { action: 'APPROVE', label: 'Brand Approve', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
-      case 'BRAND_APPROVED': return [
-        { action: 'APPROVE', label: 'Ready to Schedule', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
-      case 'READY_TO_SCHEDULE': return [
-        { action: 'SCHEDULE', label: 'Schedule Post', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
-      case 'SCHEDULED': return [
-        { action: 'PUBLISH', label: 'Publish Now', variant: 'primary' as const },
-        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
-      ]
+      case 'DRAFT':
+      case 'AI_GENERATED':
+      case 'FACT_CHECKED':
+      case 'BRAND_APPROVED':
+        return [
+          { action: 'APPROVE', label: 'Approve', variant: 'primary' as const },
+          { action: 'SCHEDULE', label: 'Approve & Schedule', variant: 'primary' as const },
+          { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
+        ]
+      case 'READY_TO_SCHEDULE':
+        return [
+          { action: 'SCHEDULE', label: 'Schedule Post', variant: 'primary' as const },
+          { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
+        ]
+      case 'SCHEDULED':
+        return [
+          { action: 'PUBLISH', label: 'Publish Now', variant: 'primary' as const },
+          { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
+        ]
       default: return []
     }
   }

@@ -34,11 +34,17 @@ export async function uploadToCloudinary(
   const resourceType = options.resourceType || 'auto'
 
   const result = await new Promise<any>((resolve, reject) => {
+    // Clean display name from original filename
+    const displayName = options.context?.originalName
+      ? options.context.originalName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim()
+      : undefined
+
     const uploadOptions: any = {
       folder,
       resource_type: resourceType,
-      // Note: Google auto-tagging requires paid Cloudinary add-on
-      // We use Claude for AI tagging instead (see upload API)
+      use_filename: true,
+      unique_filename: true,
+      display_name: displayName,
       tags: options.tags || [],
       context: options.context ? Object.entries(options.context).map(([k, v]) => `${k}=${v}`).join('|') : undefined,
     }
@@ -105,15 +111,24 @@ export async function searchAssets(query: {
     context: true,
   })
 
-  return (result.resources || []).map((r: any) => ({
-    url: r.secure_url,
-    publicId: r.public_id,
-    width: r.width,
-    height: r.height,
-    format: r.format,
-    tags: r.tags || [],
-    createdAt: r.created_at,
-  }))
+  return (result.resources || []).map((r: any) => {
+    const originalName = r.context?.custom?.originalName || ''
+    const displayName = r.display_name || originalName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || r.public_id.split('/').pop() || ''
+    return {
+      url: r.secure_url,
+      publicId: r.public_id,
+      displayName,
+      originalName,
+      width: r.width,
+      height: r.height,
+      format: r.format,
+      bytes: r.bytes || 0,
+      tags: r.tags || [],
+      context: r.context?.custom || {},
+      createdAt: r.created_at,
+      resourceType: r.resource_type || 'image',
+    }
+  })
 }
 
 /**
