@@ -80,6 +80,39 @@ export default function CalendarPage() {
     { text: '', media: null },
   ])
   const isStoryMode = newSlot.platform === 'stories'
+  const [genStory, setGenStory] = useState(false)
+
+  const generateStoryTexts = async () => {
+    setGenStory(true)
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          brief: 'Generate 3-5 Instagram Story slides for Greenmood. Each slide needs a short punchy text overlay (max 8 words per slide). The story should tell a micro-narrative: hook → detail → proof → CTA. Use real Greenmood product facts from KB. No em-dashes.',
+          contentType: 'stories',
+          markets: [newSlot.market],
+          platforms: ['stories'],
+        }),
+      })
+      const data = await res.json()
+      if (data.success && data.data?.posts) {
+        const post = Object.values(data.data.posts)[0] as any
+        if (post?.stories_slides || post?.storiesSlides) {
+          const slides = post.stories_slides || post.storiesSlides || []
+          setStorySlides(slides.map((s: any) => ({
+            text: s.text || s.overlay_text || '',
+            media: null,
+          })))
+        } else if (post?.text) {
+          // Split by --- or newlines into slides
+          const lines = post.text.split(/---|\n\n/).filter((l: string) => l.trim())
+          setStorySlides(lines.map((l: string) => ({ text: l.trim(), media: null })))
+        }
+      }
+    } catch { /* */ }
+    setGenStory(false)
+  }
 
   const fetchSlots = useCallback(async () => {
     setLoading(true)
@@ -492,9 +525,14 @@ export default function CalendarPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-semibold text-gm-cream/70">Story Slides ({storySlides.length})</label>
-              <Button variant="outline" size="sm" onClick={() => setStorySlides(prev => [...prev, { text: '', media: null }])}>
-                + Add Slide
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" size="sm" loading={genStory} onClick={generateStoryTexts}>
+                  {genStory ? 'Generating...' : '✨ AI Propose Texts'}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setStorySlides(prev => [...prev, { text: '', media: null }])}>
+                  + Add Slide
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
