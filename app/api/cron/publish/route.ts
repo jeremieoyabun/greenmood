@@ -39,15 +39,10 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    // Filter to only slots where time has passed
-    const dueSlots = readySlots.filter(slot => {
-      if (!slot.time) return true // No time = publish immediately
-      const slotDate = new Date(slot.date)
-      const slotDateStr = slotDate.toISOString().split('T')[0]
-      if (slotDateStr < today) return true // Past days = overdue
-      if (slotDateStr === today && slot.time <= currentTime) return true // Today, time passed
-      return false
-    })
+    // All scheduled slots with date <= today are due for publishing
+    // Time comparison is approximate — the cron runs daily or on-demand
+    // so we publish all posts whose date has arrived
+    const dueSlots = readySlots
 
     const results: any[] = []
 
