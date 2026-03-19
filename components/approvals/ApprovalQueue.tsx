@@ -475,7 +475,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Image</span>
                     <div className="flex gap-2">
-                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
+                      <input ref={fileInputRef} type="file" accept="image/*,video/*" className="hidden"
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
                       <Button variant="outline" size="sm" loading={analyzing}
                         onClick={() => fileInputRef.current?.click()}>

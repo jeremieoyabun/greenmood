@@ -432,22 +432,25 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           <input
             ref={imageInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/*"
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }}
           />
-          {(imageUrl || variant?.imageUrl) ? (
+          {(imageUrl || variant?.imageUrl) ? (() => {
+            const mediaUrl = imageUrl || variant?.imageUrl || ''
+            const isVideo = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
+            return (
             <div
               className="rounded-lg overflow-hidden border border-white/[0.08] cursor-pointer group relative"
               onClick={() => imageInputRef.current?.click()}
             >
-              <img
-                src={imageUrl || variant?.imageUrl || ''}
-                alt="Post image"
-                className="w-full max-h-72 object-cover"
-              />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-xs text-white font-medium">Click to change image</span>
+              {isVideo ? (
+                <video src={mediaUrl} className="w-full max-h-72 object-cover" controls muted />
+              ) : (
+                <img src={mediaUrl} alt="Post media" className="w-full max-h-72 object-cover" />
+              )}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <span className="text-xs text-white font-medium">Click to change</span>
               </div>
               {uploading && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
@@ -455,7 +458,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 </div>
               )}
             </div>
-          ) : (
+            )})() : (
             <button
               onClick={() => imageInputRef.current?.click()}
               className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-6 flex flex-col items-center gap-2 cursor-pointer"
@@ -465,7 +468,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               ) : (
                 <>
                   <span className="text-2xl opacity-30">+</span>
-                  <span className="text-xs text-gm-cream/30">Click to add image</span>
+                  <span className="text-xs text-gm-cream/30">Click to add image or video</span>
                 </>
               )}
             </button>
@@ -635,7 +638,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,video/*"
                   className="hidden"
                   onChange={(e) => { const f = e.target.files?.[0]; if (f) analyzeImage(f) }}
                 />

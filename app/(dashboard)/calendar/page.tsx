@@ -483,8 +483,8 @@ export default function CalendarPage() {
 
           {/* Image */}
           <div>
-            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Image</label>
-            <input type="file" accept="image/*" id="new-post-img" className="hidden" onChange={(e) => {
+            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Image / Video</label>
+            <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
               const f = e.target.files?.[0]
               if (f) {
                 const r = new FileReader()

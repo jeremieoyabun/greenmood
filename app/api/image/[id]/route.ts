@@ -24,12 +24,25 @@ export async function GET(
 
   const imageUrl = variant.imageUrl
 
-  // If it's a base64 data URL, decode, convert to JPEG, and serve
+  // If it's a base64 data URL, decode and serve
   if (imageUrl.startsWith('data:')) {
-    const base64Data = imageUrl.split(',')[1]
+    const [header, base64Data] = imageUrl.split(',')
+    const mimeMatch = header.match(/data:(.*?);/)
+    const mime = mimeMatch?.[1] || 'image/png'
     const rawBuffer = Buffer.from(base64Data, 'base64')
 
-    // Convert to JPEG, resize if too large, optimize quality
+    // Videos: serve as-is
+    if (mime.startsWith('video/')) {
+      return new NextResponse(new Uint8Array(rawBuffer), {
+        headers: {
+          'Content-Type': mime,
+          'Content-Length': rawBuffer.length.toString(),
+          'Cache-Control': 'public, max-age=86400',
+        },
+      })
+    }
+
+    // Images: convert to optimized JPEG
     const jpegBuffer = await sharp(rawBuffer)
       .resize(1080, 1350, { fit: 'inside', withoutEnlargement: true })
       .jpeg({ quality: 85 })

@@ -95,21 +95,40 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ─── HELPERS ───
+
+async function waitForMediaReady(containerId: string, token: string, maxAttempts = 20) {
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(resolve => setTimeout(resolve, 3000))
+    const res = await fetch(
+      `https://graph.instagram.com/v25.0/${containerId}?fields=status_code&access_token=${token}`
+    )
+    const data = await res.json()
+    if (data.status_code === 'FINISHED') return
+    if (data.status_code === 'ERROR') throw new Error('Video processing failed')
+  }
+  throw new Error('Video processing timeout')
+}
+
 // ─── INSTAGRAM ADAPTER ───
 
 async function publishToInstagram(variant: any, type: string) {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN
   if (!token) return { success: false, error: 'No Instagram access token configured' }
 
-  let imageUrl = variant.imageUrl
-  if (!imageUrl) return { success: false, error: 'No image URL — Instagram requires an image to publish' }
+  let mediaUrl = variant.imageUrl
+  if (!mediaUrl) return { success: false, error: 'No media — Instagram requires an image or video to publish' }
+
+  // Detect if media is a video
+  const isVideo = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video/') || mediaUrl.includes('video%2F')
 
   try {
-    // If image is base64, serve it via our public API endpoint so Instagram can fetch it
-    if (imageUrl.startsWith('data:')) {
-      imageUrl = `https://app.greenmood.be/api/image/${variant.id}`
-      console.log('Publish: converted base64 to proxy URL:', imageUrl)
+    // If media is base64, serve it via our public API endpoint so Instagram can fetch it
+    if (mediaUrl.startsWith('data:')) {
+      mediaUrl = `https://app.greenmood.be/api/image/${variant.id}`
+      console.log('Publish: converted base64 to proxy URL:', mediaUrl)
     }
+
     // Step 1: Get Instagram user ID
     const meRes = await fetch(
       `https://graph.instagram.com/v25.0/me?fields=user_id&access_token=${token}`
@@ -126,18 +145,27 @@ async function publishToInstagram(variant: any, type: string) {
     }
 
     if (type === 'stories') {
-      // Create story container
+      // Create story container (image or video)
       const params = new URLSearchParams({
-        image_url: imageUrl,
         media_type: 'STORIES',
         access_token: token,
       })
+      if (isVideo) {
+        params.set('video_url', mediaUrl)
+      } else {
+        params.set('image_url', mediaUrl)
+      }
       const containerRes = await fetch(
         `https://graph.instagram.com/v25.0/${userId}/media`,
         { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
       )
       const container = await containerRes.json()
       if (container.error) return { success: false, error: container.error.message }
+
+      // Wait for video processing if needed
+      if (isVideo) {
+        await waitForMediaReady(container.id, token)
+      }
 
       // Publish
       const pubParams = new URLSearchParams({ creation_id: container.id, access_token: token })
@@ -149,10 +177,38 @@ async function publishToInstagram(variant: any, type: string) {
       if (published.error) return { success: false, error: published.error.message }
 
       return { success: true, platformId: published.id, message: 'Story published' }
-    } else {
-      // Create feed post container
+    } else if (isVideo) {
+      // Create REELS container for feed video
       const params = new URLSearchParams({
-        image_url: imageUrl,
+        video_url: mediaUrl,
+        caption,
+        media_type: 'REELS',
+        access_token: token,
+      })
+      const containerRes = await fetch(
+        `https://graph.instagram.com/v25.0/${userId}/media`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
+      )
+      const container = await containerRes.json()
+      if (container.error) return { success: false, error: container.error.message + (container.error.error_user_msg ? ' — ' + container.error.error_user_msg : '') }
+
+      // Wait for video processing
+      await waitForMediaReady(container.id, token)
+
+      // Publish
+      const pubParams = new URLSearchParams({ creation_id: container.id, access_token: token })
+      const publishRes = await fetch(
+        `https://graph.instagram.com/v25.0/${userId}/media_publish`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: pubParams }
+      )
+      const published = await publishRes.json()
+      if (published.error) return { success: false, error: published.error.message }
+
+      return { success: true, platformId: published.id, message: 'Reel published' }
+    } else {
+      // Create feed image post container
+      const params = new URLSearchParams({
+        image_url: mediaUrl,
         caption,
         access_token: token,
       })
