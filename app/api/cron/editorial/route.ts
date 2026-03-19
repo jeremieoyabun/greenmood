@@ -95,14 +95,31 @@ export async function GET(req: NextRequest) {
           urgency: s.urgency,
           score: s.score,
         })),
-        instruction: `Propose 2-3 posts for today (${todayStr}) using the 4R framework:
-- Reveal: Share something new (product detail, behind-the-scenes)
-- Reference: Cite industry data, certifications, or standards
-- Results: Show project results, case studies, before/after
-- Relate: Connect to audience pain points (noise, wellness, sustainability)
+        instruction: `Today is ${todayStr} (${['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][today.getDay()]}).
 
-Prioritize gaps in this week's calendar. Use intelligence signals when relevant.
-For each slot, pick the best market and platform combination.`,
+STRICT POSTING SCHEDULE (never violate):
+- Monday or Tuesday: 1 Instagram post (market: hq)
+- Tuesday: 1 LinkedIn post (market: hq)
+- Thursday: 1 Instagram post (market: hq) + 1 LinkedIn post (market: hq)
+- Friday: 1 Instagram post (market: hq or us) — optional
+- Saturday & Sunday: NO posts ever
+- Stories: max 1 per day, only on posting days
+
+VALID MARKET CODES (use exactly these, nothing else):
+- hq (Belgium/Global)
+- us (USA)
+- uk (United Kingdom)
+- ae (UAE)
+- fr (France)
+- pl (Poland)
+
+Based on the day of week, propose ONLY the posts that fit today's schedule.
+If today is not a posting day, return empty slots array.
+If today already has posts scheduled, return empty slots array.
+
+Use the 4R framework: Reveal, Reference, Results, Relate.
+Reference real Greenmood projects (Cloud IX Budapest, UC Davis, L'Oreal Paris, AP Rooftop, Ci3 Yorkshire, JLL Brussels, Athora HQ, Saltire Court Edinburgh).
+Keep Instagram captions under 3 lines. LinkedIn hook on first line.`,
       },
     })
 
@@ -148,7 +165,10 @@ For each slot, pick the best market and platform combination.`,
 
     for (const slot of proposedSlots.slice(0, 3)) {
       // Limit to 3 posts max
-      const market = slot.market || DEFAULT_MARKETS[0]
+      // Sanitize market code — strip "tone_" prefix if AI added it
+      const VALID_MARKETS = ['hq', 'us', 'uk', 'ae', 'fr', 'pl', 'kr', 'de']
+      const rawMarket = (slot.market || DEFAULT_MARKETS[0]).replace('tone_', '')
+      const market = VALID_MARKETS.includes(rawMarket) ? rawMarket : 'hq'
       const platform = slot.platform || DEFAULT_PLATFORMS[0]
       const brief = slot.briefSuggestion || slot.brief || 'Biophilic design thought leadership post'
       const contentType = slot.contentType || 'PRODUCT'

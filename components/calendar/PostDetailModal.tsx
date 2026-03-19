@@ -7,6 +7,73 @@ import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
 import { useState, useRef, useEffect } from 'react'
 
+function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCopy, copied }: {
+  postId: string; variantId: string; initialValue: string; isLinkedIn: boolean; onCopy: (text: string) => void; copied: boolean
+}) {
+  const [editingFC, setEditingFC] = useState(false)
+  const [fcValue, setFcValue] = useState(initialValue)
+  const [savingFC, setSavingFC] = useState(false)
+
+  useEffect(() => { setFcValue(initialValue) }, [initialValue])
+
+  const saveFC = async () => {
+    if (!postId || !variantId) return
+    setSavingFC(true)
+    try {
+      await fetch(`/api/posts/${postId}/variant`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId, firstComment: fcValue }),
+      })
+      setEditingFC(false)
+    } catch { /* */ }
+    setSavingFC(false)
+  }
+
+  return (
+    <div className={`rounded-xl p-4 border ${
+      fcValue ? 'bg-sky-500/5 border-sky-500/15' : isLinkedIn ? 'bg-amber-500/5 border-amber-500/15' : 'bg-white/[0.02] border-white/[0.05]'
+    }`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
+          {isLinkedIn && <Badge variant="warning" size="sm">Required for LinkedIn</Badge>}
+        </div>
+        <div className="flex gap-1">
+          {!editingFC && <Button variant="ghost" size="sm" onClick={() => setEditingFC(true)}>{fcValue ? 'Edit' : 'Add'}</Button>}
+          {fcValue && !editingFC && (
+            <Button variant="ghost" size="sm" onClick={() => onCopy(fcValue)}>
+              {copied ? 'Copied!' : 'Copy'}
+            </Button>
+          )}
+        </div>
+      </div>
+      {editingFC ? (
+        <div className="space-y-2">
+          <textarea
+            value={fcValue}
+            onChange={(e) => setFcValue(e.target.value)}
+            placeholder={isLinkedIn ? 'Put the link here — never in the post body' : 'Link or additional context...'}
+            rows={2}
+            className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+            autoFocus
+          />
+          <div className="flex gap-2">
+            <Button variant="primary" size="sm" loading={savingFC} onClick={saveFC}>Save</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setEditingFC(false); setFcValue(initialValue) }}>Cancel</Button>
+          </div>
+        </div>
+      ) : fcValue ? (
+        <p className="text-sm text-gm-cream/70 leading-relaxed">{fcValue}</p>
+      ) : (
+        <p className="text-xs text-gm-cream/25 italic">
+          {isLinkedIn ? 'No first comment — LinkedIn posts should have the link here (not in the post body).' : 'No first comment. Click Add to include a link or extra context.'}
+        </p>
+      )}
+    </div>
+  )
+}
+
 interface PostDetail {
   id: string
   date: string
@@ -685,40 +752,15 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               </div>
             )}
 
-            {/* First Comment */}
-            <div className={`rounded-lg p-3 border ${
-              firstComment
-                ? 'bg-sky-500/5 border-sky-500/15'
-                : slot.platform === 'linkedin'
-                  ? 'bg-amber-500/5 border-amber-500/15'
-                  : 'bg-white/[0.02] border-white/[0.05]'
-            }`}>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
-                  {slot.platform === 'linkedin' && (
-                    <Badge variant="warning" size="sm">Required for LinkedIn</Badge>
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  {!firstComment && <Button variant="ghost" size="sm" onClick={startEditing}>Add</Button>}
-                  {firstComment && (
-                    <Button variant="ghost" size="sm" onClick={() => copy(firstComment, 'fc')}>
-                      {copied === 'fc' ? 'Copied!' : 'Copy'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-              {firstComment ? (
-                <p className="text-sm text-gm-cream/70 leading-relaxed">{firstComment}</p>
-              ) : (
-                <p className="text-xs text-gm-cream/25 italic">
-                  {slot.platform === 'linkedin'
-                    ? 'No first comment set — LinkedIn posts should have the link in the first comment (not in the post body).'
-                    : 'No first comment. Add one for extra engagement or to include a link.'}
-                </p>
-              )}
-            </div>
+            {/* First Comment — inline editable */}
+            <FirstCommentEditor
+              postId={slot.post?.id || ''}
+              variantId={variant?.id || ''}
+              initialValue={firstComment}
+              isLinkedIn={slot.platform === 'linkedin'}
+              onCopy={(text) => copy(text, 'fc')}
+              copied={copied === 'fc'}
+            />
           </>
         )}
 
