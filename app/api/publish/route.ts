@@ -127,65 +127,51 @@ async function publishToInstagram(variant: any, type: string) {
     }
 
     if (type === 'stories') {
-      // Step 2a: Create story container
+      // Create story container
+      const params = new URLSearchParams({
+        image_url: imageUrl,
+        media_type: 'STORIES',
+        access_token: token,
+      })
       const containerRes = await fetch(
-        `https://graph.instagram.com/v25.0/${userId}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image_url: imageUrl,
-            media_type: 'STORIES',
-            access_token: token,
-          }),
-        }
+        `https://graph.instagram.com/v25.0/${userId}/media`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
       )
       const container = await containerRes.json()
       if (container.error) return { success: false, error: container.error.message }
 
-      // Step 3: Publish
+      // Publish
+      const pubParams = new URLSearchParams({ creation_id: container.id, access_token: token })
       const publishRes = await fetch(
-        `https://graph.instagram.com/v25.0/${userId}/media_publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            creation_id: container.id,
-            access_token: token,
-          }),
-        }
+        `https://graph.instagram.com/v25.0/${userId}/media_publish`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: pubParams }
       )
       const published = await publishRes.json()
       if (published.error) return { success: false, error: published.error.message }
 
       return { success: true, platformId: published.id, message: 'Story published' }
     } else {
-      // Step 2b: Create media container (feed post)
+      // Create feed post container
+      const params = new URLSearchParams({
+        image_url: imageUrl,
+        caption,
+        access_token: token,
+      })
       const containerRes = await fetch(
-        `https://graph.instagram.com/v25.0/${userId}/media`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image_url: imageUrl,
-            caption,
-            access_token: token,
-          }),
-        }
+        `https://graph.instagram.com/v25.0/${userId}/media`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
       )
       const container = await containerRes.json()
-      if (container.error) return { success: false, error: container.error.message }
+      if (container.error) return { success: false, error: container.error.message + (container.error.error_user_msg ? ' — ' + container.error.error_user_msg : '') }
 
-      // Wait for container to be ready
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Wait for container to process
+      await new Promise(resolve => setTimeout(resolve, 5000))
 
-      // Step 3: Publish
+      // Publish
+      const pubParams = new URLSearchParams({ creation_id: container.id, access_token: token })
       const publishRes = await fetch(
-        `https://graph.instagram.com/v25.0/${userId}/media_publish`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            creation_id: container.id,
-            access_token: token,
-          }),
-        }
+        `https://graph.instagram.com/v25.0/${userId}/media_publish`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: pubParams }
       )
       const published = await publishRes.json()
       if (published.error) return { success: false, error: published.error.message }
