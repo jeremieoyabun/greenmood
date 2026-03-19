@@ -62,7 +62,7 @@ export async function POST(
       )
     }
 
-    // Create duplicated post with variant
+    // Create duplicated post with variant — always DRAFT, always editable
     const newPost = await prisma.post.create({
       data: {
         workspaceId,
@@ -76,8 +76,9 @@ export async function POST(
             text: activeVariant.text,
             hashtags: activeVariant.hashtags,
             firstComment: activeVariant.firstComment,
+            imageUrl: activeVariant.imageUrl,
             timing: activeVariant.timing,
-            notes: `Duplicated from ${sourcePost.market}/${sourcePost.platform} post (${sourcePost.id}). Needs adaptation for ${targetMarket} market.`,
+            notes: `Duplicated from ${sourcePost.market}/${sourcePost.platform}. Adapt for ${targetMarket}.`,
             source: 'MANUAL',
           },
         },
@@ -87,6 +88,17 @@ export async function POST(
         campaign: { select: { id: true, title: true } },
       },
     })
+
+    // Copy multi-media items (for stories with multiple slides)
+    const sourceMedia = await prisma.$queryRaw<Array<{ url: string; media_type: string; sort_order: number }>>`
+      SELECT url, media_type, sort_order FROM post_media WHERE post_id = ${id} ORDER BY sort_order ASC
+    `
+    for (const m of sourceMedia) {
+      await prisma.$executeRaw`
+        INSERT INTO post_media (id, post_id, url, media_type, sort_order)
+        VALUES (gen_random_uuid()::text, ${newPost.id}, ${m.url}, ${m.media_type}, ${m.sort_order})
+      `
+    }
 
     // Create calendar slot for the duplicated post
     const timeByPlatform: Record<string, string> = {
