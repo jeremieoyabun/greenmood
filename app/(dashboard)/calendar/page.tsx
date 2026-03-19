@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { PostDetailModal } from '@/components/calendar/PostDetailModal'
 import { SocialIcon } from '@/components/ui/SocialIcon'
+import { FlagIcon } from '@/components/ui/FlagIcon'
 import { MARKETS, PLATFORMS } from '@/lib/constants'
 
 interface CalendarSlot {
@@ -217,16 +218,11 @@ export default function CalendarPage() {
     } catch { fetchSlots() }
   }
 
-  const MARKET_FLAGS: Record<string, string> = {
-    hq: '🇧🇪', us: '🇺🇸', uk: '🇬🇧', ae: '🇦🇪', fr: '🇫🇷', pl: '🇵🇱', kr: '🇰🇷', de: '🇩🇪',
-  }
-
   const SlotChip = ({ slot, compact = false }: { slot: CalendarSlot; compact?: boolean }) => {
     const style = getAccountStyle(slot.market, slot.platform)
     const variant = slot.post?.variants?.[0]
     const previewText = variant?.text?.split('\n')[0]?.substring(0, 40) || ''
     const hasImage = !!variant?.imageUrl
-    const flag = MARKET_FLAGS[slot.market] || '🌐'
     const postStatus = slot.post?.status || ''
     const isScheduled = postStatus === 'SCHEDULED' || postStatus === 'READY_TO_SCHEDULE'
     const isPublished = postStatus === 'PUBLISHED'
@@ -257,7 +253,7 @@ export default function CalendarPage() {
           <div className="text-[8px] font-bold text-gm-sage uppercase tracking-widest mb-0.5">Scheduled</div>
         )}
         <div className="flex items-center gap-1.5">
-          <span className="text-xs">{flag}</span>
+          <FlagIcon market={slot.market} size="sm" />
           <SocialIcon platform={slot.platform} size="sm" />
           {hasImage && <span className="text-[9px] text-gm-cream/30">🖼</span>}
           {slot.time && <span className="text-[10px] text-gm-cream/25 ml-auto">{slot.time}</span>}
@@ -318,14 +314,14 @@ export default function CalendarPage() {
         </div>
         <div className="flex items-center gap-4 flex-wrap">
           {[
-            { flag: '🇧🇪', platform: 'instagram' },
-            { flag: '🇺🇸', platform: 'instagram' },
-            { flag: '🇦🇪', platform: 'instagram' },
-            { flag: '', platform: 'linkedin' },
-            { flag: '', platform: 'stories' },
+            { market: 'hq', platform: 'instagram' },
+            { market: 'us', platform: 'instagram' },
+            { market: 'ae', platform: 'instagram' },
+            { market: '', platform: 'linkedin' },
+            { market: '', platform: 'stories' },
           ].map((l, i) => (
             <div key={i} className="flex items-center gap-1">
-              {l.flag && <span className="text-xs">{l.flag}</span>}
+              {l.market && <FlagIcon market={l.market} size="sm" withLabel />}
               <SocialIcon platform={l.platform} size="sm" withLabel />
             </div>
           ))}

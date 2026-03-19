@@ -63,25 +63,13 @@ interface MarketBadgeProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const MARKET_FLAGS: Record<string, string> = {
-  hq: '🇧🇪',
-  us: '🇺🇸',
-  uk: '🇬🇧',
-  ae: '🇦🇪',
-  fr: '🇫🇷',
-  pl: '🇵🇱',
-  kr: '🇰🇷',
-  de: '🇩🇪',
-}
-
 export function MarketBadge({ market, platform, className, size = 'sm' }: MarketBadgeProps) {
-  const flag = MARKET_FLAGS[market] || '🌐'
-  const textSize = size === 'lg' ? 'text-sm' : size === 'md' ? 'text-xs' : 'text-[10px]'
-  const flagSize = size === 'lg' ? 'text-base' : size === 'md' ? 'text-sm' : 'text-xs'
+  // Lazy import to avoid circular deps
+  const { FlagIcon } = require('@/components/ui/FlagIcon')
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
-      <span className={flagSize}>{flag}</span>
+      <FlagIcon market={market} size={size} />
       <SocialIcon platform={platform} size={size} />
     </span>
   )
