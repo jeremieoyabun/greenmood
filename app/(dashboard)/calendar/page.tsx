@@ -36,7 +36,7 @@ interface CalendarSlot {
 type ViewMode = 'month' | 'week' | 'agenda'
 
 const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
-  'hq--instagram': { label: 'IG HQ', bg: 'bg-pink-500/15', text: 'text-pink-300', border: 'border-l-pink-400', dot: 'bg-pink-400' },
+  'hq--instagram': { label: 'IG BE', bg: 'bg-pink-500/15', text: 'text-pink-300', border: 'border-l-pink-400', dot: 'bg-pink-400' },
   'us--instagram': { label: 'IG US', bg: 'bg-blue-500/15', text: 'text-blue-300', border: 'border-l-blue-400', dot: 'bg-blue-400' },
   'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-l-amber-400', dot: 'bg-amber-400' },
   'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
@@ -308,7 +308,7 @@ export default function CalendarPage() {
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           {[
-            { label: 'IG HQ', dot: 'bg-pink-400' },
+            { label: 'IG BE', dot: 'bg-pink-400' },
             { label: 'IG US', dot: 'bg-blue-400' },
             { label: 'IG UAE', dot: 'bg-amber-400' },
             { label: 'LinkedIn', dot: 'bg-sky-400' },

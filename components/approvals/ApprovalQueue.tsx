@@ -189,24 +189,23 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
     switch (status) {
       case 'AI_GENERATED': return [
         { action: 'APPROVE', label: 'Mark as Fact-Checked', variant: 'primary' as const },
-        { action: 'REJECT', label: 'Reject', variant: 'danger' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
       ]
       case 'FACT_CHECKED': return [
         { action: 'APPROVE', label: 'Brand Approve', variant: 'primary' as const },
-        { action: 'REJECT', label: 'Reject', variant: 'danger' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
       ]
       case 'BRAND_APPROVED': return [
         { action: 'APPROVE', label: 'Ready to Schedule', variant: 'primary' as const },
-        { action: 'REJECT', label: 'Reject', variant: 'danger' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
       ]
       case 'READY_TO_SCHEDULE': return [
         { action: 'SCHEDULE', label: 'Schedule Post', variant: 'primary' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
       ]
       case 'SCHEDULED': return [
         { action: 'PUBLISH', label: 'Publish Now', variant: 'primary' as const },
-      ]
-      case 'REJECTED': return [
-        { action: 'APPROVE', label: 'Back to Draft', variant: 'secondary' as const },
+        { action: 'DELETE', label: 'Delete', variant: 'danger' as const },
       ]
       default: return []
     }
@@ -569,7 +568,11 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                         {getActions(selectedPost.status).map(({ action, label, variant }) => (
                           <Button key={action} variant={variant} size="sm" loading={approving === action}
                             onClick={() => {
-                              if (action === 'REJECT') setShowReject(true)
+                              if (action === 'DELETE') {
+                                if (!confirm('Delete this post?')) return
+                                fetch(`/api/posts/${selectedPost.id}`, { method: 'DELETE' })
+                                  .then(() => window.location.reload())
+                              }
                               else if (action === 'SCHEDULE') {
                                 setScheduleDate(selectedPost.date ? selectedPost.date.split('T')[0] : new Date().toISOString().split('T')[0])
                                 setScheduleTime(selectedPost.time || '12:00')

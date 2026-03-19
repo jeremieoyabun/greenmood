@@ -31,12 +31,22 @@ interface PostDetailModalProps {
   onDelete?: () => void
 }
 
+const DUPLICATE_TARGETS = [
+  { market: 'hq', label: 'IG BE' },
+  { market: 'us', label: 'IG US' },
+  { market: 'ae', label: 'IG UAE' },
+  { market: 'uk', label: 'IG UK' },
+  { market: 'fr', label: 'IG FR' },
+]
+
 export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: PostDetailModalProps) {
   const [copied, setCopied] = useState('')
   const [imageAnalysis, setImageAnalysis] = useState<any>(null)
   const [analyzing, setAnalyzing] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const [showDuplicate, setShowDuplicate] = useState(false)
+  const [duplicating, setDuplicating] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -266,9 +276,55 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           {meta.type && <Badge variant="info">{meta.type}</Badge>}
           {pillar && <Badge variant={pillar.color as any}>{pillar.label}</Badge>}
           <StatusDot status={postStatus} />
-          {onDelete && (
-            <button onClick={onDelete} className="ml-auto text-[10px] text-red-400/60 hover:text-red-400 transition-colors" title="Delete post">Delete</button>
-          )}
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Duplicate to other market */}
+            <div className="relative">
+              <button
+                onClick={() => setShowDuplicate(!showDuplicate)}
+                className="text-[10px] text-gm-sage/60 hover:text-gm-sage transition-colors"
+              >
+                Duplicate to...
+              </button>
+              {showDuplicate && (
+                <div className="absolute top-6 right-0 z-50 bg-gm-dark border border-white/[0.1] rounded-lg shadow-xl py-1 min-w-[140px]">
+                  {DUPLICATE_TARGETS
+                    .filter(t => t.market !== slot.market)
+                    .map(t => (
+                      <button
+                        key={t.market}
+                        disabled={duplicating === t.market}
+                        onClick={async () => {
+                          if (!slot.post?.id) return
+                          setDuplicating(t.market)
+                          try {
+                            const res = await fetch(`/api/posts/${slot.post.id}/duplicate`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ targetMarket: t.market }),
+                            })
+                            const data = await res.json()
+                            if (data.success) {
+                              setShowDuplicate(false)
+                              onUpdate?.()
+                              alert(`Post duplicated to ${t.label}`)
+                            } else {
+                              alert('Failed: ' + data.error)
+                            }
+                          } catch { alert('Duplicate failed') }
+                          setDuplicating(null)
+                        }}
+                        className="w-full text-left px-3 py-1.5 text-xs text-gm-cream/70 hover:bg-white/[0.05] hover:text-gm-cream transition-colors disabled:opacity-40"
+                      >
+                        {duplicating === t.market ? 'Duplicating...' : t.label}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+            {onDelete && (
+              <button onClick={onDelete} className="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
+            )}
+          </div>
           {editingSchedule ? (
             <div className="flex items-center gap-2 ml-auto">
               <input
