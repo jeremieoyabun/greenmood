@@ -75,6 +75,11 @@ export default function CalendarPage() {
   const [newImage, setNewImage] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [genHash, setGenHash] = useState(false)
+  // Story slides
+  const [storySlides, setStorySlides] = useState<Array<{ text: string; media: string | null }>>([
+    { text: '', media: null },
+  ])
+  const isStoryMode = newSlot.platform === 'stories'
 
   const fetchSlots = useCallback(async () => {
     setLoading(true)
@@ -126,6 +131,7 @@ export default function CalendarPage() {
     setNewFirstComment('')
     setNewImage(null)
     setNewSlot({ market: 'hq', platform: 'instagram', time: '12:00', notes: '' })
+    setStorySlides([{ text: '', media: null }])
   }
 
   const openAddModal = (date?: Date) => {
@@ -470,110 +476,190 @@ export default function CalendarPage() {
       />
 
       {/* Create Post Modal — Full-width, spacious */}
-      <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title="Create New Post" size="xl">
-        <div className="grid grid-cols-2 gap-8">
-          {/* Left column — Media + Settings */}
-          <div className="space-y-6">
-            {/* Media Upload */}
-            <div>
-              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Media</label>
-              <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
-                const f = e.target.files?.[0]
-                if (f) {
-                  const r = new FileReader()
-                  r.onload = (ev) => setNewImage(ev.target?.result as string)
-                  r.readAsDataURL(f)
-                }
-              }} />
-              {newImage ? (
-                <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
-                  {newImage.startsWith('data:video') ? (
-                    <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
-                  ) : (
-                    <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
-                  )}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                    <span className="text-sm text-white font-medium">Click to change</span>
+      <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title={isStoryMode ? 'Create Story' : 'Create New Post'} size="xl">
+        {/* Schedule Settings — always visible at top */}
+        <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06] mb-6">
+          <div className="grid grid-cols-4 gap-4">
+            <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+            <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
+            <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
+            <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
+          </div>
+        </div>
+
+        {isStoryMode ? (
+          /* ─── STORY MODE: Slide-by-slide editor ─── */
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-gm-cream/70">Story Slides ({storySlides.length})</label>
+              <Button variant="outline" size="sm" onClick={() => setStorySlides(prev => [...prev, { text: '', media: null }])}>
+                + Add Slide
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              {storySlides.map((slide, i) => (
+                <div key={i} className="bg-white/[0.03] rounded-xl border border-white/[0.06] overflow-hidden">
+                  {/* Slide header */}
+                  <div className="flex items-center justify-between px-3 py-2 bg-white/[0.02] border-b border-white/[0.06]">
+                    <span className="text-xs font-semibold text-gm-cream/50">Slide {i + 1}</span>
+                    {storySlides.length > 1 && (
+                      <button onClick={() => setStorySlides(prev => prev.filter((_, idx) => idx !== i))} className="text-xs text-red-400/50 hover:text-red-400">Remove</button>
+                    )}
+                  </div>
+
+                  {/* Media upload */}
+                  <div className="p-3">
+                    <input type="file" accept="image/*,video/*" id={`story-slide-${i}`} className="hidden" onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) {
+                        const r = new FileReader()
+                        r.onload = (ev) => setStorySlides(prev => prev.map((s, idx) => idx === i ? { ...s, media: ev.target?.result as string } : s))
+                        r.readAsDataURL(f)
+                      }
+                    }} />
+                    {slide.media ? (
+                      <div className="relative rounded-lg overflow-hidden cursor-pointer group aspect-[9/16] bg-black/20 mb-3"
+                        onClick={() => document.getElementById(`story-slide-${i}`)?.click()}>
+                        {slide.media.includes('video') ? (
+                          <video src={slide.media} className="w-full h-full object-cover" muted />
+                        ) : (
+                          <img src={slide.media} alt="" className="w-full h-full object-cover" />
+                        )}
+                        {/* Text overlay preview */}
+                        {slide.text && (
+                          <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+                            <p className="text-white text-center text-sm font-bold drop-shadow-lg bg-black/30 rounded-lg px-3 py-2">{slide.text}</p>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <span className="text-xs text-white">Change</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => document.getElementById(`story-slide-${i}`)?.click()}
+                        className="w-full aspect-[9/16] rounded-lg border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02] transition-all mb-3">
+                        <span className="text-2xl opacity-15">+</span>
+                        <span className="text-xs text-gm-cream/25">Image / Video</span>
+                      </button>
+                    )}
+
+                    {/* Text to overlay on this slide */}
+                    <textarea
+                      value={slide.text}
+                      onChange={(e) => setStorySlides(prev => prev.map((s, idx) => idx === i ? { ...s, text: e.target.value } : s))}
+                      placeholder="Text for this slide..."
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm bg-white/[0.04] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+                    />
                   </div>
                 </div>
-              ) : (
-                <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
-                  <span className="text-4xl opacity-20">+</span>
-                  <span className="text-sm text-gm-cream/30">Click to add image or video</span>
-                  <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
-                </button>
-              )}
+              ))}
+
+              {/* Add slide button */}
+              <button onClick={() => setStorySlides(prev => [...prev, { text: '', media: null }])}
+                className="rounded-xl border-2 border-dashed border-white/[0.06] hover:border-gm-sage/20 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02] transition-all min-h-[200px]">
+                <span className="text-3xl opacity-10">+</span>
+                <span className="text-xs text-gm-cream/20">Add slide</span>
+              </button>
             </div>
 
-            {/* Schedule Settings */}
-            <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06]">
-              <label className="text-sm font-semibold text-gm-cream/70 block mb-4">Schedule</label>
-              <div className="grid grid-cols-2 gap-4">
-                <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
-                <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
-              </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
-                <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
-              </div>
-            </div>
+            <Button onClick={createPost} disabled={creating || storySlides.every(s => !s.media && !s.text)} size="lg" className="w-full mt-4">
+              {creating ? 'Creating...' : `Create Story (${storySlides.filter(s => s.media || s.text).length} slides)`}
+            </Button>
           </div>
-
-          {/* Right column — Content */}
-          <div className="space-y-6">
-            {/* Caption */}
-            <div>
-              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Caption</label>
-              <textarea
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                placeholder="Write your caption..."
-                rows={8}
-                className="w-full px-4 py-3 text-base bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 focus:border-gm-sage/20 resize-none leading-relaxed"
-              />
-            </div>
-
-            {/* Hashtags */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-gm-cream/70">Hashtags</label>
-                <button
-                  onClick={generateHashtags}
-                  disabled={genHash || !newText.trim()}
-                  className="text-sm font-medium text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
-                >
-                  {genHash ? 'Generating...' : '✨ Auto-generate'}
-                </button>
+        ) : (
+          /* ─── REGULAR POST MODE ─── */
+          <div className="grid grid-cols-2 gap-8">
+            {/* Left column — Media */}
+            <div className="space-y-6">
+              <div>
+                <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Media</label>
+                <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) {
+                    const r = new FileReader()
+                    r.onload = (ev) => setNewImage(ev.target?.result as string)
+                    r.readAsDataURL(f)
+                  }
+                }} />
+                {newImage ? (
+                  <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
+                    {newImage.startsWith('data:video') ? (
+                      <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
+                    ) : (
+                      <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <span className="text-sm text-white font-medium">Click to change</span>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
+                    <span className="text-4xl opacity-20">+</span>
+                    <span className="text-sm text-gm-cream/30">Click to add image or video</span>
+                    <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
+                  </button>
+                )}
               </div>
-              <textarea
-                value={newHashtags}
-                onChange={(e) => setNewHashtags(e.target.value)}
-                placeholder="#biophilicdesign #greenmood ..."
-                rows={3}
-                className="w-full px-4 py-3 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-sage/70 placeholder:text-gm-cream/15 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 resize-none"
-              />
             </div>
 
-            {/* First Comment */}
-            <div>
-              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">
-                First Comment
-                <span className="text-gm-cream/25 font-normal ml-2">Required for LinkedIn links</span>
-              </label>
-              <input
-                value={newFirstComment}
-                onChange={(e) => setNewFirstComment(e.target.value)}
-                placeholder="Link or additional context..."
+            {/* Right column — Content */}
+            <div className="space-y-6">
+              {/* Caption */}
+              <div>
+                <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Caption</label>
+                <textarea
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  placeholder="Write your caption..."
+                  rows={6}
+                  className="w-full px-4 py-3 text-base bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 focus:border-gm-sage/20 resize-none leading-relaxed"
+                />
+              </div>
+
+              {/* Hashtags */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-semibold text-gm-cream/70">Hashtags</label>
+                  <button
+                    onClick={generateHashtags}
+                    disabled={genHash || !newText.trim()}
+                    className="text-sm font-medium text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {genHash ? 'Generating...' : '✨ Auto-generate'}
+                  </button>
+                </div>
+                <textarea
+                  value={newHashtags}
+                  onChange={(e) => setNewHashtags(e.target.value)}
+                  placeholder="#biophilicdesign #greenmood ..."
+                  rows={2}
+                  className="w-full px-4 py-3 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-sage/70 placeholder:text-gm-cream/15 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 resize-none"
+                />
+              </div>
+
+              {/* First Comment */}
+              <div>
+                <label className="text-sm font-semibold text-gm-cream/70 block mb-3">
+                  First Comment
+                  <span className="text-gm-cream/25 font-normal ml-2">{newSlot.platform === 'linkedin' ? 'Put the link here' : 'Optional'}</span>
+                </label>
+                <input
+                  value={newFirstComment}
+                  onChange={(e) => setNewFirstComment(e.target.value)}
+                  placeholder="Link or additional context..."
                 className="w-full px-4 py-3 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-2 focus:ring-gm-sage/30"
               />
             </div>
 
-            {/* Submit */}
-            <Button onClick={createPost} disabled={creating || !newText.trim()} size="lg" className="w-full">
-              {creating ? 'Creating...' : 'Create Post'}
-            </Button>
+              {/* Submit */}
+              <Button onClick={createPost} disabled={creating || !newText.trim()} size="lg" className="w-full">
+                {creating ? 'Creating...' : 'Create Post'}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </Modal>
     </>
   )
