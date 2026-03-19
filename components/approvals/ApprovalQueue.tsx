@@ -276,27 +276,27 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       <div className="w-1/2 space-y-2">
         <div className="flex gap-2 mb-3 flex-wrap">
           <select value={filterMarket} onChange={e => setFilterMarket(e.target.value)}
-            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
+            className="bg-[#1a2a1a] text-sm text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Markets</option>
             {markets.map(m => (
               <option key={m} value={m}>{MARKETS[m]?.emoji} {MARKETS[m]?.name || m}</option>
             ))}
           </select>
           <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
+            className="bg-[#1a2a1a] text-sm text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Statuses</option>
             {statuses.map(s => (
               <option key={s} value={s}>{POST_STATUS_CONFIG[s as keyof typeof POST_STATUS_CONFIG]?.label || s}</option>
             ))}
           </select>
           <select value={filterPlatform} onChange={e => setFilterPlatform(e.target.value)}
-            className="bg-[#1a2a1a] text-xs text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
+            className="bg-[#1a2a1a] text-sm text-gm-cream/70 rounded-lg px-3 py-1.5 border border-white/[0.1] focus:outline-none [&>option]:bg-[#1a2a1a] [&>option]:text-gm-cream/90">
             <option value="all">All Platforms</option>
             {platforms.map(p => (
               <option key={p} value={p}>{p}</option>
             ))}
           </select>
-          <span className="text-[9px] text-gm-cream/25 self-center ml-auto">{filteredPosts.length} posts</span>
+          <span className="text-xs text-gm-cream/25 self-center ml-auto">{filteredPosts.length} posts</span>
         </div>
 
         {filteredPosts.length === 0 ? (
@@ -323,20 +323,20 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     post.status === 'READY_TO_SCHEDULE' ? 'warning' :
                     post.status === 'SCHEDULED' ? 'info' : 'default'
                   } size="sm">{config?.label || post.status}</Badge>
-                  <span className="text-[10px] text-gm-cream/50">
+                  <span className="text-xs text-gm-cream/50">
                     {MARKETS[post.market]?.emoji} {MARKETS[post.market]?.name} — {post.platform}
                   </span>
                   {post.date && (
-                    <span className="text-[9px] text-gm-cream/25">
+                    <span className="text-xs text-gm-cream/25">
                       {new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                     </span>
                   )}
                 </div>
                 {post.variant && (
-                  <p className="text-[10px] text-gm-cream/50 line-clamp-2">{post.variant.text}</p>
+                  <p className="text-xs text-gm-cream/50 line-clamp-2">{post.variant.text}</p>
                 )}
                 {post.lastStep?.comment && (
-                  <p className="text-[9px] text-amber-400/50 mt-1 italic">&quot;{post.lastStep.comment}&quot;</p>
+                  <p className="text-xs text-amber-400/50 mt-1 italic">&quot;{post.lastStep.comment}&quot;</p>
                 )}
               </Card>
             )
@@ -352,12 +352,12 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 {history.map((step) => (
                   <div key={step.id} className="flex items-center gap-2 py-1 border-b border-white/[0.03] last:border-0">
                     <StatusDot status={step.toStatus} />
-                    <span className="text-[9px] text-gm-cream/40 flex-1">
+                    <span className="text-xs text-gm-cream/40 flex-1">
                       {step.fromStatus} → {step.toStatus}
                       {step.post && ` — ${MARKETS[step.post.market]?.emoji || ''} ${step.post.platform}`}
                     </span>
                     <Badge variant={step.action === 'APPROVE' ? 'success' : 'danger'} size="sm">{step.action}</Badge>
-                    <span className="text-[8px] text-gm-cream/15">{new Date(step.createdAt).toLocaleDateString()}</span>
+                    <span className="text-[11px] text-gm-cream/15">{new Date(step.createdAt).toLocaleDateString()}</span>
                   </div>
                 ))}
               </div>
@@ -370,7 +370,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
       <div className="w-1/2 sticky top-4">
         {!selectedPost ? (
           <Card className="h-96 flex items-center justify-center">
-            <p className="text-xs text-gm-cream/20">Select a post to preview and review</p>
+            <p className="text-sm text-gm-cream/20">Select a post to preview and review</p>
           </Card>
         ) : (
           <Card>
@@ -380,7 +380,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
               <span className="text-sm font-medium text-gm-cream">{MARKETS[selectedPost.market]?.name}</span>
               <Badge variant="default">{selectedPost.platform}</Badge>
               <StatusDot status={selectedPost.status} />
-              <span className="text-[10px] text-gm-cream/30 ml-auto">
+              <span className="text-xs text-gm-cream/30 ml-auto">
                 {selectedPost.date && new Date(selectedPost.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} {selectedPost.time || ''}
               </span>
             </div>
@@ -389,22 +389,22 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
               /* Edit Mode */
               <div className="space-y-3">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Caption</label>
+                  <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Caption</label>
                   <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={6}
                     className="w-full bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none font-sans leading-relaxed" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Hashtags</label>
+                  <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Hashtags</label>
                   <textarea value={editHashtags} onChange={(e) => setEditHashtags(e.target.value)} rows={2}
-                    className="w-full bg-white/[0.05] text-xs text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none" />
+                    className="w-full bg-white/[0.05] text-sm text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none" />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">
+                  <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">
                     First Comment {selectedPost.platform === 'linkedin' && <Badge variant="warning" size="sm" className="ml-1">Required</Badge>}
                   </label>
                   <textarea value={editFirstComment} onChange={(e) => setEditFirstComment(e.target.value)} rows={2}
                     placeholder={selectedPost.platform === 'linkedin' ? 'Link goes here — never in the post body' : 'Optional'}
-                    className="w-full bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/10" />
+                    className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/10" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="primary" size="sm" loading={saving} onClick={saveEdit}>Save</Button>
@@ -418,7 +418,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 {selectedPost.variant?.text && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Caption</span>
+                      <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Caption</span>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="sm" onClick={startEditing}>Edit</Button>
                         <Button variant="ghost" size="sm" onClick={() => copy(selectedPost.variant!.text, 'cap')}>
@@ -436,12 +436,12 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 {selectedPost.variant?.hashtags && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Hashtags</span>
+                      <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Hashtags</span>
                       <Button variant="ghost" size="sm" onClick={() => copy(selectedPost.variant!.hashtags!, 'hash')}>
                         {copied === 'hash' ? 'Copied!' : 'Copy'}
                       </Button>
                     </div>
-                    <p className="text-xs text-gm-sage/60 bg-white/[0.02] rounded p-3 border border-white/[0.05]">
+                    <p className="text-sm text-gm-sage/60 bg-white/[0.02] rounded p-3 border border-white/[0.05]">
                       {selectedPost.variant.hashtags}
                     </p>
                   </div>
@@ -453,7 +453,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                   selectedPost.platform === 'linkedin' ? 'bg-amber-500/5 border-amber-500/15' : 'bg-white/[0.02] border-white/[0.05]'
                 }`}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
+                    <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
                     {!selectedPost.variant?.firstComment && <Button variant="ghost" size="sm" onClick={startEditing}>Add</Button>}
                     {selectedPost.variant?.firstComment && (
                       <Button variant="ghost" size="sm" onClick={() => copy(selectedPost.variant!.firstComment!, 'fc')}>
@@ -462,9 +462,9 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     )}
                   </div>
                   {selectedPost.variant?.firstComment ? (
-                    <p className="text-xs text-gm-cream/70">{selectedPost.variant.firstComment}</p>
+                    <p className="text-sm text-gm-cream/70">{selectedPost.variant.firstComment}</p>
                   ) : (
-                    <p className="text-[10px] text-gm-cream/20 italic">
+                    <p className="text-xs text-gm-cream/20 italic">
                       {selectedPost.platform === 'linkedin' ? 'Missing — put the link here, not in the post body' : 'No first comment'}
                     </p>
                   )}
@@ -473,7 +473,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 {/* Image */}
                 <div className="pt-3 border-t border-white/[0.06]">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Image</span>
+                    <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Image</span>
                     <div className="flex gap-2">
                       <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
                         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(f) }} />
@@ -491,7 +491,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                   )}
 
                   {analyzing && (
-                    <p className="text-[10px] text-gm-cream/30 animate-pulse">Analyzing image with AI...</p>
+                    <p className="text-xs text-gm-cream/30 animate-pulse">Analyzing image with AI...</p>
                   )}
 
                   {imageAnalysis && !analyzing && (
@@ -505,23 +505,23 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                           imageAnalysis.status === 'approved' ? 'success' :
                           imageAnalysis.status === 'needs_adjustment' ? 'warning' : 'danger'
                         }>{imageAnalysis.status?.toUpperCase()}</Badge>
-                        {imageAnalysis.quality_score && <span className="text-[9px] text-gm-cream/30">Quality: {imageAnalysis.quality_score}/10</span>}
-                        {imageAnalysis.brand_alignment && <span className="text-[9px] text-gm-cream/30">Brand: {imageAnalysis.brand_alignment}/10</span>}
+                        {imageAnalysis.quality_score && <span className="text-xs text-gm-cream/30">Quality: {imageAnalysis.quality_score}/10</span>}
+                        {imageAnalysis.brand_alignment && <span className="text-xs text-gm-cream/30">Brand: {imageAnalysis.brand_alignment}/10</span>}
                       </div>
                       {imageAnalysis.product_identified && (
-                        <p className="text-[10px] text-gm-cream/50 mb-1">Product: {imageAnalysis.product_identified}</p>
+                        <p className="text-xs text-gm-cream/50 mb-1">Product: {imageAnalysis.product_identified}</p>
                       )}
                       {imageAnalysis.issues?.map((issue: any, i: number) => (
-                        <p key={i} className={`text-[9px] ${issue.severity === 'critical' ? 'text-red-400' : 'text-amber-400/70'}`}>
+                        <p key={i} className={`text-xs ${issue.severity === 'critical' ? 'text-red-400' : 'text-amber-400/70'}`}>
                           {issue.severity === 'critical' ? '✕' : '△'} {issue.detail}
                         </p>
                       ))}
-                      <p className="text-[10px] text-gm-cream/40 mt-1">{imageAnalysis.summary}</p>
+                      <p className="text-xs text-gm-cream/40 mt-1">{imageAnalysis.summary}</p>
                     </div>
                   )}
 
                   {!imagePreview && !analyzing && (
-                    <p className="text-[9px] text-gm-cream/15">Upload an image to preview and verify with AI</p>
+                    <p className="text-xs text-gm-cream/15">Upload an image to preview and verify with AI</p>
                   )}
                 </div>
 
@@ -537,13 +537,13 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
 
                 {/* Approval Actions */}
                 <div className="pt-3 border-t border-white/[0.06]">
-                  <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Actions</span>
+                  <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Actions</span>
 
                   {showReject ? (
                     <div>
                       <textarea value={rejectComment} onChange={(e) => setRejectComment(e.target.value)}
                         placeholder="Reason for rejection..." rows={2}
-                        className="w-full bg-white/[0.05] text-xs text-gm-cream/70 rounded p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/10 mb-2" />
+                        className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/10 mb-2" />
                       <div className="flex gap-2">
                         <Button variant="danger" size="sm" loading={approving === 'REJECT'}
                           onClick={() => { if (!rejectComment.trim()) { alert('Comment required'); return }; handleApproval('REJECT', rejectComment) }}>
@@ -556,13 +556,13 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                       <div className="space-y-2">
                         <div className="flex gap-2">
                           <div className="flex-1">
-                            <label className="text-[9px] uppercase tracking-wider text-gm-cream/40 block mb-1">Date</label>
+                            <label className="text-xs uppercase tracking-wider text-gm-cream/40 block mb-1">Date</label>
                             <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)}
                               min={new Date().toISOString().split('T')[0]}
                               className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
                           </div>
                           <div className="w-24">
-                            <label className="text-[9px] uppercase tracking-wider text-gm-cream/40 block mb-1">Time</label>
+                            <label className="text-xs uppercase tracking-wider text-gm-cream/40 block mb-1">Time</label>
                             <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
                               className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
                           </div>

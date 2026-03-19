@@ -238,28 +238,34 @@ export default function CalendarPage() {
         }}
         onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
         onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
-        className={`w-full text-left rounded-lg border-l-[3px] px-2 py-1.5 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
+        className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
           isPublished
-            ? 'border-l-emerald-500 bg-emerald-500/[0.06] opacity-50 hover:opacity-75'
+            ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
             : isScheduled
-            ? 'border-l-gm-sage bg-gm-sage/[0.15] ring-1 ring-gm-sage/40 shadow-sm shadow-gm-sage/10'
+            ? 'border-l-green-400 bg-green-500/20 ring-2 ring-green-400/30 shadow-md shadow-green-500/10'
             : `${style.border} ${style.bg} hover:brightness-125`
         }`}
       >
         {isPublished && (
-          <div className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest mb-0.5">Published</div>
+          <div className="flex items-center gap-1 mb-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
+            <span className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-wider">Published</span>
+          </div>
         )}
         {isScheduled && (
-          <div className="text-[8px] font-bold text-gm-sage uppercase tracking-widest mb-0.5">Scheduled</div>
+          <div className="flex items-center gap-1 mb-1">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-[11px] font-bold text-green-300 uppercase tracking-wider">Scheduled</span>
+          </div>
         )}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <FlagIcon market={slot.market} size="sm" />
           <SocialIcon platform={slot.platform} size="sm" />
-          {hasImage && <span className="text-[9px] text-gm-cream/30">🖼</span>}
-          {slot.time && <span className="text-[10px] text-gm-cream/25 ml-auto">{slot.time}</span>}
+          {hasImage && <span className="text-xs text-gm-cream/30">🖼</span>}
+          {slot.time && <span className="text-xs text-gm-cream/30 ml-auto font-medium">{slot.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className={`text-[9px] truncate mt-0.5 ${isPublished ? 'text-gm-cream/20 line-through' : 'text-gm-cream/35 group-hover:text-gm-cream/50'}`}>{previewText}</p>
+          <p className={`text-xs truncate mt-1 ${isPublished ? 'text-gm-cream/15 line-through' : 'text-gm-cream/40 group-hover:text-gm-cream/60'}`}>{previewText}</p>
         )}
       </button>
     )
@@ -333,7 +339,7 @@ export default function CalendarPage() {
         <div className="rounded-xl border border-white/[0.08] overflow-hidden">
           <div className="grid grid-cols-7 bg-white/[0.03]">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <div key={d} className="px-2 py-2 text-[10px] font-semibold text-gm-cream/40 uppercase tracking-wider text-center border-b border-white/[0.06]">{d}</div>
+              <div key={d} className="px-2 py-2 text-xs font-semibold text-gm-cream/40 uppercase tracking-wider text-center border-b border-white/[0.06]">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
@@ -358,7 +364,7 @@ export default function CalendarPage() {
                       {format(day, 'd')}
                     </span>
                     {daySlots.length > 0 && (
-                      <span className="text-[8px] text-gm-cream/20">{daySlots.length}</span>
+                      <span className="text-[11px] text-gm-cream/20">{daySlots.length}</span>
                     )}
                   </div>
                   <div className="space-y-[3px]">
@@ -366,7 +372,7 @@ export default function CalendarPage() {
                       <SlotChip key={slot.id} slot={slot} compact={daySlots.length > 3} />
                     ))}
                     {daySlots.length > 4 && (
-                      <span className="text-[8px] text-gm-cream/20 pl-1">+{daySlots.length - 4} more</span>
+                      <span className="text-[11px] text-gm-cream/20 pl-1">+{daySlots.length - 4} more</span>
                     )}
                   </div>
                 </div>
@@ -389,7 +395,7 @@ export default function CalendarPage() {
               return (
                 <div key={i} className="border-r border-white/[0.04] last:border-r-0">
                   <div className={`px-3 py-2 border-b border-white/[0.06] text-center ${today ? 'bg-gm-sage/10' : 'bg-white/[0.02]'}`}>
-                    <p className="text-[10px] text-gm-cream/40 uppercase">{format(day, 'EEE')}</p>
+                    <p className="text-xs text-gm-cream/40 uppercase">{format(day, 'EEE')}</p>
                     <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gm-cream/60'}`}>{format(day, 'd')}</p>
                   </div>
                   <div
@@ -401,7 +407,7 @@ export default function CalendarPage() {
                     {daySlots.map(slot => <SlotChip key={slot.id} slot={slot} />)}
                     <button
                       onClick={() => openAddModal(day)}
-                      className="w-full py-2 text-[10px] text-gm-cream/10 hover:text-gm-cream/25 hover:bg-white/[0.02] rounded transition-colors"
+                      className="w-full py-2 text-xs text-gm-cream/10 hover:text-gm-cream/25 hover:bg-white/[0.02] rounded transition-colors"
                     >+</button>
                   </div>
                 </div>
@@ -433,16 +439,16 @@ export default function CalendarPage() {
                   <div className="flex items-center gap-3">
                     <div className="text-center min-w-[45px]">
                       <p className="text-lg font-semibold text-gm-cream">{format(new Date(slot.date), 'd')}</p>
-                      <p className="text-[10px] text-gm-cream/30">{format(new Date(slot.date), 'EEE')}</p>
+                      <p className="text-xs text-gm-cream/30">{format(new Date(slot.date), 'EEE')}</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>{style.label}</span>
-                        {slot.time && <span className="text-[10px] text-gm-cream/30">{slot.time}</span>}
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>{style.label}</span>
+                        {slot.time && <span className="text-xs text-gm-cream/30">{slot.time}</span>}
                         {slot.notes && <Badge variant="default" size="sm">{slot.notes}</Badge>}
                       </div>
-                      {previewText && <p className="text-xs text-gm-cream/50 truncate">{previewText}</p>}
-                      {slot.campaign && <p className="text-[10px] text-gm-sage/40 mt-0.5">{slot.campaign.title}</p>}
+                      {previewText && <p className="text-sm text-gm-cream/50 truncate">{previewText}</p>}
+                      {slot.campaign && <p className="text-xs text-gm-sage/40 mt-0.5">{slot.campaign.title}</p>}
                     </div>
                   </div>
                 </button>
@@ -496,7 +502,7 @@ export default function CalendarPage() {
             ) : (
               <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-4 flex flex-col items-center gap-1">
                 <span className="text-xl opacity-30">+</span>
-                <span className="text-[10px] text-gm-cream/30">Click to add image</span>
+                <span className="text-xs text-gm-cream/30">Click to add image</span>
               </button>
             )}
           </div>
@@ -520,7 +526,7 @@ export default function CalendarPage() {
               <button
                 onClick={generateHashtags}
                 disabled={genHash || !newText.trim()}
-                className="text-[10px] text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
+                className="text-xs text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
               >
                 {genHash ? 'Generating...' : 'Auto-generate'}
               </button>

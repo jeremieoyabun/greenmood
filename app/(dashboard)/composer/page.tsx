@@ -133,7 +133,7 @@ export default function ComposerPage() {
               <div className="text-center py-4">
                 <p className="text-2xl mb-2">{type.icon === 'FileText' ? '📝' : type.icon === 'Building2' ? '🏢' : type.icon === 'Leaf' ? '🌿' : type.icon === 'MapPin' ? '📍' : type.icon === 'GraduationCap' ? '📊' : '🔧'}</p>
                 <p className="text-sm font-medium text-gm-cream">{type.label}</p>
-                <p className="text-[10px] text-gm-cream/40 mt-1">{type.description}</p>
+                <p className="text-xs text-gm-cream/40 mt-1">{type.description}</p>
               </div>
             </Card>
           ))}
@@ -174,7 +174,7 @@ export default function ComposerPage() {
                 ))}
               </div>
               <button
-                className="text-[10px] text-gm-sage/60 hover:text-gm-sage mt-2"
+                className="text-xs text-gm-sage/60 hover:text-gm-sage mt-2"
                 onClick={() => setSelectedMarkets(
                   selectedMarkets.length === Object.keys(MARKETS).length ? [] : Object.keys(MARKETS)
                 )}
@@ -224,7 +224,7 @@ export default function ComposerPage() {
           <div className="text-center py-12">
             <div className="inline-block w-8 h-8 border-2 border-gm-sage/30 border-t-gm-sage rounded-full animate-spin mb-4" />
             <p className="text-sm text-gm-cream/70 mb-1">Generating content...</p>
-            <p className="text-[10px] text-gm-cream/30">
+            <p className="text-xs text-gm-cream/30">
               {selectedMarkets.length} markets × {selectedPlatforms.length} platforms
             </p>
           </div>
@@ -283,7 +283,7 @@ export default function ComposerPage() {
                   {/* Post Text */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-medium">Post</span>
+                      <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">Post</span>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -301,7 +301,7 @@ export default function ComposerPage() {
                   {results.posts[activePost].first_comment && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-medium">First Comment</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">First Comment</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -310,7 +310,7 @@ export default function ComposerPage() {
                           {copied === `${activePost}-fc` ? 'Copied!' : 'Copy'}
                         </Button>
                       </div>
-                      <p className="text-xs text-gm-cream/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+                      <p className="text-sm text-gm-cream/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
                         {results.posts[activePost].first_comment}
                       </p>
                     </div>
@@ -320,7 +320,7 @@ export default function ComposerPage() {
                   {results.posts[activePost].hashtags && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-medium">Hashtags</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">Hashtags</span>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -329,7 +329,7 @@ export default function ComposerPage() {
                           {copied === `${activePost}-hash` ? 'Copied!' : 'Copy'}
                         </Button>
                       </div>
-                      <p className="text-xs text-gm-sage/70 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+                      <p className="text-sm text-gm-sage/70 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
                         {results.posts[activePost].hashtags}
                       </p>
                     </div>
@@ -339,14 +339,14 @@ export default function ComposerPage() {
                   <div className="flex gap-4 pt-2 border-t border-white/[0.05]">
                     {results.posts[activePost].timing && (
                       <div>
-                        <span className="text-[10px] uppercase tracking-wider text-gm-cream/30">Timing</span>
-                        <p className="text-xs text-gm-cream/60 mt-0.5">{results.posts[activePost].timing}</p>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">Timing</span>
+                        <p className="text-sm text-gm-cream/60 mt-0.5">{results.posts[activePost].timing}</p>
                       </div>
                     )}
                     {results.posts[activePost].notes && (
                       <div>
-                        <span className="text-[10px] uppercase tracking-wider text-gm-cream/30">Notes</span>
-                        <p className="text-xs text-gm-cream/60 mt-0.5">{results.posts[activePost].notes}</p>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">Notes</span>
+                        <p className="text-sm text-gm-cream/60 mt-0.5">{results.posts[activePost].notes}</p>
                       </div>
                     )}
                   </div>
@@ -363,8 +363,8 @@ export default function ComposerPage() {
                 <div className="space-y-2">
                   {results.image_prompts.map((prompt, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <span className="text-[10px] text-gm-cream/30 mt-1">{i + 1}.</span>
-                      <p className="text-xs text-gm-cream/60">{prompt}</p>
+                      <span className="text-xs text-gm-cream/30 mt-1">{i + 1}.</span>
+                      <p className="text-sm text-gm-cream/60">{prompt}</p>
                     </div>
                   ))}
                 </div>

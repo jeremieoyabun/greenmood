@@ -45,7 +45,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-sm font-semibold text-gm-cream tracking-tight">Greenmood</h1>
-            <p className="text-[10px] text-gm-cream/40 font-medium">Marketing OS</p>
+            <p className="text-xs text-gm-cream/40 font-medium">Marketing OS</p>
           </div>
         </div>
       </div>
@@ -62,7 +62,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150',
+                'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
                 isActive
                   ? 'bg-gm-sage/15 text-gm-sage'
                   : 'text-gm-cream/50 hover:text-gm-cream/80 hover:bg-white/[0.03]'
@@ -84,8 +84,8 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[11px] text-gm-cream/70 font-medium truncate">{userName}</p>
-            <p className="text-[9px] text-gm-cream/30">{userRole.toLowerCase()}</p>
+            <p className="text-xs text-gm-cream/70 font-medium truncate">{userName}</p>
+            <p className="text-xs text-gm-cream/30">{userRole.toLowerCase()}</p>
           </div>
         </div>
       </div>

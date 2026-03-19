@@ -93,7 +93,7 @@ export function SignalActions({
             href={sourceUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[9px] px-2 py-1 bg-white/[0.04] hover:bg-white/[0.08] rounded text-gm-cream/40 hover:text-gm-cream/70 transition-colors"
+            className="text-xs px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] rounded-lg text-gm-cream/50 hover:text-gm-cream/80 transition-colors"
           >
             View source
           </a>
@@ -101,38 +101,38 @@ export function SignalActions({
         <button
           onClick={generatePosts}
           disabled={generating}
-          className="text-[9px] px-2 py-1 bg-gm-sage/10 hover:bg-gm-sage/20 rounded text-gm-sage/70 hover:text-gm-sage transition-colors disabled:opacity-40"
+          className="text-sm font-semibold px-4 py-2 bg-gm-sage hover:bg-gm-sage/80 rounded-lg text-gm-dark shadow-md shadow-gm-sage/20 hover:shadow-lg hover:shadow-gm-sage/30 transition-all disabled:opacity-40 disabled:shadow-none"
         >
-          {generating ? 'Generating...' : 'Create posts from this'}
+          {generating ? 'Generating...' : '+ Create Posts'}
         </button>
       </div>
 
       <Modal open={showPosts} onClose={() => setShowPosts(false)} title="Generated Post Proposals" size="lg">
-        <p className="text-[10px] text-gm-cream/40 mb-4">
+        <p className="text-xs text-gm-cream/40 mb-4">
           Based on: <span className="text-gm-cream/60">{title}</span>
         </p>
         <div className="space-y-4">
           {posts.map((post, i) => (
             <div key={i} className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300">
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300">
                   {post.platform === 'linkedin' ? 'LinkedIn' : `IG ${(post.market || 'BE').toUpperCase()}`}
                 </span>
-                <span className="text-[10px] text-gm-cream/30">{post.format || 'post'}</span>
-                {post.saved && <span className="text-[10px] text-emerald-400 ml-auto">Saved to calendar</span>}
+                <span className="text-xs text-gm-cream/30">{post.format || 'post'}</span>
+                {post.saved && <span className="text-xs text-emerald-400 ml-auto">Saved to calendar</span>}
               </div>
 
               <div className="mb-3">
-                <p className="text-xs text-gm-cream/80 whitespace-pre-wrap leading-relaxed">{post.caption}</p>
+                <p className="text-sm text-gm-cream/80 whitespace-pre-wrap leading-relaxed">{post.caption}</p>
               </div>
 
               {post.hashtags && (
-                <p className="text-[10px] text-gm-cream/30 mb-3">{post.hashtags}</p>
+                <p className="text-xs text-gm-cream/30 mb-3">{post.hashtags}</p>
               )}
 
               {post.firstComment && (
                 <div className="bg-white/[0.02] rounded p-2 mb-3 border border-white/[0.04]">
-                  <p className="text-[10px] text-gm-cream/40">
+                  <p className="text-xs text-gm-cream/40">
                     <span className="text-gm-cream/60 font-medium">First comment: </span>
                     {post.firstComment}
                   </p>
@@ -140,7 +140,7 @@ export function SignalActions({
               )}
 
               {post.visualDirection && (
-                <p className="text-[10px] text-gm-sage/50 mb-3">Visual: {post.visualDirection}</p>
+                <p className="text-xs text-gm-sage/50 mb-3">Visual: {post.visualDirection}</p>
               )}
 
               {!post.saved && (

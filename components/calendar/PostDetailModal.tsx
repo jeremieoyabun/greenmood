@@ -323,7 +323,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
             <div className="relative">
               <button
                 onClick={() => setShowDuplicate(!showDuplicate)}
-                className="text-[10px] text-gm-sage/60 hover:text-gm-sage transition-colors"
+                className="text-xs text-gm-sage/60 hover:text-gm-sage transition-colors"
               >
                 Duplicate to...
               </button>
@@ -355,7 +355,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                           } catch { alert('Duplicate failed') }
                           setDuplicating(null)
                         }}
-                        className="w-full text-left px-3 py-1.5 text-xs text-gm-cream/70 hover:bg-white/[0.05] hover:text-gm-cream transition-colors disabled:opacity-40"
+                        className="w-full text-left px-3 py-1.5 text-sm text-gm-cream/70 hover:bg-white/[0.05] hover:text-gm-cream transition-colors disabled:opacity-40"
                       >
                         {duplicating === t.market ? 'Duplicating...' : t.label}
                       </button>
@@ -364,7 +364,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               )}
             </div>
             {onDelete && (
-              <button onClick={onDelete} className="text-[10px] text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
+              <button onClick={onDelete} className="text-xs text-red-400/60 hover:text-red-400 transition-colors">Delete</button>
             )}
           </div>
           {editingSchedule ? (
@@ -387,7 +387,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           ) : (
             <button
               onClick={startEditingSchedule}
-              className="text-[10px] text-gm-cream/30 ml-auto hover:text-gm-sage/60 transition-colors cursor-pointer"
+              className="text-xs text-gm-cream/30 ml-auto hover:text-gm-sage/60 transition-colors cursor-pointer"
               title="Click to edit date/time"
             >
               {slot.date?.split('T')[0]} {slot.time || ''} ✎
@@ -424,7 +424,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         )}
 
         {slot.campaign && (
-          <p className="text-[10px] text-gm-sage/50">Campaign: {slot.campaign.title}</p>
+          <p className="text-xs text-gm-sage/50">Campaign: {slot.campaign.title}</p>
         )}
 
         {/* Post Image — upload or display */}
@@ -476,7 +476,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {editing ? (
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Caption</label>
+              <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Caption</label>
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
@@ -485,16 +485,16 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Hashtags</label>
+              <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Hashtags</label>
               <textarea
                 value={editHashtags}
                 onChange={(e) => setEditHashtags(e.target.value)}
                 rows={3}
-                className="w-full bg-white/[0.05] text-xs text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none"
+                className="w-full bg-white/[0.05] text-sm text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none"
               />
             </div>
             <div>
-              <label className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">
+              <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">
                 First Comment
                 {slot.platform === 'linkedin' && <Badge variant="warning" size="sm" className="ml-2">Required for LinkedIn</Badge>}
               </label>
@@ -503,7 +503,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 onChange={(e) => setEditFirstComment(e.target.value)}
                 rows={2}
                 placeholder={slot.platform === 'linkedin' ? 'Put the link here — never in the post body' : 'Optional first comment'}
-                className="w-full bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
+                className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
               />
             </div>
             <div className="flex gap-2">
@@ -517,7 +517,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
             {postText && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">
+                  <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">
                     {slot.platform === 'stories' ? 'Story Slides' : 'Caption'}
                   </span>
                   <div className="flex gap-1">
@@ -537,12 +537,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
             {hashtags && (
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Hashtags</span>
+                  <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Hashtags</span>
                   <Button variant="ghost" size="sm" onClick={() => copy(hashtags, 'hash')}>
                     {copied === 'hash' ? 'Copied!' : 'Copy'}
                   </Button>
                 </div>
-                <p className="text-xs text-gm-sage/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05] leading-relaxed">
+                <p className="text-sm text-gm-sage/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05] leading-relaxed">
                   {hashtags}
                 </p>
               </div>
@@ -558,7 +558,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
             }`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
+                  <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
                   {slot.platform === 'linkedin' && (
                     <Badge variant="warning" size="sm">Required for LinkedIn</Badge>
                   )}
@@ -573,9 +573,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 </div>
               </div>
               {firstComment ? (
-                <p className="text-xs text-gm-cream/70 leading-relaxed">{firstComment}</p>
+                <p className="text-sm text-gm-cream/70 leading-relaxed">{firstComment}</p>
               ) : (
-                <p className="text-[10px] text-gm-cream/25 italic">
+                <p className="text-xs text-gm-cream/25 italic">
                   {slot.platform === 'linkedin'
                     ? 'No first comment set — LinkedIn posts should have the link in the first comment (not in the post body).'
                     : 'No first comment. Add one for extra engagement or to include a link.'}
@@ -588,8 +588,8 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {/* Visual Direction */}
         {!editing && meta.visualDirection && (
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Visual Direction</span>
-            <p className="text-xs text-gm-cream/50 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Visual Direction</span>
+            <p className="text-sm text-gm-cream/50 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
               {meta.visualDirection}
             </p>
           </div>
@@ -599,12 +599,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {!editing && meta.pomelliPrompt && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Pomelli Prompt</span>
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Pomelli Prompt</span>
               <Button variant="ghost" size="sm" onClick={() => copy(meta.pomelliPrompt, 'pomelli')}>
                 {copied === 'pomelli' ? 'Copied!' : 'Copy'}
               </Button>
             </div>
-            <p className="text-xs text-amber-400/70 bg-amber-500/5 rounded-lg p-3 border border-amber-500/10">
+            <p className="text-sm text-amber-400/70 bg-amber-500/5 rounded-lg p-3 border border-amber-500/10">
               {meta.pomelliPrompt}
             </p>
           </div>
@@ -613,13 +613,13 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {/* Stories Slides */}
         {!editing && meta.storiesSlides && meta.storiesSlides.length > 0 && (
           <div>
-            <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Story Slides</span>
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Story Slides</span>
             <div className="grid grid-cols-3 gap-2">
               {meta.storiesSlides.map((slide: any, i: number) => (
                 <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.05]">
-                  <p className="text-[10px] text-gm-cream/30 mb-1">Slide {i + 1}</p>
-                  <p className="text-xs text-gm-cream/80 font-medium mb-1">{slide.text}</p>
-                  <p className="text-[10px] text-gm-cream/40">{slide.visual}</p>
+                  <p className="text-xs text-gm-cream/30 mb-1">Slide {i + 1}</p>
+                  <p className="text-sm text-gm-cream/80 font-medium mb-1">{slide.text}</p>
+                  <p className="text-xs text-gm-cream/40">{slide.visual}</p>
                 </div>
               ))}
             </div>
@@ -630,7 +630,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {!editing && (
           <div className="pt-3 border-t border-white/[0.06]">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">Image Check</span>
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Image Check</span>
               <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
@@ -644,7 +644,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-gm-cream/25 mb-2">Upload an image to verify it matches this post (product, dimensions, quality, brand).</p>
+            <p className="text-xs text-gm-cream/25 mb-2">Upload an image to verify it matches this post (product, dimensions, quality, brand).</p>
 
             {imageAnalysis && (
               <div className={`rounded-lg p-3 border ${
@@ -660,15 +660,15 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                     {imageAnalysis.status?.toUpperCase()}
                   </Badge>
                   {imageAnalysis.quality_score && (
-                    <span className="text-[10px] text-gm-cream/40">Quality: {imageAnalysis.quality_score}/10</span>
+                    <span className="text-xs text-gm-cream/40">Quality: {imageAnalysis.quality_score}/10</span>
                   )}
                   {imageAnalysis.brand_alignment && (
-                    <span className="text-[10px] text-gm-cream/40">Brand: {imageAnalysis.brand_alignment}/10</span>
+                    <span className="text-xs text-gm-cream/40">Brand: {imageAnalysis.brand_alignment}/10</span>
                   )}
                 </div>
 
                 {imageAnalysis.product_identified && (
-                  <p className="text-xs text-gm-cream/60 mb-1">
+                  <p className="text-sm text-gm-cream/60 mb-1">
                     <span className="text-gm-cream/40">Product:</span> {imageAnalysis.product_identified}
                     {imageAnalysis.product_correct === false && (
                       <Badge variant="danger" size="sm" className="ml-2">Wrong product</Badge>
@@ -677,7 +677,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 )}
 
                 {imageAnalysis.dimensions_check && !imageAnalysis.dimensions_check.suitable && (
-                  <p className="text-[10px] text-amber-400/80 mb-1">
+                  <p className="text-xs text-amber-400/80 mb-1">
                     Dimensions: {imageAnalysis.dimensions_check.recommendation}
                   </p>
                 )}
@@ -685,7 +685,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 {imageAnalysis.issues?.length > 0 && (
                   <div className="space-y-1 mt-2">
                     {imageAnalysis.issues.map((issue: any, i: number) => (
-                      <p key={i} className={`text-[10px] ${issue.severity === 'critical' ? 'text-red-400' : 'text-amber-400/70'}`}>
+                      <p key={i} className={`text-xs ${issue.severity === 'critical' ? 'text-red-400' : 'text-amber-400/70'}`}>
                         {issue.severity === 'critical' ? '✕' : '△'} {issue.detail}
                       </p>
                     ))}
@@ -695,12 +695,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 {imageAnalysis.suggestions?.length > 0 && (
                   <div className="mt-2 space-y-1">
                     {imageAnalysis.suggestions.map((s: string, i: number) => (
-                      <p key={i} className="text-[10px] text-gm-sage/60">→ {s}</p>
+                      <p key={i} className="text-xs text-gm-sage/60">→ {s}</p>
                     ))}
                   </div>
                 )}
 
-                <p className="text-xs text-gm-cream/50 mt-2">{imageAnalysis.summary}</p>
+                <p className="text-sm text-gm-cream/50 mt-2">{imageAnalysis.summary}</p>
               </div>
             )}
           </div>
@@ -709,7 +709,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         {/* Approval Actions */}
         {!editing && availableActions.length > 0 && (
           <div className="pt-4 border-t border-white/[0.06]">
-            <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold block mb-3">Approval Actions</span>
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-3">Approval Actions</span>
 
             {showRejectInput && (
               <div className="mb-3">
@@ -718,7 +718,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                   onChange={(e) => setRejectComment(e.target.value)}
                   placeholder="Reason for rejection (required)..."
                   rows={2}
-                  className="w-full bg-white/[0.05] text-xs text-gm-cream/70 rounded-lg p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
+                  className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
                 />
                 <div className="flex gap-2 mt-2">
                   <Button

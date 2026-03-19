@@ -117,7 +117,7 @@ export default async function DashboardPage() {
         ].map((stat) => (
           <a key={stat.label} href={stat.href}>
             <Card hover>
-              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">{stat.label}</span>
+              <span className="text-sm uppercase tracking-wider text-gm-cream/40 font-medium">{stat.label}</span>
               <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
             </Card>
           </a>
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-gm-cream/80 truncate">{action.detail}</p>
                     </div>
-                    <span className="text-xs text-gm-cream/30 whitespace-nowrap">{action.time}</span>
+                    <span className="text-sm text-gm-cream/30 whitespace-nowrap">{action.time}</span>
                     <span className="text-sm">
                       {action.type === 'post' ? '📤' : '✋'}
                     </span>
@@ -200,7 +200,7 @@ export default async function DashboardPage() {
                         }`}>{signal.score}</span>
                         <Badge variant={signal.urgency === 'HIGH' ? 'danger' : 'default'} size="sm">{signal.category?.replace('_', ' ')}</Badge>
                       </div>
-                      <p className="text-xs text-gm-cream/50 line-clamp-2">{signal.title}</p>
+                      <p className="text-sm text-gm-cream/50 line-clamp-2">{signal.title}</p>
                     </a>
                   ))}
                 </div>
@@ -236,16 +236,16 @@ export default async function DashboardPage() {
                 }`}>
                   <p className={`text-xs font-semibold mb-2 ${isToday ? 'text-gm-sage' : 'text-gm-cream/40'}`}>
                     {DAY_NAMES[day.getDay()]} {day.getDate()}
-                    {isToday && <span className="ml-1.5 text-[10px] text-gm-sage/60">TODAY</span>}
+                    {isToday && <span className="ml-1.5 text-xs text-gm-sage/60">TODAY</span>}
                   </p>
                   {daySlots.length === 0 ? (
-                    <p className="text-xs text-gm-cream/15">No posts</p>
+                    <p className="text-sm text-gm-cream/15">No posts</p>
                   ) : (
                     <div className="space-y-1.5">
                       {daySlots.map((slot) => (
                         <div key={slot.id} className="flex items-center gap-2">
                           <MarketBadge market={slot.post?.market || ''} platform={slot.post?.platform || ''} size="sm" />
-                          <span className="text-[10px] text-gm-cream/30">{slot.time || ''}</span>
+                          <span className="text-xs text-gm-cream/30">{slot.time || ''}</span>
                           <StatusDot status={slot.post?.status || ''} className="ml-auto" />
                         </div>
                       ))}
@@ -271,7 +271,7 @@ export default async function DashboardPage() {
                   <Badge variant={run.status === 'COMPLETED' ? 'success' : run.status === 'FAILED' ? 'danger' : 'warning'} size="sm">
                     {run.status}
                   </Badge>
-                  {run.tokensUsed ? <span className="text-xs text-gm-cream/20">{run.tokensUsed} tokens</span> : null}
+                  {run.tokensUsed ? <span className="text-sm text-gm-cream/20">{run.tokensUsed} tokens</span> : null}
                 </div>
               ))}
             </div>

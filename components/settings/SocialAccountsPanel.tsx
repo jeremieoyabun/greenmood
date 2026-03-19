@@ -205,7 +205,7 @@ export function SocialAccountsPanel() {
           {/* Connected */}
           {connected.length > 0 && (
             <div className="mb-4">
-              <p className="text-[10px] uppercase tracking-wider text-gm-cream/30 font-semibold mb-2">Connected</p>
+              <p className="text-xs uppercase tracking-wider text-gm-cream/30 font-semibold mb-2">Connected</p>
               <div className="space-y-2">
                 {connected.map(account => {
                   const p = PLATFORM_ICONS[account.platform]
@@ -214,8 +214,8 @@ export function SocialAccountsPanel() {
                       <div className="flex items-center gap-3">
                         <span className="text-base">{p?.icon}</span>
                         <div>
-                          <p className="text-xs text-gm-cream/80 font-medium">{account.handle}</p>
-                          <p className="text-[10px] text-gm-cream/30">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
+                          <p className="text-sm text-gm-cream/80 font-medium">{account.handle}</p>
+                          <p className="text-xs text-gm-cream/30">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
                         </div>
                       </div>
                       <Badge variant="success">Connected</Badge>
@@ -228,7 +228,7 @@ export function SocialAccountsPanel() {
 
           {/* Disconnected */}
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-gm-cream/30 font-semibold mb-2">
+            <p className="text-xs uppercase tracking-wider text-gm-cream/30 font-semibold mb-2">
               {connected.length > 0 ? 'Available to connect' : 'Connect your accounts'}
             </p>
             <div className="space-y-1.5">
@@ -239,8 +239,8 @@ export function SocialAccountsPanel() {
                     <div className="flex items-center gap-3">
                       <span className="text-base">{p?.icon}</span>
                       <div>
-                        <p className="text-xs text-gm-cream/60">{account.handle}</p>
-                        <p className="text-[10px] text-gm-cream/25">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
+                        <p className="text-sm text-gm-cream/60">{account.handle}</p>
+                        <p className="text-xs text-gm-cream/25">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
                       </div>
                     </div>
                     <div className="flex gap-1.5">
@@ -266,7 +266,7 @@ export function SocialAccountsPanel() {
             </div>
           </div>
 
-          <p className="text-[9px] text-gm-cream/20 mt-4">
+          <p className="text-xs text-gm-cream/20 mt-4">
             Connecting accounts enables auto-publishing. Instagram requires Meta App Review approval. TikTok requires TikTok Developer approval. Reviews take 2-5 business days.
           </p>
         </CardContent>
