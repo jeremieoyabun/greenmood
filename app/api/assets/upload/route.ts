@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { uploadToCloudinary } from '@/lib/cloudinary'
+import { detectProducts, suggestFolder } from '@/lib/product-detector'
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,6 +9,7 @@ export async function POST(req: NextRequest) {
     const postId = formData.get('postId') as string | null
     const folder = formData.get('folder') as string | null
     const tagsStr = formData.get('tags') as string | null
+    const autoDetect = formData.get('autoDetect') !== 'false' // default true
 
     if (!file) {
       return NextResponse.json({ success: false, error: 'No file provided' }, { status: 400 })
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
     const resourceType = isVideo ? 'video' as const : 'image' as const
 
     // Build tags from filename + folder + manual tags
-    const tags: string[] = []
+    const tags: string[] = ['greenmood']
     if (tagsStr) tags.push(...tagsStr.split(',').map(t => t.trim()))
     if (postId) tags.push(`post:${postId}`)
     // Auto-tag from filename (e.g., "Hoverlight-03.png" → "hoverlight")
@@ -32,9 +34,10 @@ export async function POST(req: NextRequest) {
     const folderTag = (folder || '').split('/').pop()
     if (folderTag && folderTag !== 'unlinked' && folderTag !== 'posts') tags.push(folderTag)
 
-    // Upload to Cloudinary with auto-tagging
+    // Upload to Cloudinary first (need a URL for AI detection)
+    const uploadFolder = folder || `greenmood/posts/${postId || 'unlinked'}`
     const result = await uploadToCloudinary(buffer, {
-      folder: folder || `greenmood/posts/${postId || 'unlinked'}`,
+      folder: uploadFolder,
       tags,
       resourceType,
       context: {
@@ -43,6 +46,34 @@ export async function POST(req: NextRequest) {
         uploadedAt: new Date().toISOString(),
       },
     })
+
+    // Run AI product detection on images (not videos)
+    let detection = null
+    if (autoDetect && !isVideo && result.url) {
+      try {
+        detection = await detectProducts(result.url)
+
+        // Add detected product tags to the asset
+        if (detection.tags.length > 0) {
+          const allTags = [...new Set([...tags, ...detection.tags])]
+          const cloudinary = require('cloudinary').v2
+          cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+          })
+          await cloudinary.uploader.add_tag(allTags.join(','), [result.publicId])
+
+          // If no folder was specified and we detected a product, suggest moving
+          if (!folder && detection.products.length > 0) {
+            const suggested = suggestFolder(detection.products)
+            detection = { ...detection, suggestedFolder: suggested }
+          }
+        }
+      } catch (e) {
+        console.error('Product detection failed (non-blocking):', e)
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -53,8 +84,14 @@ export async function POST(req: NextRequest) {
         height: result.height,
         format: result.format,
         bytes: result.bytes,
-        tags: result.tags,
-        aiTags: result.aiTags,
+        tags: [...new Set([...(result.tags || []), ...(detection?.tags || [])])],
+        detection: detection ? {
+          products: detection.products,
+          description: detection.description,
+          mossType: detection.mossType,
+          setting: detection.setting,
+          suggestedFolder: (detection as any).suggestedFolder,
+        } : null,
       },
     })
   } catch (error) {
