@@ -469,91 +469,110 @@ export default function CalendarPage() {
         }}
       />
 
-      {/* Create Post Modal */}
-      <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title="Create Post" size="md">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
-            <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
-            <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
-          </div>
-
-          {/* Image */}
-          <div>
-            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Image / Video</label>
-            <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) {
-                const r = new FileReader()
-                r.onload = (ev) => setNewImage(ev.target?.result as string)
-                r.readAsDataURL(f)
-              }
-            }} />
-            {newImage ? (
-              <div className="relative rounded-lg overflow-hidden cursor-pointer group" onClick={() => document.getElementById('new-post-img')?.click()}>
-                <img src={newImage} alt="" className="w-full max-h-48 object-cover" />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <span className="text-xs text-white">Change image</span>
+      {/* Create Post Modal — Full-width, spacious */}
+      <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title="Create New Post" size="xl">
+        <div className="grid grid-cols-2 gap-8">
+          {/* Left column — Media + Settings */}
+          <div className="space-y-6">
+            {/* Media Upload */}
+            <div>
+              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Media</label>
+              <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (f) {
+                  const r = new FileReader()
+                  r.onload = (ev) => setNewImage(ev.target?.result as string)
+                  r.readAsDataURL(f)
+                }
+              }} />
+              {newImage ? (
+                <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
+                  {newImage.startsWith('data:video') ? (
+                    <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
+                  ) : (
+                    <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                    <span className="text-sm text-white font-medium">Click to change</span>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-lg border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-colors p-4 flex flex-col items-center gap-1">
-                <span className="text-xl opacity-30">+</span>
-                <span className="text-xs text-gm-cream/30">Click to add image</span>
-              </button>
-            )}
-          </div>
-
-          {/* Caption */}
-          <div>
-            <label className="text-xs font-medium text-gm-cream/60 block mb-1">Caption</label>
-            <textarea
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
-              placeholder="Write your caption..."
-              rows={4}
-              className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
-            />
-          </div>
-
-          {/* Hashtags */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-medium text-gm-cream/60">Hashtags</label>
-              <button
-                onClick={generateHashtags}
-                disabled={genHash || !newText.trim()}
-                className="text-xs text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
-              >
-                {genHash ? 'Generating...' : 'Auto-generate'}
-              </button>
+              ) : (
+                <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
+                  <span className="text-4xl opacity-20">+</span>
+                  <span className="text-sm text-gm-cream/30">Click to add image or video</span>
+                  <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
+                </button>
+              )}
             </div>
-            <textarea
-              value={newHashtags}
-              onChange={(e) => setNewHashtags(e.target.value)}
-              placeholder="#biophilicdesign #greenmood ..."
-              rows={2}
-              className="w-full px-3 py-2 text-xs bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
-            />
+
+            {/* Schedule Settings */}
+            <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06]">
+              <label className="text-sm font-semibold text-gm-cream/70 block mb-4">Schedule</label>
+              <div className="grid grid-cols-2 gap-4">
+                <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
+                <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
+                <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
+              </div>
+            </div>
           </div>
 
-          {/* First Comment */}
-          <div>
-            <label className="text-xs font-medium text-gm-cream/60 block mb-1">First Comment <span className="text-gm-cream/20">(link for LinkedIn)</span></label>
-            <input
-              value={newFirstComment}
-              onChange={(e) => setNewFirstComment(e.target.value)}
-              placeholder="Link or additional context..."
-              className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.08] rounded-lg text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
-            />
-          </div>
+          {/* Right column — Content */}
+          <div className="space-y-6">
+            {/* Caption */}
+            <div>
+              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Caption</label>
+              <textarea
+                value={newText}
+                onChange={(e) => setNewText(e.target.value)}
+                placeholder="Write your caption..."
+                rows={8}
+                className="w-full px-4 py-3 text-base bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/20 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 focus:border-gm-sage/20 resize-none leading-relaxed"
+              />
+            </div>
 
-          <Button onClick={createPost} disabled={creating || !newText.trim()} className="w-full">
-            {creating ? 'Creating...' : 'Create Post'}
-          </Button>
+            {/* Hashtags */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-semibold text-gm-cream/70">Hashtags</label>
+                <button
+                  onClick={generateHashtags}
+                  disabled={genHash || !newText.trim()}
+                  className="text-sm font-medium text-gm-sage hover:text-gm-sage/80 disabled:text-gm-cream/20 disabled:cursor-not-allowed transition-colors"
+                >
+                  {genHash ? 'Generating...' : '✨ Auto-generate'}
+                </button>
+              </div>
+              <textarea
+                value={newHashtags}
+                onChange={(e) => setNewHashtags(e.target.value)}
+                placeholder="#biophilicdesign #greenmood ..."
+                rows={3}
+                className="w-full px-4 py-3 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-sage/70 placeholder:text-gm-cream/15 focus:outline-none focus:ring-2 focus:ring-gm-sage/30 resize-none"
+              />
+            </div>
+
+            {/* First Comment */}
+            <div>
+              <label className="text-sm font-semibold text-gm-cream/70 block mb-3">
+                First Comment
+                <span className="text-gm-cream/25 font-normal ml-2">Required for LinkedIn links</span>
+              </label>
+              <input
+                value={newFirstComment}
+                onChange={(e) => setNewFirstComment(e.target.value)}
+                placeholder="Link or additional context..."
+                className="w-full px-4 py-3 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-2 focus:ring-gm-sage/30"
+              />
+            </div>
+
+            {/* Submit */}
+            <Button onClick={createPost} disabled={creating || !newText.trim()} size="lg" className="w-full">
+              {creating ? 'Creating...' : 'Create Post'}
+            </Button>
+          </div>
         </div>
       </Modal>
     </>
