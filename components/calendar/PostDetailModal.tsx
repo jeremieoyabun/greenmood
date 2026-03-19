@@ -7,6 +7,95 @@ import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
 import { useState, useRef, useEffect } from 'react'
 
+function StorySlideEditor({ postId, variantId, initialSlides, onUpdate }: {
+  postId: string; variantId: string
+  initialSlides: Array<{ text: string; visual?: string }>
+  onUpdate?: () => void
+}) {
+  const [slides, setSlides] = useState(initialSlides)
+  const [editingSlide, setEditingSlide] = useState<number | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  const saveSlides = async (newSlides: typeof slides) => {
+    setSaving(true)
+    try {
+      // Update the variant notes with the new slides
+      const text = newSlides.map((s, i) => `Slide ${i + 1}: ${s.text}`).join('\n---\n')
+      const notes = JSON.stringify({ storiesSlides: newSlides })
+      await fetch(`/api/posts/${postId}/variant`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ variantId, text, notes }),
+      })
+      setSlides(newSlides)
+      setEditingSlide(null)
+      onUpdate?.()
+    } catch { /* */ }
+    setSaving(false)
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Story Slides ({slides.length})</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {slides.map((slide, i) => (
+          <div key={i} className="bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-gm-cream/40">Slide {i + 1}</span>
+              <button
+                onClick={() => setEditingSlide(editingSlide === i ? null : i)}
+                className="text-xs text-gm-sage/60 hover:text-gm-sage transition-colors"
+              >
+                {editingSlide === i ? 'Cancel' : 'Edit'}
+              </button>
+            </div>
+
+            {editingSlide === i ? (
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[10px] text-gm-cream/30 block mb-1">Text overlay (what appears on the slide)</label>
+                  <input
+                    value={slide.text}
+                    onChange={(e) => {
+                      const updated = [...slides]
+                      updated[i] = { ...updated[i], text: e.target.value }
+                      setSlides(updated)
+                    }}
+                    className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-gm-cream/30 block mb-1">Visual direction (what the image/video should show)</label>
+                  <input
+                    value={slide.visual || ''}
+                    onChange={(e) => {
+                      const updated = [...slides]
+                      updated[i] = { ...updated[i], visual: e.target.value }
+                      setSlides(updated)
+                    }}
+                    className="w-full px-3 py-2 text-xs bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream/60 focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+                  />
+                </div>
+                <Button variant="primary" size="sm" loading={saving} onClick={() => saveSlides(slides)}>Save</Button>
+              </div>
+            ) : (
+              <>
+                <p className="text-sm text-gm-cream/90 font-medium mb-1">"{slide.text}"</p>
+                {slide.visual && (
+                  <p className="text-xs text-gm-cream/35 italic">{slide.visual}</p>
+                )}
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCopy, copied }: {
   postId: string; variantId: string; initialValue: string; isLinkedIn: boolean; onCopy: (text: string) => void; copied: boolean
 }) {
@@ -431,7 +520,6 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         break
       case 'FACT_CHECKED':
         actions.push({ action: 'APPROVE', label: 'Brand Approve', variant: 'primary', nextStatus: 'BRAND_APPROVED' })
-        actions.push({ action: 'REQUEST_CHANGES', label: 'Request Changes', variant: 'outline', nextStatus: 'REJECTED' })
         actions.push({ action: 'REJECT', label: 'Reject', variant: 'danger', nextStatus: 'REJECTED' })
         break
       case 'BRAND_APPROVED':
@@ -805,20 +893,14 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           </div>
         )}
 
-        {/* Stories Slides */}
-        {!editing && meta.storiesSlides && meta.storiesSlides.length > 0 && (
-          <div>
-            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Story Slides</span>
-            <div className="grid grid-cols-3 gap-2">
-              {meta.storiesSlides.map((slide: any, i: number) => (
-                <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.05]">
-                  <p className="text-xs text-gm-cream/30 mb-1">Slide {i + 1}</p>
-                  <p className="text-sm text-gm-cream/80 font-medium mb-1">{slide.text}</p>
-                  <p className="text-xs text-gm-cream/40">{slide.visual}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Stories Slides — editable inline */}
+        {meta.storiesSlides && meta.storiesSlides.length > 0 && (
+          <StorySlideEditor
+            postId={slot.post?.id || ''}
+            variantId={variant?.id || ''}
+            initialSlides={meta.storiesSlides}
+            onUpdate={onUpdate}
+          />
         )}
 
         {/* Image Check */}
