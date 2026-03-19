@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
     const newSignals = await prisma.intelligenceSignal.findMany({
-      where: { createdAt: { gte: yesterday }, isDuplicate: false, category: { not: 'social_comment' } },
+      where: { detectedAt: { gte: yesterday }, isDuplicate: false, category: { not: 'social_comment' } },
       orderBy: { score: 'desc' },
       take: 5,
       select: { title: true, category: true, score: true, urgency: true, summary: true },
@@ -63,14 +63,14 @@ export async function GET(req: NextRequest) {
 
     // New comments flagged
     const newComments = await prisma.intelligenceSignal.findMany({
-      where: { createdAt: { gte: yesterday }, category: 'social_comment', urgency: 'act_now' },
+      where: { detectedAt: { gte: yesterday }, category: 'social_comment', urgency: 'act_now' },
       take: 5,
       select: { title: true, summary: true, recommendedAction: true },
     })
 
     // Recent agent runs (last 24h)
     const recentRuns = await prisma.agentRun.findMany({
-      where: { createdAt: { gte: yesterday } },
+      where: { detectedAt: { gte: yesterday } },
       select: { agentType: true, status: true },
     })
     const completedRuns = recentRuns.filter(r => r.status === 'COMPLETED').length
