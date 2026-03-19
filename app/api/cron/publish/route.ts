@@ -4,30 +4,39 @@ import { prisma } from '@/lib/db'
 /**
  * Cron job: Auto-publish scheduled posts at their scheduled time.
  * Runs every 5 minutes via Vercel Cron.
- * Checks for posts with status SCHEDULED and a calendar slot
- * where date+time is now or in the past.
+ *
+ * IMPORTANT: Only publishes posts where:
+ * 1. Status is SCHEDULED (not READY_TO_SCHEDULE — must be explicitly scheduled)
+ * 2. The calendar slot date+time has passed (in Brussels timezone CET/CEST)
+ * 3. Uses the correct Instagram token per market
  */
 export async function GET(req: NextRequest) {
-  // Verify cron secret (Vercel sets this header)
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    // Allow in dev or if no secret configured
     if (process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
   }
 
+  // Current time in Brussels timezone
   const now = new Date()
-  const today = now.toISOString().split('T')[0]
-  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+  const brusselsFormatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Europe/Brussels',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  })
+  const parts = brusselsFormatter.formatToParts(now)
+  const getVal = (type: string) => parts.find(p => p.type === type)?.value || '00'
+  const brusselsDate = `${getVal('year')}-${getVal('month')}-${getVal('day')}`
+  const brusselsTime = `${getVal('hour')}:${getVal('minute')}`
 
   try {
-    // Find all SCHEDULED posts with a calendar slot for today at or before current time
+    // Only SCHEDULED posts (not READY_TO_SCHEDULE)
     const readySlots = await prisma.calendarSlot.findMany({
       where: {
         date: { lte: now },
         post: {
-          status: { in: ['SCHEDULED', 'READY_TO_SCHEDULE'] },
+          status: 'SCHEDULED',
         },
       },
       include: {
@@ -39,10 +48,19 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    // All scheduled slots with date <= today are due for publishing
-    // Time comparison is approximate — the cron runs daily or on-demand
-    // so we publish all posts whose date has arrived
-    const dueSlots = readySlots
+    // Filter: only publish if the scheduled time has passed in Brussels timezone
+    const dueSlots = readySlots.filter(slot => {
+      const slotDate = new Date(slot.date).toISOString().split('T')[0]
+      const slotTime = slot.time || '00:00'
+
+      // Past days = overdue, publish immediately
+      if (slotDate < brusselsDate) return true
+
+      // Today = check if time has passed
+      if (slotDate === brusselsDate && slotTime <= brusselsTime) return true
+
+      return false
+    })
 
     const results: any[] = []
 
@@ -53,9 +71,7 @@ export async function GET(req: NextRequest) {
       if (!variant) continue
 
       try {
-        // Call our own publish API
-        const appUrl = 'https://app.greenmood.be'
-        const res = await fetch(`${appUrl}/api/publish`, {
+        const res = await fetch('https://app.greenmood.be/api/publish', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ postId: post.id }),
@@ -66,7 +82,7 @@ export async function GET(req: NextRequest) {
           postId: post.id,
           platform: post.platform,
           market: post.market,
-          time: slot.time,
+          scheduledTime: slot.time,
           success: data.success,
           error: data.error,
         })
@@ -74,6 +90,7 @@ export async function GET(req: NextRequest) {
         results.push({
           postId: post.id,
           platform: post.platform,
+          market: post.market,
           error: err instanceof Error ? err.message : 'Unknown error',
         })
       }
@@ -81,11 +98,12 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      brusselsTime: `${brusselsDate} ${brusselsTime}`,
       checked: readySlots.length,
       due: dueSlots.length,
       published: results.filter(r => r.success).length,
+      skipped: readySlots.length - dueSlots.length,
       results,
-      time: now.toISOString(),
     })
   } catch (error) {
     console.error('Cron publish error:', error)

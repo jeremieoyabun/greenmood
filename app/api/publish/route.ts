@@ -33,13 +33,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'No active variant found' }, { status: 400 })
     }
 
+    // Get the correct token for this market+platform
+    const tokenRecord = await prisma.$queryRaw<Array<{ access_token: string }>>`
+      SELECT access_token FROM social_tokens
+      WHERE workspace_id = ${post.workspaceId}
+        AND market = ${post.market}
+        AND platform = ${post.platform === 'stories' ? 'instagram' : post.platform}
+      LIMIT 1
+    `
+    const marketToken = tokenRecord?.[0]?.access_token
+
     // Route to platform adapter
     let result: any
 
     if (post.platform === 'instagram' || post.platform === 'stories') {
-      result = await publishToInstagram(variant, post.platform)
+      const token = marketToken || process.env.INSTAGRAM_ACCESS_TOKEN
+      if (!token) {
+        return NextResponse.json({ success: false, error: `No Instagram token for market "${post.market}". Connect this account in Settings first.` }, { status: 400 })
+      }
+      result = await publishToInstagram(variant, post.platform, token)
     } else if (post.platform === 'linkedin') {
-      result = await publishToLinkedIn(variant)
+      const token = marketToken || process.env.LINKEDIN_ACCESS_TOKEN
+      if (!token) {
+        return NextResponse.json({ success: false, error: `No LinkedIn token for market "${post.market}". Connect this account in Settings first.` }, { status: 400 })
+      }
+      result = await publishToLinkedIn(variant, token)
     } else {
       return NextResponse.json({ success: false, error: `Platform "${post.platform}" not yet supported` }, { status: 400 })
     }
@@ -112,9 +130,7 @@ async function waitForMediaReady(containerId: string, token: string, maxAttempts
 
 // ─── INSTAGRAM ADAPTER ───
 
-async function publishToInstagram(variant: any, type: string) {
-  const token = process.env.INSTAGRAM_ACCESS_TOKEN
-  if (!token) return { success: false, error: 'No Instagram access token configured' }
+async function publishToInstagram(variant: any, type: string, token: string) {
 
   let mediaUrl = variant.imageUrl
   if (!mediaUrl) return { success: false, error: 'No media — Instagram requires an image or video to publish' }
@@ -258,9 +274,7 @@ async function postInstagramComment(mediaId: string, comment: string) {
 
 // ─── LINKEDIN ADAPTER ───
 
-async function publishToLinkedIn(variant: any) {
-  const accessToken = process.env.LINKEDIN_ACCESS_TOKEN
-  if (!accessToken) return { success: false, error: 'No LinkedIn access token configured' }
+async function publishToLinkedIn(variant: any, accessToken: string) {
 
   try {
     // Get LinkedIn profile URN
