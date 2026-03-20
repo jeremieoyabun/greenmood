@@ -70,8 +70,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           reviewerId,
           fromStatus: post.status,
           toStatus,
-          action: action as any,
-          comment,
+          action: action === 'SCHEDULE' ? 'APPROVE' : action as any,
+          comment: comment || (action === 'SCHEDULE' ? 'Approved and scheduled' : undefined),
         },
       }),
     ])
