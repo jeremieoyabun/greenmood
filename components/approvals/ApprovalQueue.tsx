@@ -316,7 +316,8 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     post.status === 'FACT_CHECKED' ? 'info' :
                     post.status === 'BRAND_APPROVED' ? 'success' :
                     post.status === 'READY_TO_SCHEDULE' ? 'warning' :
-                    post.status === 'SCHEDULED' ? 'info' : 'default'
+                    post.status === 'SCHEDULED' ? 'success' :
+                    post.status === 'PUBLISHED' ? 'default' : 'default'
                   } size="sm">{config?.label || post.status}</Badge>
                   <span className="text-xs text-gm-cream/50">
                     {MARKETS[post.market]?.emoji} {MARKETS[post.market]?.name} — {post.platform}
@@ -327,9 +328,21 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     </span>
                   )}
                 </div>
-                {post.variant && (
-                  <p className="text-xs text-gm-cream/50 line-clamp-2">{post.variant.text}</p>
-                )}
+                <div className="flex gap-2">
+                  {/* Image/Video thumbnail */}
+                  {post.variant?.imageUrl && post.variant.imageUrl !== 'HAS_IMAGE' && (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/[0.08] shrink-0">
+                      {post.variant.imageUrl.match(/\.(mp4|mov|webm)/i) || post.variant.imageUrl.includes('video') ? (
+                        <video src={post.variant.imageUrl} className="w-full h-full object-cover" muted />
+                      ) : (
+                        <img src={post.variant.imageUrl} alt="" className="w-full h-full object-cover" />
+                      )}
+                    </div>
+                  )}
+                  {post.variant && (
+                    <p className="text-xs text-gm-cream/50 line-clamp-2 flex-1">{post.variant.text}</p>
+                  )}
+                </div>
                 {post.lastStep?.comment && (
                   <p className="text-xs text-amber-400/50 mt-1 italic">&quot;{post.lastStep.comment}&quot;</p>
                 )}
