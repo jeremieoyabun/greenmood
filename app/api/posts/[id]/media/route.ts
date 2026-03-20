@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { v2 as cloudinary } from 'cloudinary'
 
+// Allow large uploads (videos up to 100MB)
+export const maxDuration = 120
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -46,20 +49,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64 = `data:${file.type};base64,${buffer.toString('base64')}`
 
     // Clean filename for display
     const cleanName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '-')
+    const isVideo = file.type.startsWith('video/')
 
-    const result = await cloudinary.uploader.upload(base64, {
-      folder,
-      resource_type: 'auto',
-      public_id: `${cleanName}-${Date.now()}`,
-      use_filename: true,
-      unique_filename: false,
-      display_name: file.name.replace(/\.[^.]+$/, ''),
-      context: `originalName=${file.name}|postId=${id}|market=${market}|platform=${platform}`,
-      tags: [platform, market, `post:${id}`],
+    // Upload to Cloudinary — use upload_stream for reliability with large files
+    const result = await new Promise<any>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: isVideo ? 'video' : 'image',
+          public_id: `${cleanName}-${Date.now()}`,
+          display_name: file.name.replace(/\.[^.]+$/, ''),
+          context: `originalName=${file.name}|postId=${id}|market=${market}|platform=${platform}`,
+          tags: [platform, market, `post:${id}`],
+          chunk_size: 6_000_000, // 6MB chunks for large videos
+        },
+        (error, result) => {
+          if (error) reject(error)
+          else resolve(result)
+        }
+      )
+      stream.end(buffer)
     })
 
     // Get next sort order

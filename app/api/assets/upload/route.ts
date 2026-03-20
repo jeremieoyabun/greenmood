@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { uploadToCloudinary } from '@/lib/cloudinary'
 import { detectProducts, suggestFolder } from '@/lib/product-detector'
 
+export const maxDuration = 120 // Allow up to 2 min for video uploads
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
