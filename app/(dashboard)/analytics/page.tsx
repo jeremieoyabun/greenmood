@@ -47,10 +47,12 @@ async function getAnalyticsData() {
   `
 
   // KB performance insight
-  const insight = await prisma.knowledgeBaseEntry.findFirst({
-    where: { category: 'PERFORMANCE_INSIGHT' as any, isActive: true },
-    select: { value: true, updatedAt: true },
-  })
+  const insightRows = await prisma.$queryRaw<Array<{ value: string; updated_at: Date }>>`
+    SELECT value, updated_at FROM knowledge_base
+    WHERE category = 'PERFORMANCE_INSIGHT' AND is_active = true
+    ORDER BY updated_at DESC LIMIT 1
+  `
+  const insight = insightRows[0] ? { value: insightRows[0].value, updatedAt: insightRows[0].updated_at } : null
 
   return { snapshots, topPosts, byDayOfWeek, recentTrend: recentTrend.reverse(), insight }
 }
