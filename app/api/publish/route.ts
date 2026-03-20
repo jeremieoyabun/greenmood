@@ -43,6 +43,11 @@ export async function POST(req: NextRequest) {
     `
     const marketToken = tokenRecord?.[0]?.access_token
 
+    // Get multi-media (for stories and carousels)
+    const postMedia = await prisma.$queryRaw<Array<{ url: string; media_type: string }>>`
+      SELECT url, media_type FROM post_media WHERE post_id = ${postId} ORDER BY sort_order ASC
+    `
+
     // Route to platform adapter
     let result: any
 
@@ -51,7 +56,7 @@ export async function POST(req: NextRequest) {
       if (!token) {
         return NextResponse.json({ success: false, error: `No Instagram token for market "${post.market}". Connect this account in Settings first.` }, { status: 400 })
       }
-      result = await publishToInstagram(variant, post.platform, token)
+      result = await publishToInstagram(variant, post.platform, token, postMedia)
     } else if (post.platform === 'linkedin') {
       const token = marketToken || process.env.LINKEDIN_ACCESS_TOKEN
       if (!token) {
@@ -130,9 +135,15 @@ async function waitForMediaReady(containerId: string, token: string, maxAttempts
 
 // ─── INSTAGRAM ADAPTER ───
 
-async function publishToInstagram(variant: any, type: string, token: string) {
+async function publishToInstagram(variant: any, type: string, token: string, postMedia: Array<{ url: string; media_type: string }> = []) {
 
-  let mediaUrl = variant.imageUrl
+  // For stories with multiple media: publish each as a separate story
+  if (type === 'stories' && postMedia.length > 0) {
+    return await publishMultiStories(postMedia, token)
+  }
+
+  // Use post_media first, then fallback to variant.imageUrl
+  let mediaUrl = postMedia.length > 0 ? postMedia[0].url : variant.imageUrl
   if (!mediaUrl) return { success: false, error: 'No media — Instagram requires an image or video to publish' }
 
   // Detect if media is a video
@@ -269,6 +280,71 @@ async function postInstagramComment(mediaId: string, comment: string) {
     })
   } catch (error) {
     console.error('Failed to post first comment:', error)
+  }
+}
+
+// ─── MULTI-STORY PUBLISHER ───
+
+async function publishMultiStories(media: Array<{ url: string; media_type: string }>, token: string) {
+  try {
+    // Get user ID
+    const meRes = await fetch(`https://graph.instagram.com/v25.0/me?fields=user_id&access_token=${token}`)
+    const me = await meRes.json()
+    if (!me.user_id) return { success: false, error: 'Failed to get Instagram user ID' }
+    const userId = me.user_id
+
+    const publishedIds: string[] = []
+
+    for (const item of media) {
+      const isVideo = item.media_type === 'video' || item.url.match(/\.(mp4|mov|webm)/i)
+
+      const params = new URLSearchParams({
+        media_type: 'STORIES',
+        access_token: token,
+      })
+      if (isVideo) {
+        params.set('video_url', item.url)
+      } else {
+        params.set('image_url', item.url)
+      }
+
+      // Create container
+      const containerRes = await fetch(
+        `https://graph.instagram.com/v25.0/${userId}/media`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
+      )
+      const container = await containerRes.json()
+      if (container.error) return { success: false, error: `Story slide failed: ${container.error.message}` }
+
+      // Wait for video processing
+      if (isVideo) {
+        await waitForMediaReady(container.id, token)
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 3000))
+      }
+
+      // Publish
+      const pubParams = new URLSearchParams({ creation_id: container.id, access_token: token })
+      const publishRes = await fetch(
+        `https://graph.instagram.com/v25.0/${userId}/media_publish`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: pubParams }
+      )
+      const published = await publishRes.json()
+      if (published.error) return { success: false, error: `Story publish failed: ${published.error.message}` }
+
+      publishedIds.push(published.id)
+
+      // Wait between stories to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    }
+
+    return {
+      success: true,
+      platformId: publishedIds.join(','),
+      message: `${publishedIds.length} stories published`
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Multi-story publish failed' }
   }
 }
 
