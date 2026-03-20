@@ -85,7 +85,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gm-cream/80 font-medium truncate">{userName}</p>
-            <p className="text-xs text-gm-cream/30 capitalize">{userRole.toLowerCase()}</p>
+            <p className="text-xs text-gm-cream/30">{userRole === 'OPERATOR' ? 'Admin' : userRole === 'COORDINATOR' ? 'Coordinator' : 'Viewer'}</p>
           </div>
         </div>
       </div>
