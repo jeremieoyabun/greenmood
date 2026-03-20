@@ -35,15 +35,31 @@ export async function GET(req: NextRequest) {
         )
       }
     } else {
-      // Browse by folder prefix
-      const result = await cloudinary.api.resources({
-        type: 'upload',
-        prefix: folder.endsWith('/') ? folder : `${folder}/`,
-        max_results: Math.min(limit, 50),
-        tags: true,
-        context: true,
-      })
-      resources = result.resources || []
+      // Browse by folder prefix — fetch both images and videos
+      const prefix = folder.endsWith('/') ? folder : `${folder}/`
+      const maxRes = Math.min(limit, 50)
+
+      const [imgResult, vidResult] = await Promise.all([
+        cloudinary.api.resources({
+          type: 'upload',
+          resource_type: 'image',
+          prefix,
+          max_results: maxRes,
+          tags: true,
+          context: true,
+        }).catch(() => ({ resources: [] })),
+        cloudinary.api.resources({
+          type: 'upload',
+          resource_type: 'video',
+          prefix,
+          max_results: maxRes,
+          tags: true,
+          context: true,
+        }).catch(() => ({ resources: [] })),
+      ])
+
+      resources = [...(imgResult.resources || []), ...(vidResult.resources || [])]
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     }
 
     const assets = resources.map((r: any) => ({
