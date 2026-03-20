@@ -28,8 +28,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Post not found' }, { status: 404 })
     }
 
+    // LOCK: Only publish if still SCHEDULED (prevents double-publish)
+    if (post.status === 'PUBLISHED') {
+      return NextResponse.json({ success: false, error: 'Post already published' }, { status: 400 })
+    }
+
+    // Immediately mark as PUBLISHED to prevent concurrent publishes
+    await prisma.post.update({
+      where: { id: postId },
+      data: { status: 'PUBLISHED' },
+    })
+
     const variant = post.variants[0]
     if (!variant) {
+      // Revert if no variant
+      await prisma.post.update({ where: { id: postId }, data: { status: post.status } })
       return NextResponse.json({ success: false, error: 'No active variant found' }, { status: 400 })
     }
 
@@ -67,13 +80,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: `Platform "${post.platform}" not yet supported` }, { status: 400 })
     }
 
-    if (result.success) {
-      // Update post status
-      await prisma.post.update({
-        where: { id: postId },
-        data: { status: 'PUBLISHED' },
-      })
+    if (!result.success) {
+      // Revert status on failure
+      await prisma.post.update({ where: { id: postId }, data: { status: post.status } })
+    }
 
+    if (result.success) {
       // Update calendar slot
       if (post.calendarSlot) {
         await prisma.calendarSlot.update({
