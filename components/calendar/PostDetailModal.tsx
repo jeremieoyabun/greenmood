@@ -314,31 +314,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
     setUploading(true)
     for (const file of Array.from(files)) {
       try {
+        // Upload directly via the media endpoint (FormData → Cloudinary)
         const formData = new FormData()
         formData.append('file', file)
-        formData.append('postId', slot.post.id)
-        const uploadRes = await fetch('/api/assets/upload', { method: 'POST', body: formData })
-        const uploadData = await uploadRes.json()
-        const url = uploadData.success ? uploadData.data.url : null
-        if (!url) {
-          // Fallback to data URL
-          const dataUrl = await new Promise<string>((resolve) => {
-            const reader = new FileReader()
-            reader.onload = (e) => resolve(e.target?.result as string)
-            reader.readAsDataURL(file)
-          })
-          await fetch(`/api/posts/${slot.post.id}/media`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: dataUrl, mediaType: file.type.startsWith('video') ? 'video' : 'image' }),
-          })
-        } else {
-          await fetch(`/api/posts/${slot.post.id}/media`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url, mediaType: file.type.startsWith('video') ? 'video' : 'image' }),
-          })
-        }
+        await fetch(`/api/posts/${slot.post.id}/media`, { method: 'POST', body: formData })
       } catch { /* continue */ }
     }
     // Refresh media list
@@ -350,11 +329,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
 
   const removeMedia = async (mediaId: string) => {
     if (!slot?.post?.id) return
-    await fetch(`/api/posts/${slot.post.id}/media`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mediaId }),
-    })
+    await fetch(`/api/posts/${slot.post.id}/media?mediaId=${mediaId}`, { method: 'DELETE' })
     setMediaItems(prev => prev.filter(m => m.id !== mediaId))
   }
 
