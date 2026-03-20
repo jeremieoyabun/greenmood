@@ -32,16 +32,34 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   try {
+    // Get post info for proper folder organization
+    const post = await prisma.$queryRaw<Array<{ platform: string; market: string }>>`
+      SELECT platform, market FROM posts WHERE id = ${id} LIMIT 1
+    `
+    const platform = post[0]?.platform || 'other'
+    const market = post[0]?.market || 'hq'
+
+    // Upload to organized folder: greenmood/social/{platform}/{market}/
+    const folder = platform === 'stories'
+      ? `greenmood/social/stories/${market}`
+      : `greenmood/social/${platform}/${market}`
+
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const base64 = `data:${file.type};base64,${buffer.toString('base64')}`
 
+    // Clean filename for display
+    const cleanName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_]/g, '-')
+
     const result = await cloudinary.uploader.upload(base64, {
-      folder: `greenmood/posts/${id}`,
+      folder,
       resource_type: 'auto',
+      public_id: `${cleanName}-${Date.now()}`,
       use_filename: true,
-      unique_filename: true,
-      context: `originalName=${file.name}|postId=${id}`,
+      unique_filename: false,
+      display_name: file.name.replace(/\.[^.]+$/, ''),
+      context: `originalName=${file.name}|postId=${id}|market=${market}|platform=${platform}`,
+      tags: [platform, market, `post:${id}`],
     })
 
     // Get next sort order
