@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Bell, Search, LogOut } from 'lucide-react'
+import { Search, LogOut } from 'lucide-react'
+import { NotificationBell } from '@/components/layout/NotificationBell'
 
 interface TopBarProps {
   userName: string
@@ -32,10 +33,7 @@ export function TopBar({ userName, userRole }: TopBarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-5">
-        <button className="relative text-gm-cream/40 hover:text-gm-cream/70 transition-colors p-2 rounded-xl hover:bg-white/[0.04]">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gm-sage rounded-full border-2 border-[#0d180d]" />
-        </button>
+        <NotificationBell />
 
         <div className="flex items-center gap-3 pl-5 border-l border-white/[0.08]">
           <div className="text-right">

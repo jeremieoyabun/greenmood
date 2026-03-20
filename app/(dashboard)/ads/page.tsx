@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { AdsFilters } from '@/components/ads/AdsFilters'
+import { AdsCreateButton } from '@/components/ads/AdsCreateButton'
 
 interface MetaCampaignInsights {
   spend: string
@@ -128,7 +129,8 @@ export default async function AdsPage({ searchParams }: PageProps) {
     <>
       <PageHeader
         title="Ads Control Center"
-        description={`Meta Ads performance overview \u2014 ${dateLabel}`}
+        description={`Meta Ads performance overview. ${dateLabel}`}
+        actions={<AdsCreateButton />}
       />
 
       {noCredentials && (
