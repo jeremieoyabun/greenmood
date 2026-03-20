@@ -426,7 +426,12 @@ export default function CalendarPage() {
                       <SlotChip key={slot.id} slot={slot} compact={daySlots.length > 3} />
                     ))}
                     {daySlots.length > 4 && (
-                      <span className="text-[11px] text-gm-cream/20 pl-1">+{daySlots.length - 4} more</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setCurrentDate(day); setView('week' as ViewMode) }}
+                        className="text-xs text-gm-sage/50 hover:text-gm-sage pl-1 transition-colors"
+                      >
+                        +{daySlots.length - 4} more
+                      </button>
                     )}
                   </div>
                 </div>

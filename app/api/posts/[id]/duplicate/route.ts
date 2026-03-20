@@ -100,14 +100,18 @@ export async function POST(
       `
     }
 
-    // Create calendar slot for the duplicated post
+    // Create calendar slot — same date/time as source post
+    const sourceSlot = await prisma.calendarSlot.findFirst({
+      where: { postId: id },
+      select: { date: true, time: true },
+    })
     const timeByPlatform: Record<string, string> = {
       instagram: '12:00',
       linkedin: '09:00',
       stories: '08:00',
     }
-    const time = timeByPlatform[newPost.platform] || '10:00'
-    const slotDate = await findNextAvailableSlotDate(workspaceId)
+    const time = sourceSlot?.time || timeByPlatform[newPost.platform] || '10:00'
+    const slotDate = sourceSlot?.date || await findNextAvailableSlotDate(workspaceId)
 
     const calendarSlot = await prisma.calendarSlot.create({
       data: {
