@@ -34,42 +34,23 @@ export async function GET(req: NextRequest) {
   })
 
   try {
-    // ─── Get Instagram token from social_tokens ───
+    // ─── Get ALL Instagram tokens from social_tokens ───
     const tokenRecords = await prisma.$queryRaw<
-      Array<{ access_token: string; account_handle: string }>
+      Array<{ access_token: string; account_handle: string; market: string }>
     >`
-      SELECT access_token, account_handle FROM social_tokens
+      SELECT access_token, account_handle, market FROM social_tokens
       WHERE workspace_id = ${WORKSPACE_ID}
-        AND market = 'hq'
         AND platform = 'instagram'
-      LIMIT 1
     `
 
     if (!tokenRecords.length) {
-      throw new Error('No Instagram token found for market=hq in social_tokens')
+      throw new Error('No Instagram tokens found in social_tokens')
     }
 
-    const accessToken = tokenRecords[0].access_token
-
-    // ─── Fetch recent media with insights ───
-    const mediaUrl = `https://graph.instagram.com/me/media?fields=id,caption,media_type,timestamp,like_count,comments_count,insights.metric(reach,impressions,saved,shares)&limit=25&access_token=${accessToken}`
-    const mediaRes = await fetch(mediaUrl)
-
-    if (!mediaRes.ok) {
-      const errBody = await mediaRes.text()
-      throw new Error(`Instagram API error ${mediaRes.status}: ${errBody}`)
-    }
-
-    const mediaData = await mediaRes.json()
-    const posts = mediaData.data || []
-
-    if (posts.length === 0) {
-      throw new Error('No media returned from Instagram API')
-    }
-
-    // ─── Store performance snapshots ───
+    // ─── Fetch and store for ALL accounts ───
     let storedCount = 0
     const postSummaries: Array<{
+      market: string
       caption: string
       mediaType: string
       timestamp: string
@@ -81,74 +62,84 @@ export async function GET(req: NextRequest) {
       shares: number
     }> = []
 
-    for (const post of posts) {
-      // Extract insight metrics
-      const insights = post.insights?.data || []
-      const getMetric = (name: string): number => {
-        const m = insights.find((i: { name: string }) => i.name === name)
-        return m?.values?.[0]?.value || 0
-      }
+    for (const tokenRecord of tokenRecords) {
+      const { access_token: accessToken, market, account_handle } = tokenRecord
 
-      const reach = getMetric('reach')
-      const impressions = getMetric('impressions')
-      const saves = getMetric('saved')
-      const shares = getMetric('shares')
-      const likes = post.like_count || 0
-      const comments = post.comments_count || 0
-      const totalEngagement = reach > 0
-        ? ((likes + comments + saves + shares) / reach) * 100
-        : 0
+      try {
+        const mediaUrl = `https://graph.instagram.com/me/media?fields=id,caption,media_type,timestamp,like_count,comments_count&limit=25&access_token=${accessToken}`
+        const mediaRes = await fetch(mediaUrl)
 
-      // Check if we already have a snapshot for this post today
-      const today = new Date()
-      today.setHours(0, 0, 0, 0)
+        if (!mediaRes.ok) {
+          console.error(`Instagram API error for ${account_handle}: ${mediaRes.status}`)
+          continue
+        }
 
-      const existing = await prisma.analyticsSnapshot.findFirst({
-        where: {
-          platform: 'instagram',
-          date: today,
-          metadata: {
-            path: ['igPostId'],
-            equals: post.id,
-          },
-        },
-      })
+        const mediaData = await mediaRes.json()
+        const posts = mediaData.data || []
 
-      if (!existing) {
-        await prisma.analyticsSnapshot.create({
-          data: {
-            platform: 'instagram',
-            market: 'hq',
-            date: today,
-            impressions,
-            reach,
+        for (const post of posts) {
+          const likes = post.like_count || 0
+          const comments = post.comments_count || 0
+          // Use publication date instead of today
+          const pubDate = post.timestamp ? new Date(post.timestamp) : new Date()
+          pubDate.setHours(0, 0, 0, 0)
+
+          // Check if we already have a snapshot for this IG post
+          const existing = await prisma.analyticsSnapshot.findFirst({
+            where: {
+              platform: 'instagram',
+              market,
+              metadata: { path: ['igPostId'], equals: post.id },
+            },
+          })
+
+          if (existing) {
+            // Update with latest stats
+            await prisma.analyticsSnapshot.update({
+              where: { id: existing.id },
+              data: { likes, comments },
+            })
+          } else {
+            await prisma.analyticsSnapshot.create({
+              data: {
+                platform: 'instagram',
+                market,
+                date: pubDate,
+                likes,
+                comments,
+                shares: 0,
+                saves: 0,
+                reach: 0,
+                impressions: 0,
+                engagement: 0,
+                metadata: {
+                  igPostId: post.id,
+                  mediaType: post.media_type,
+                  caption: (post.caption || '').substring(0, 200),
+                  timestamp: post.timestamp,
+                  account: account_handle,
+                },
+              },
+            })
+            storedCount++
+          }
+
+          postSummaries.push({
+            market,
+            caption: (post.caption || '').substring(0, 150),
+            mediaType: post.media_type,
+            timestamp: post.timestamp,
             likes,
             comments,
-            shares,
-            saves,
-            engagement: totalEngagement,
-            metadata: {
-              igPostId: post.id,
-              mediaType: post.media_type,
-              caption: (post.caption || '').substring(0, 200),
-              timestamp: post.timestamp,
-            },
-          },
-        })
-        storedCount++
+            reach: 0,
+            impressions: 0,
+            saves: 0,
+            shares: 0,
+          })
+        }
+      } catch (err) {
+        console.error(`Failed to fetch stats for ${account_handle}:`, err)
       }
-
-      postSummaries.push({
-        caption: (post.caption || '').substring(0, 150),
-        mediaType: post.media_type,
-        timestamp: post.timestamp,
-        likes,
-        comments,
-        reach,
-        impressions,
-        saves,
-        shares,
-      })
     }
 
     // ─── AI analysis with Claude Haiku ───
@@ -191,38 +182,15 @@ Respond ONLY with valid JSON. No markdown, no preamble.`
       analysis = { rawResponse: analysisText, parseError: true }
     }
 
-    // ─── Store as KB entry ───
-    const today = new Date().toISOString().split('T')[0]
-    await prisma.knowledgeBaseEntry.upsert({
-      where: {
-        workspaceId_category_key: {
-          workspaceId: WORKSPACE_ID,
-          category: 'PERFORMANCE_INSIGHT',
-          key: 'weekly_performance_analysis',
-        },
-      },
-      update: {
-        value: JSON.stringify(analysis),
-        metadata: {
-          lastUpdated: today,
-          postsAnalyzed: posts.length,
-          snapshotsStored: storedCount,
-        },
-        isActive: true,
-      },
-      create: {
-        workspaceId: WORKSPACE_ID,
-        category: 'PERFORMANCE_INSIGHT',
-        key: 'weekly_performance_analysis',
-        value: JSON.stringify(analysis),
-        source: 'performance_learner_cron',
-        metadata: {
-          lastUpdated: today,
-          postsAnalyzed: posts.length,
-          snapshotsStored: storedCount,
-        },
-      },
-    })
+    // ─── Store as KB entry (raw SQL to avoid enum mismatch) ───
+    const analysisJson = JSON.stringify(analysis)
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO knowledge_base (id, workspace_id, category, key, value, is_active, source, created_at, updated_at)
+       VALUES (gen_random_uuid()::text, $1, 'PERFORMANCE_INSIGHT', 'weekly_performance_analysis', $2, true, 'performance_learner_cron', NOW(), NOW())
+       ON CONFLICT (workspace_id, category, key) DO UPDATE SET value = $2, updated_at = NOW()`,
+      WORKSPACE_ID,
+      analysisJson
+    )
 
     const durationMs = Date.now() - startTime
     const tokensUsed =
@@ -234,7 +202,7 @@ Respond ONLY with valid JSON. No markdown, no preamble.`
       data: {
         status: AgentRunStatus.COMPLETED,
         output: JSON.parse(JSON.stringify({
-          postsAnalyzed: posts.length,
+          postsAnalyzed: postSummaries.length,
           snapshotsStored: storedCount,
           analysis,
         })),
@@ -246,7 +214,7 @@ Respond ONLY with valid JSON. No markdown, no preamble.`
 
     return NextResponse.json({
       success: true,
-      postsAnalyzed: posts.length,
+      postsAnalyzed: postSummaries.length,
       snapshotsStored: storedCount,
       analysis,
       durationMs,
