@@ -5,12 +5,12 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, Calendar, PenTool, Image, CheckCircle,
-  Database, Radar, BarChart3, Bot, Settings,
+  Database, Radar, BarChart3, Megaphone, Bot, Settings,
 } from 'lucide-react'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, Calendar, PenTool, Image, CheckCircle,
-  Database, Radar, BarChart3, Bot, Settings,
+  Database, Radar, BarChart3, Megaphone, Bot, Settings,
 }
 
 const NAV_ITEMS = [
@@ -22,6 +22,7 @@ const NAV_ITEMS = [
   { href: '/knowledge-base', label: 'Knowledge Base', icon: 'Database', roles: ['OPERATOR', 'COORDINATOR'] },
   { href: '/intelligence', label: 'Intelligence', icon: 'Radar', roles: ['OPERATOR', 'COORDINATOR'] },
   { href: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
+  { href: '/ads', label: 'Ads', icon: 'Megaphone', roles: ['OPERATOR'] },
   { href: '/agent-runs', label: 'Agent Runs', icon: 'Bot', roles: ['OPERATOR'] },
   { href: '/settings', label: 'Settings', icon: 'Settings', roles: ['OPERATOR', 'COORDINATOR'] },
 ]
