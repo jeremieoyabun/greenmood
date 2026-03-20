@@ -153,6 +153,26 @@ Keep Instagram captions under 3 lines. LinkedIn hook on first line.`,
         reasoning = parsed.reasoning || null
       } catch { /* parsing failed */ }
     }
+    // HARD FILTER: reject any slots on weekends and normalize time format
+    proposedSlots = proposedSlots.filter(slot => {
+      if (slot.date) {
+        const d = new Date(slot.date)
+        const dow = d.getDay()
+        if (dow === 0 || dow === 6) return false // Sunday = 0, Saturday = 6
+      }
+      // Normalize time format: "2:00 PM CET" → "14:00"
+      if (slot.time && (slot.time.includes('AM') || slot.time.includes('PM'))) {
+        const match = slot.time.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i)
+        if (match) {
+          let h = parseInt(match[1])
+          if (match[3].toUpperCase() === 'PM' && h < 12) h += 12
+          if (match[3].toUpperCase() === 'AM' && h === 12) h = 0
+          slot.time = `${h.toString().padStart(2, '0')}:${match[2]}`
+        }
+      }
+      return true
+    })
+
     const createdPosts: Array<{
       postId: string
       slotId: string
@@ -165,7 +185,7 @@ Keep Instagram captions under 3 lines. LinkedIn hook on first line.`,
 
     for (const slot of proposedSlots.slice(0, 3)) {
       // Limit to 3 posts max
-      // Sanitize market code — strip "tone_" prefix if AI added it
+      // Sanitize market code
       const VALID_MARKETS = ['hq', 'us', 'uk', 'ae', 'fr', 'pl', 'kr', 'de']
       const rawMarket = (slot.market || DEFAULT_MARKETS[0]).replace('tone_', '')
       const market = VALID_MARKETS.includes(rawMarket) ? rawMarket : 'hq'
