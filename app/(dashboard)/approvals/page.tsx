@@ -76,10 +76,10 @@ export default async function ApprovalsPage() {
   const { posts, history } = await getApprovalData()
 
   const statusCounts = {
-    AI_GENERATED: posts.filter(p => p.status === 'AI_GENERATED').length,
-    FACT_CHECKED: posts.filter(p => p.status === 'FACT_CHECKED').length,
-    BRAND_APPROVED: posts.filter(p => p.status === 'BRAND_APPROVED').length,
-    READY_TO_SCHEDULE: posts.filter(p => p.status === 'READY_TO_SCHEDULE').length,
+    'To Review': posts.filter(p => ['DRAFT', 'AI_GENERATED', 'FACT_CHECKED', 'BRAND_APPROVED'].includes(p.status)).length,
+    'Scheduled': posts.filter(p => ['READY_TO_SCHEDULE', 'SCHEDULED'].includes(p.status)).length,
+    'Published': posts.filter(p => p.status === 'PUBLISHED').length,
+    'Total': posts.length,
   }
 
   return (
