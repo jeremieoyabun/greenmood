@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { prisma } from '@/lib/db'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
@@ -46,13 +48,14 @@ async function getAnalyticsData() {
     LIMIT 10
   `
 
-  // KB performance insight
-  const insightRows = await prisma.$queryRaw<Array<{ value: string; updated_at: Date }>>`
-    SELECT value, updated_at FROM knowledge_base
-    WHERE category = 'PERFORMANCE_INSIGHT' AND is_active = true
-    ORDER BY updated_at DESC LIMIT 1
-  `
-  const insight = insightRows[0] ? { value: insightRows[0].value, updatedAt: insightRows[0].updated_at } : null
+  // KB performance insight — use text cast to avoid enum mismatch
+  let insight: { value: string; updatedAt: Date } | null = null
+  try {
+    const insightRows = await prisma.$queryRawUnsafe<Array<{ value: string; updated_at: Date }>>(
+      `SELECT value, updated_at FROM knowledge_base WHERE category::text = 'PERFORMANCE_INSIGHT' AND is_active = true ORDER BY updated_at DESC LIMIT 1`
+    )
+    if (insightRows[0]) insight = { value: insightRows[0].value, updatedAt: insightRows[0].updated_at }
+  } catch { /* enum doesn't exist yet */ }
 
   return { snapshots, topPosts, byDayOfWeek, recentTrend: recentTrend.reverse(), insight }
 }
