@@ -103,15 +103,30 @@ export async function searchAssets(query: {
     expression = query.query
   }
 
-  const result = await cloudinary.api.resources({
-    type: 'upload',
-    prefix: query.folder || 'greenmood/',
-    max_results: query.maxResults || 20,
-    tags: true,
-    context: true,
-  })
+  // Fetch both images and videos
+  const [imageResult, videoResult] = await Promise.all([
+    cloudinary.api.resources({
+      type: 'upload',
+      resource_type: 'image',
+      prefix: query.folder || 'greenmood/',
+      max_results: query.maxResults || 20,
+      tags: true,
+      context: true,
+    }),
+    cloudinary.api.resources({
+      type: 'upload',
+      resource_type: 'video',
+      prefix: query.folder || 'greenmood/',
+      max_results: query.maxResults || 20,
+      tags: true,
+      context: true,
+    }).catch(() => ({ resources: [] })), // video folder might not exist
+  ])
 
-  return (result.resources || []).map((r: any) => {
+  const allResources = [...(imageResult.resources || []), ...(videoResult.resources || [])]
+    .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+  return allResources.map((r: any) => {
     const originalName = r.context?.custom?.originalName || ''
     const displayName = r.display_name || originalName.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim() || r.public_id.split('/').pop() || ''
     return {

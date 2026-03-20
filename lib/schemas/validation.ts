@@ -39,7 +39,7 @@ export const updateCalendarSlotSchema = z.object({
 })
 
 export const approvalActionSchema = z.object({
-  action: z.enum(['APPROVE', 'REJECT', 'REQUEST_CHANGES']),
+  action: z.enum(['APPROVE', 'REJECT', 'REQUEST_CHANGES', 'SCHEDULE']),
   comment: z.string().optional(),
   reviewerId: z.string().optional(),
 })
