@@ -41,6 +41,19 @@ export default async function AgentRunsPage() {
   const failedRuns = runs.filter(r => r.status === 'FAILED').length
   const totalTokens = runs.reduce((sum, r) => sum + (r.tokensUsed || 0), 0)
 
+  // Estimate cost in EUR — Claude pricing (approximate, assuming 50/50 input/output)
+  // Sonnet: $3/M input + $15/M output ≈ $9/M average
+  // Haiku: $0.25/M input + $1.25/M output ≈ $0.75/M average
+  // Most runs use Sonnet except fact-check/brand-guard which use Haiku
+  const sonnetTokens = runs
+    .filter(r => !['FACT_CHECKER', 'BRAND_GUARDIAN'].includes(r.agentType))
+    .reduce((sum, r) => sum + (r.tokensUsed || 0), 0)
+  const haikuTokens = runs
+    .filter(r => ['FACT_CHECKER', 'BRAND_GUARDIAN'].includes(r.agentType))
+    .reduce((sum, r) => sum + (r.tokensUsed || 0), 0)
+  const costUSD = (sonnetTokens / 1_000_000) * 9 + (haikuTokens / 1_000_000) * 0.75
+  const costEUR = (costUSD * 0.92).toFixed(2)
+
   return (
     <>
       <PageHeader
@@ -49,12 +62,13 @@ export default async function AgentRunsPage() {
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-5 gap-4 mb-8">
         {[
           { label: 'Total Runs', value: totalRuns, color: 'text-gm-cream' },
           { label: 'Completed', value: completedRuns, color: 'text-emerald-400' },
           { label: 'Failed', value: failedRuns, color: 'text-red-400' },
           { label: 'Tokens Used', value: totalTokens.toLocaleString(), color: 'text-amber-400' },
+          { label: 'Est. Cost', value: `€${costEUR}`, color: 'text-sky-400' },
         ].map(s => (
           <Card key={s.label}>
             <span className="text-xs uppercase tracking-wider text-gm-cream/40">{s.label}</span>

@@ -38,14 +38,29 @@ interface CalendarSlot {
 type ViewMode = 'month' | 'week' | 'agenda'
 
 const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
+  // Instagram — all markets
   'hq--instagram': { label: 'IG BE', bg: 'bg-pink-500/15', text: 'text-pink-300', border: 'border-l-pink-400', dot: 'bg-pink-400' },
   'us--instagram': { label: 'IG US', bg: 'bg-blue-500/15', text: 'text-blue-300', border: 'border-l-blue-400', dot: 'bg-blue-400' },
+  'uk--instagram': { label: 'IG UK', bg: 'bg-red-500/15', text: 'text-red-300', border: 'border-l-red-400', dot: 'bg-red-400' },
   'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-l-amber-400', dot: 'bg-amber-400' },
-  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'fr--linkedin': { label: 'LI FR', bg: 'bg-indigo-500/15', text: 'text-indigo-300', border: 'border-l-indigo-400', dot: 'bg-indigo-400' },
-  'hq--stories': { label: 'Stories', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
+  'fr--instagram': { label: 'IG FR', bg: 'bg-violet-500/15', text: 'text-violet-300', border: 'border-l-violet-400', dot: 'bg-violet-400' },
+  'pl--instagram': { label: 'IG PL', bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-l-rose-400', dot: 'bg-rose-400' },
+  'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-500/15', text: 'text-cyan-300', border: 'border-l-cyan-400', dot: 'bg-cyan-400' },
+  // LinkedIn — all markets (sky blue = LinkedIn brand)
+  'hq--linkedin': { label: 'LI BE', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'us--linkedin': { label: 'LI US', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'uk--linkedin': { label: 'LI UK', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'fr--linkedin': { label: 'LI FR', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'ae--linkedin': { label: 'LI UAE', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'pl--linkedin': { label: 'LI PL', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  // Stories
+  'hq--stories': { label: 'Stories BE', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
+  'us--stories': { label: 'Stories US', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
   'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-500/15', text: 'text-orange-300', border: 'border-l-orange-400', dot: 'bg-orange-400' },
-  'hq--facebook': { label: 'Facebook', bg: 'bg-blue-600/15', text: 'text-blue-200', border: 'border-l-blue-500', dot: 'bg-blue-500' },
+  // Facebook
+  'hq--facebook': { label: 'FB BE', bg: 'bg-blue-600/15', text: 'text-blue-200', border: 'border-l-blue-500', dot: 'bg-blue-500' },
+  // TikTok
+  'ae--tiktok': { label: 'TT UAE', bg: 'bg-white/[0.1]', text: 'text-white/80', border: 'border-l-white', dot: 'bg-white' },
 }
 
 function getAccountStyle(market: string, platform: string) {
