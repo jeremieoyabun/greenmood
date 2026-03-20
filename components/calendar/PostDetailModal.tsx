@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CarouselEditor } from '@/components/posts/CarouselEditor'
+import { SocialIcon } from '@/components/ui/SocialIcon'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
 import { useState, useRef, useEffect } from 'react'
@@ -545,6 +546,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
       {/* Status Bar — prominent at top */}
       {!editing && availableActions.length > 0 && (
         <div className="flex items-center gap-3 p-4 -mx-8 -mt-8 mb-6 bg-white/[0.03] border-b border-white/[0.08]">
+          <SocialIcon platform={slot.platform} size="lg" />
+          <span className="text-sm font-semibold text-gm-cream/60 capitalize">{slot.platform}</span>
+          <span className="text-gm-cream/15">|</span>
           <Badge variant="info" size="md">{postStatus?.replace(/_/g, ' ')}</Badge>
           <span className="text-gm-cream/20">→</span>
           <div className="flex items-center gap-2 ml-auto">
@@ -655,8 +659,8 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 >
                   {slot?.post?.isCarousel ? 'Carousel ON' : 'Carousel OFF'}
                 </button>
-                {slot?.post?.isCarousel && slot?.post?.platform === 'linkedin' && (
-                  <span className="text-xs text-sky-400/60">LinkedIn: upload a PDF for carousel</span>
+                {slot?.post?.isCarousel && (
+                  <span className="text-xs text-gm-cream/30">Upload multiple images, drag to reorder</span>
                 )}
               </div>
 
@@ -678,8 +682,22 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                       ) : (
                         <img src={mediaUrl} alt="Post media" className="w-full max-h-56 object-contain bg-black/40" />
                       )}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                        <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change</span>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <span className="text-sm text-white font-medium bg-black/50 px-4 py-2 rounded-xl cursor-pointer hover:bg-black/70 transition-colors">Change</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setImageUrl(null)
+                            if (variant?.id && slot?.post?.id) {
+                              fetch(`/api/posts/${slot.post.id}/variant`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ variantId: variant.id, imageUrl: null }),
+                              }).then(() => onUpdate?.())
+                            }
+                          }}
+                          className="text-sm text-white font-medium bg-red-500/70 px-4 py-2 rounded-xl hover:bg-red-500 transition-colors"
+                        >Delete</button>
                       </div>
                       {uploading && (
                         <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
