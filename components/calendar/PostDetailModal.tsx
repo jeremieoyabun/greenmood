@@ -227,6 +227,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
     setLocalStatus(null)
   }, [slot?.post?.id])
   const [rejectComment, setRejectComment] = useState('')
+  const [showRewrite, setShowRewrite] = useState(false)
+  const [rewriteInstruction, setRewriteInstruction] = useState('')
+  const [rewriting, setRewriting] = useState(false)
+  const [rewriteVersions, setRewriteVersions] = useState<Array<{ text: string; reasoning: string }>>([])
   const [showRejectInput, setShowRejectInput] = useState(false)
 
   // Schedule edit state
@@ -888,6 +892,86 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 <pre className="text-sm text-gm-cream/80 whitespace-pre-wrap font-sans leading-relaxed bg-white/[0.03] rounded-lg p-4 border border-white/[0.05]">
                   {postText}
                 </pre>
+
+                {/* AI Rewrite */}
+                <div className="mt-3 space-y-2">
+                  {!showRewrite ? (
+                    <button
+                      onClick={() => setShowRewrite(true)}
+                      className="text-xs text-gm-sage/60 hover:text-gm-sage transition-colors flex items-center gap-1.5"
+                    >
+                      <span>✨</span> Rewrite with AI
+                    </button>
+                  ) : (
+                    <div className="bg-white/[0.02] rounded-lg border border-white/[0.06] p-3 space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          value={rewriteInstruction}
+                          onChange={(e) => setRewriteInstruction(e.target.value)}
+                          placeholder="Optional: make it shorter, more punchy, different angle..."
+                          className="flex-1 bg-white/[0.05] text-sm text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none placeholder:text-gm-cream/20"
+                        />
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          loading={rewriting}
+                          onClick={async () => {
+                            if (!slot?.post?.id) return
+                            setRewriting(true)
+                            setRewriteVersions([])
+                            try {
+                              const res = await fetch(`/api/posts/${slot.post.id}/rewrite`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  text: postText,
+                                  instruction: rewriteInstruction || undefined,
+                                  platform: slot.platform,
+                                  market: slot.market,
+                                }),
+                              })
+                              const data = await res.json()
+                              if (data.success) setRewriteVersions(data.data.versions || [])
+                              else alert('Rewrite failed: ' + data.error)
+                            } catch { alert('Rewrite failed') }
+                            setRewriting(false)
+                          }}
+                        >
+                          Generate
+                        </Button>
+                        <button onClick={() => { setShowRewrite(false); setRewriteVersions([]) }} className="text-xs text-gm-cream/30 hover:text-gm-cream/50">x</button>
+                      </div>
+
+                      {rewriteVersions.map((v, i) => (
+                        <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.05] space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="text-xs text-gm-sage/60 font-semibold shrink-0">Version {i + 1}</span>
+                            <span className="text-xs text-gm-cream/25 italic">{v.reasoning}</span>
+                          </div>
+                          <pre className="text-sm text-gm-cream/70 whitespace-pre-wrap font-sans leading-relaxed">{v.text}</pre>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => copy(v.text, `v${i}`)}>
+                              {copied === `v${i}` ? 'Copied!' : 'Copy'}
+                            </Button>
+                            <Button variant="primary" size="sm" onClick={async () => {
+                              if (!variant?.id || !slot?.post?.id) return
+                              await fetch(`/api/posts/${slot.post.id}/variant`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ variantId: variant.id, text: v.text }),
+                              })
+                              setShowRewrite(false)
+                              setRewriteVersions([])
+                              onUpdate?.()
+                            }}>
+                              Use this version
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
