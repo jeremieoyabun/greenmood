@@ -29,10 +29,35 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
 
   const handleUpload = async (files: FileList) => {
     setUploading(true)
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
+
     for (const file of Array.from(files)) {
-      const form = new FormData()
-      form.append('file', file)
-      await fetch(`/api/posts/${postId}/media`, { method: 'POST', body: form })
+      try {
+        // Upload directly to Cloudinary from browser (bypasses server size limits)
+        const form = new FormData()
+        form.append('file', file)
+        form.append('upload_preset', 'greenmood_upload')
+        form.append('folder', `greenmood/social/instagram`)
+        form.append('tags', `carousel,post:${postId}`)
+
+        const cloudRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          { method: 'POST', body: form }
+        )
+        const cloudData = await cloudRes.json()
+
+        if (cloudData.secure_url) {
+          // Register in our DB
+          await fetch(`/api/posts/${postId}/media/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              url: cloudData.secure_url,
+              mediaType: file.type.startsWith('video/') ? 'video' : 'image',
+            }),
+          })
+        }
+      } catch { /* continue */ }
     }
     await fetchMedia()
     setUploading(false)

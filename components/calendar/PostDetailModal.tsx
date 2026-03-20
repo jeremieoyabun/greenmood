@@ -312,19 +312,52 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   const handleMultiUpload = async (files: FileList) => {
     if (!slot?.post?.id) return
     setUploading(true)
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
+    const platform = slot.platform || 'other'
+    const market = slot.market || 'hq'
+    const folder = platform === 'stories'
+      ? `greenmood/social/stories/${market}`
+      : `greenmood/social/${platform}/${market}`
+
     for (const file of Array.from(files)) {
       try {
-        // Upload directly via the media endpoint (FormData → Cloudinary)
+        // Upload directly to Cloudinary from browser (no server size limit)
         const formData = new FormData()
         formData.append('file', file)
-        await fetch(`/api/posts/${slot.post.id}/media`, { method: 'POST', body: formData })
-      } catch { /* continue */ }
+        formData.append('upload_preset', 'greenmood_upload')
+        formData.append('folder', folder)
+        formData.append('tags', `${platform},${market},post:${slot.post.id}`)
+
+        const cloudRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+          { method: 'POST', body: formData }
+        )
+        const cloudData = await cloudRes.json()
+
+        if (cloudData.secure_url) {
+          // Register in our DB
+          const isVideo = file.type.startsWith('video/')
+          const maxOrder = mediaItems.length
+          await prisma_register(slot.post.id, cloudData.secure_url, isVideo ? 'video' : 'image', maxOrder)
+        }
+      } catch (e) {
+        console.error('Upload failed:', e)
+      }
     }
     // Refresh media list
     const res = await fetch(`/api/posts/${slot.post.id}/media`)
     const data = await res.json()
     if (data.success) setMediaItems(data.data || [])
     setUploading(false)
+  }
+
+  // Register uploaded media in our DB
+  const prisma_register = async (postId: string, url: string, mediaType: string, sortOrder: number) => {
+    await fetch(`/api/posts/${postId}/media/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, mediaType, sortOrder }),
+    })
   }
 
   const removeMedia = async (mediaId: string) => {
