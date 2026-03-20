@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
             status: true,
             market: true,
             platform: true,
+            isCarousel: true,
             variants: {
               where: { isActive: true },
               orderBy: { version: 'desc' as const },

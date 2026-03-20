@@ -170,6 +170,7 @@ model Post {
   market      String
   platform    String
   status      PostStatus @default(DRAFT)
+  isCarousel  Boolean    @default(false) @map("is_carousel")
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 

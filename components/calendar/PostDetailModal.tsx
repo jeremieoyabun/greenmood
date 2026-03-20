@@ -3,6 +3,7 @@
 import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { CarouselEditor } from '@/components/posts/CarouselEditor'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
 import { useState, useRef, useEffect } from 'react'
@@ -175,6 +176,8 @@ interface PostDetail {
   post: {
     id: string
     status: string
+    isCarousel?: boolean
+    platform?: string
     variants: { id: string; text: string; hashtags: string | null; firstComment: string | null; notes: string | null; timing: string | null; imageUrl: string | null }[]
   } | null
 }
@@ -629,44 +632,77 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               {uploading && <p className="text-xs text-gm-cream/40 animate-pulse text-center">Uploading...</p>}
             </div>
           ) : (
-            /* REGULAR POST: Single media, smaller preview */
-            <div>
-              {(imageUrl || variant?.imageUrl) ? (() => {
-                const mediaUrl = imageUrl || variant?.imageUrl || ''
-                const isVideoFile = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
-                return (
-                <div
-                  className="rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer group relative bg-black/20"
-                  onClick={() => imageInputRef.current?.click()}
-                >
-                  {isVideoFile ? (
-                    <video src={mediaUrl} className="w-full max-h-56 object-contain bg-black" controls muted />
-                  ) : (
-                    <img src={mediaUrl} alt="Post media" className="w-full max-h-56 object-contain bg-black/40" />
-                  )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                    <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change</span>
-                  </div>
-                  {uploading && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-sm text-white animate-pulse">Uploading...</span>
-                    </div>
-                  )}
-                </div>
-                )})() : (
+            /* REGULAR POST: Single or Carousel */
+            <div className="space-y-3">
+              {/* Carousel toggle */}
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => imageInputRef.current?.click()}
-                  className="w-full h-40 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
+                  onClick={async () => {
+                    if (!slot?.post?.id) return
+                    const newVal = !slot.post.isCarousel
+                    await fetch(`/api/posts/${slot.post.id}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ isCarousel: newVal }),
+                    })
+                    onUpdate?.()
+                  }}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                    slot?.post?.isCarousel
+                      ? 'bg-gm-sage/20 border-gm-sage/40 text-gm-sage'
+                      : 'bg-white/[0.03] border-white/[0.08] text-gm-cream/40 hover:text-gm-cream/60'
+                  }`}
                 >
-                  {uploading ? (
-                    <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
-                  ) : (
-                    <>
-                      <span className="text-2xl opacity-15">+</span>
-                      <span className="text-xs text-gm-cream/25">Add image or video</span>
-                    </>
-                  )}
+                  {slot?.post?.isCarousel ? 'Carousel ON' : 'Carousel OFF'}
                 </button>
+                {slot?.post?.isCarousel && slot?.post?.platform === 'linkedin' && (
+                  <span className="text-xs text-sky-400/60">LinkedIn: upload a PDF for carousel</span>
+                )}
+              </div>
+
+              {/* Carousel editor or single image */}
+              {slot?.post?.isCarousel ? (
+                <CarouselEditor postId={slot.post.id} onUpdate={onUpdate} />
+              ) : (
+                <>
+                  {(imageUrl || variant?.imageUrl) ? (() => {
+                    const mediaUrl = imageUrl || variant?.imageUrl || ''
+                    const isVideoFile = mediaUrl.match(/\.(mp4|mov|webm|avi)/i) || mediaUrl.includes('video')
+                    return (
+                    <div
+                      className="rounded-xl overflow-hidden border border-white/[0.08] cursor-pointer group relative bg-black/20"
+                      onClick={() => imageInputRef.current?.click()}
+                    >
+                      {isVideoFile ? (
+                        <video src={mediaUrl} className="w-full max-h-56 object-contain bg-black" controls muted />
+                      ) : (
+                        <img src={mediaUrl} alt="Post media" className="w-full max-h-56 object-contain bg-black/40" />
+                      )}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                        <span className="text-sm text-white font-medium bg-black/40 px-4 py-2 rounded-xl">Change</span>
+                      </div>
+                      {uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-sm text-white animate-pulse">Uploading...</span>
+                        </div>
+                      )}
+                    </div>
+                    )})() : (
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      className="w-full h-40 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
+                    >
+                      {uploading ? (
+                        <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
+                      ) : (
+                        <>
+                          <span className="text-2xl opacity-15">+</span>
+                          <span className="text-xs text-gm-cream/25">Add image or video</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
