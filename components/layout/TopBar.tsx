@@ -21,14 +21,14 @@ export function TopBar({ userName, userRole }: TopBarProps) {
   return (
     <header className="h-16 border-b border-white/[0.06] bg-[#0d180d]/80 backdrop-blur-md flex items-center justify-between px-8">
       {/* Search */}
-      <div className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2 w-80 hover:border-white/[0.12] transition-colors focus-within:border-gm-sage/30">
-        <Search className="w-4 h-4 text-gm-cream/30" />
+      <div className="flex items-center gap-3 bg-white border border-white/20 rounded-xl px-4 py-2 w-80 shadow-sm transition-all focus-within:ring-2 focus-within:ring-gm-sage/60 focus-within:border-gm-sage/60">
+        <Search className="w-4 h-4 text-gray-400" />
         <input
           type="text"
           placeholder="Search posts, campaigns, assets..."
-          className="bg-transparent text-sm text-gm-cream placeholder:text-gm-cream/25 focus:outline-none w-full"
+          className="bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none w-full"
         />
-        <kbd className="text-xs text-gm-cream/20 bg-white/[0.06] px-2 py-0.5 rounded-md font-mono">⌘K</kbd>
+        <kbd className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md font-mono">⌘K</kbd>
       </div>
 
       {/* Right side */}

@@ -202,7 +202,7 @@ export default function ComposerPage() {
           </Card>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-400">
+            <div className="p-3 bg-red-50 border border-red-300 rounded-xl text-xs text-red-600 font-medium">
               {error}
             </div>
           )}
