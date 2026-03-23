@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { v2 as cloudinary } from 'cloudinary'
+import { validateImageDimensions } from '@/lib/image-validation'
 
 // Allow large uploads (videos up to 100MB)
 export const maxDuration = 120
@@ -94,9 +95,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       await prisma.$executeRaw`UPDATE posts SET is_carousel = true WHERE id = ${id}`
     }
 
+    // Validate dimensions for images
+    const dimensionCheck = !isVideo && result.width && result.height
+      ? validateImageDimensions(platform, result.width, result.height)
+      : null
+
     return NextResponse.json({
       success: true,
-      data: { id: mediaId, url: result.secure_url, mediaType: result.resource_type, sortOrder: nextOrder }
+      data: {
+        id: mediaId,
+        url: result.secure_url,
+        mediaType: result.resource_type,
+        sortOrder: nextOrder,
+        dimensions: result.width && result.height ? { width: result.width, height: result.height } : null,
+        dimensionCheck,
+      },
     })
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 })

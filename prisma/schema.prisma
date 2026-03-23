@@ -320,6 +320,7 @@ enum AgentType {
   MARKET_INTELLIGENCE
   COMMENT_MONITOR
   REPURPOSE_AGENT
+  POST_INSPECTOR
 }
 
 enum AgentRunStatus {

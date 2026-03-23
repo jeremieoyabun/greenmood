@@ -17,6 +17,7 @@ export { VisualBuilderAgent } from './visual-builder'
 export { SchedulerAgent } from './scheduler'
 export { PerformanceAnalystAgent } from './performance-analyst'
 export { MarketIntelligenceAgent } from './market-intelligence'
+export { PostInspectorAgent } from './post-inspector'
 
 // ─── Agent Factory ───
 
@@ -32,6 +33,7 @@ import { VisualBuilderAgent } from './visual-builder'
 import { SchedulerAgent } from './scheduler'
 import { PerformanceAnalystAgent } from './performance-analyst'
 import { MarketIntelligenceAgent } from './market-intelligence'
+import { PostInspectorAgent } from './post-inspector'
 
 const agentRegistry: Record<AgentType, () => BaseAgent> = {
   ORCHESTRATOR: () => new OrchestratorAgent(),
@@ -46,6 +48,7 @@ const agentRegistry: Record<AgentType, () => BaseAgent> = {
   MARKET_INTELLIGENCE: () => new MarketIntelligenceAgent(),
   COMMENT_MONITOR: () => new MarketIntelligenceAgent(), // Comment monitor runs inline in cron
   REPURPOSE_AGENT: () => new ContentGeneratorAgent(), // Repurpose runs inline in cron
+  POST_INSPECTOR: () => new PostInspectorAgent(),
 }
 
 /**

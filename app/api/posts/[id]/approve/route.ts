@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { approvalActionSchema } from '@/lib/schemas/validation'
 import { PostStatus } from '@prisma/client'
+import { validateImageDimensions, getImageDimensionsFromUrl } from '@/lib/image-validation'
 
 // Valid approval state transitions
 const VALID_TRANSITIONS: Record<string, Record<string, PostStatus>> = {
@@ -57,6 +58,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     const toStatus = transitions[action]
+
+    // ─── Dimension validation gate before scheduling ───
+    if (toStatus === PostStatus.SCHEDULED) {
+      const media = await prisma.$queryRaw<Array<{ url: string; media_type: string }>>`
+        SELECT url, media_type FROM post_media
+        WHERE post_id = ${id} AND media_type != 'video'
+        ORDER BY sort_order ASC
+      `
+      const variant = await prisma.postVariant.findFirst({
+        where: { postId: id, isActive: true },
+        select: { imageUrl: true },
+      })
+
+      const imageUrls = media.map((m) => m.url)
+      if (!imageUrls.length && variant?.imageUrl) {
+        imageUrls.push(variant.imageUrl)
+      }
+
+      for (const url of imageUrls) {
+        const dims = await getImageDimensionsFromUrl(url)
+        if (dims) {
+          const check = validateImageDimensions(post.platform, dims.width, dims.height)
+          if (check.severity === 'critical') {
+            return NextResponse.json(
+              { success: false, error: `Cannot schedule: ${check.message}` },
+              { status: 400 }
+            )
+          }
+        }
+      }
+    }
 
     // Execute transition in a transaction
     const [updatedPost, approvalStep] = await prisma.$transaction([
