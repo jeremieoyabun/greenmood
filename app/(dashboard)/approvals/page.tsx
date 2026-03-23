@@ -1,11 +1,7 @@
 import { prisma } from '@/lib/db'
 import { getWorkspaceId } from '@/lib/workspace'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { StatusDot } from '@/components/ui/StatusDot'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { MARKETS, POST_STATUS_CONFIG } from '@/lib/constants'
+import { Card } from '@/components/ui/Card'
 import { ApprovalQueue } from '@/components/approvals/ApprovalQueue'
 
 async function getApprovalData() {
@@ -91,18 +87,20 @@ export default async function ApprovalsPage() {
 
       {/* Status Pipeline */}
       <div className="grid grid-cols-4 gap-3 mb-6">
-        {(Object.entries(statusCounts) as [string, number][]).map(([status, count]) => {
-          const config = POST_STATUS_CONFIG[status as keyof typeof POST_STATUS_CONFIG]
-          return (
-            <Card key={status}>
-              <div className="flex items-center gap-2 mb-1">
-                <StatusDot status={status} />
-                <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-medium">{config?.label || status}</span>
-              </div>
-              <p className="text-2xl font-semibold text-gm-cream">{count}</p>
-            </Card>
-          )
-        })}
+        {([
+          { label: 'To Review', count: statusCounts['To Review'], color: 'bg-amber-400', accent: 'border-amber-400/40' },
+          { label: 'Scheduled', count: statusCounts['Scheduled'], color: 'bg-indigo-400', accent: 'border-indigo-400/40' },
+          { label: 'Published', count: statusCounts['Published'], color: 'bg-emerald-400', accent: 'border-emerald-400/40' },
+          { label: 'Total', count: statusCounts['Total'], color: 'bg-gm-sage', accent: 'border-gm-sage/40' },
+        ]).map((item) => (
+          <Card key={item.label} className={`border-l-[3px] ${item.accent}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`inline-block w-2 h-2 rounded-full ${item.color}`} />
+              <span className="text-[10px] uppercase tracking-wider text-gm-cream/50 font-semibold">{item.label}</span>
+            </div>
+            <p className="text-2xl font-semibold text-gm-cream">{item.count}</p>
+          </Card>
+        ))}
       </div>
 
       <ApprovalQueue posts={posts} history={history} />
