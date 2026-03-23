@@ -29,10 +29,10 @@ export function FilterBar({ filters, className }: FilterBarProps) {
           <select
             value={filter.value}
             onChange={(e) => filter.onChange(e.target.value)}
-            className="px-2 py-1 text-xs bg-white/[0.05] border border-white/[0.08] rounded-md text-gm-cream appearance-none focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+            className="px-2.5 py-1.5 text-xs bg-white border border-white/20 rounded-lg text-gray-900 shadow-sm appearance-none focus:outline-none focus:ring-2 focus:ring-gm-sage/60"
           >
             {filter.options.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-gm-dark">
+              <option key={opt.value} value={opt.value} className="bg-white text-gray-900">
                 {opt.label}
               </option>
             ))}

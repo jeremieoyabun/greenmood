@@ -11,23 +11,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, ...props }, ref) => {
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {label && (
-          <label className="block text-xs font-medium text-gm-cream/60">{label}</label>
+          <label className="block text-xs font-semibold text-gm-cream/80 uppercase tracking-wide">{label}</label>
         )}
         <input
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg',
-            'text-gm-cream placeholder:text-gm-cream/30',
-            'focus:outline-none focus:ring-1 focus:ring-gm-sage/50 focus:border-gm-sage/50',
-            'transition-colors duration-150',
-            error && 'border-red-500/50 focus:ring-red-500/50',
+            'w-full px-3.5 py-2.5 text-sm bg-white border border-white/20 rounded-xl shadow-sm',
+            'text-gray-900 placeholder:text-gray-400',
+            'focus:outline-none focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60',
+            'transition-all duration-150',
+            error && 'border-red-400 focus:ring-red-400/50',
             className
           )}
           {...props}
         />
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-red-400 font-medium mt-1">{error}</p>}
       </div>
     )
   }
@@ -42,23 +42,23 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, ...props }, ref) => {
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {label && (
-          <label className="block text-xs font-medium text-gm-cream/60">{label}</label>
+          <label className="block text-xs font-semibold text-gm-cream/80 uppercase tracking-wide">{label}</label>
         )}
         <textarea
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg',
-            'text-gm-cream placeholder:text-gm-cream/30',
-            'focus:outline-none focus:ring-1 focus:ring-gm-sage/50 focus:border-gm-sage/50',
-            'transition-colors duration-150 resize-y min-h-[80px]',
-            error && 'border-red-500/50 focus:ring-red-500/50',
+            'w-full px-3.5 py-2.5 text-sm bg-white border border-white/20 rounded-xl shadow-sm',
+            'text-gray-900 placeholder:text-gray-400',
+            'focus:outline-none focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60',
+            'transition-all duration-150 resize-y min-h-[80px]',
+            error && 'border-red-400 focus:ring-red-400/50',
             className
           )}
           {...props}
         />
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-red-400 font-medium mt-1">{error}</p>}
       </div>
     )
   }

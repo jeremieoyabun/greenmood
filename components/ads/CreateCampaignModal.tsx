@@ -145,12 +145,12 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gm-cream/70 mb-4">Campaign Details</h3>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-1 block">Campaign Name</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Campaign Name</label>
                 <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Cork Tiles Spring 2026"
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:border-gm-sage/40 focus:outline-none" />
+                  className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
               </div>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-2 block">Objective</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2 block">Objective</label>
                 <div className="grid grid-cols-2 gap-2">
                   {OBJECTIVES.map(o => (
                     <button key={o.value} onClick={() => setObjective(o.value)}
@@ -163,19 +163,19 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-sm text-gm-cream/50 mb-1 block">Daily Budget (EUR)</label>
+                  <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Daily Budget (EUR)</label>
                   <input type="number" value={dailyBudget} onChange={e => setDailyBudget(Number(e.target.value))}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:border-gm-sage/40 focus:outline-none" />
+                    className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-sm text-gm-cream/50 mb-1 block">Start Date</label>
+                  <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Start Date</label>
                   <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:border-gm-sage/40 focus:outline-none" />
+                    className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-sm text-gm-cream/50 mb-1 block">End Date (opt.)</label>
+                  <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">End Date (opt.)</label>
                   <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:border-gm-sage/40 focus:outline-none" />
+                    className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                 </div>
               </div>
             </div>
@@ -186,7 +186,7 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
             <div className="space-y-4">
               <h3 className="text-sm font-semibold text-gm-cream/70 mb-4">Audience Targeting</h3>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-2 block">Countries</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2 block">Countries</label>
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.map(c => (
                     <button key={c.code} onClick={() => toggleCountry(c.code)}
@@ -198,23 +198,23 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-sm text-gm-cream/50 mb-1 block">Min Age</label>
+                  <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Min Age</label>
                   <input type="number" value={ageMin} onChange={e => setAgeMin(Number(e.target.value))}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:outline-none" />
+                    className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="text-sm text-gm-cream/50 mb-1 block">Max Age</label>
+                  <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Max Age</label>
                   <input type="number" value={ageMax} onChange={e => setAgeMax(Number(e.target.value))}
-                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:outline-none" />
+                    className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none" />
                 </div>
               </div>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-1 block">Interests</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Interests</label>
                 <div className="flex gap-2 mb-2">
                   <input value={interestInput} onChange={e => setInterestInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && addInterest()}
                     placeholder="e.g. interior design, architecture..."
-                    className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-2 text-sm text-gm-cream focus:outline-none" />
+                    className="flex-1 bg-white border border-white/20 rounded-xl px-4 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none" />
                   <Button variant="ghost" size="sm" onClick={addInterest}>Add</Button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -239,7 +239,7 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
                 </Button>
               </div>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-2 block">Headlines (pick one or edit)</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2 block">Headlines (pick one or edit)</label>
                 <div className="space-y-2">
                   {headlines.map((h, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -247,14 +247,14 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
                         className={`w-5 h-5 rounded-full border-2 flex-shrink-0 ${selectedHeadline === i ? 'border-gm-sage bg-gm-sage' : 'border-white/20'}`} />
                       <input value={h} onChange={e => { const n = [...headlines]; n[i] = e.target.value; setHeadlines(n) }}
                         placeholder={`Headline ${i + 1}`} maxLength={40}
-                        className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-gm-cream focus:outline-none" />
+                        className="flex-1 bg-white border border-white/20 rounded-lg px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none" />
                       <span className="text-xs text-gm-cream/20">{h.length}/40</span>
                     </div>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-2 block">Body Text (pick one or edit)</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2 block">Body Text (pick one or edit)</label>
                 <div className="space-y-2">
                   {bodies.map((b, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -262,16 +262,16 @@ export function CreateCampaignModal({ open, onClose, onCreated }: Props) {
                         className={`w-5 h-5 rounded-full border-2 flex-shrink-0 mt-2 ${selectedBody === i ? 'border-gm-sage bg-gm-sage' : 'border-white/20'}`} />
                       <textarea value={b} onChange={e => { const n = [...bodies]; n[i] = e.target.value; setBodies(n) }}
                         placeholder={`Body text ${i + 1}`} maxLength={125} rows={2}
-                        className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2 text-sm text-gm-cream focus:outline-none resize-none" />
+                        className="flex-1 bg-white border border-white/20 rounded-lg px-3 py-2 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none resize-none" />
                       <span className="text-xs text-gm-cream/20 mt-2">{b.length}/125</span>
                     </div>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-sm text-gm-cream/50 mb-1 block">Link URL</label>
+                <label className="text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-1.5 block">Link URL</label>
                 <input value={linkUrl} onChange={e => setLinkUrl(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-gm-cream focus:outline-none" />
+                  className="w-full bg-white border border-white/20 rounded-xl px-4 py-3 text-sm text-gray-900 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none" />
               </div>
             </div>
           )}

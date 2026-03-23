@@ -20,7 +20,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           'disabled:opacity-40 disabled:cursor-not-allowed',
           {
             'bg-gm-sage text-gm-dark hover:bg-gm-sage/85 shadow-md shadow-gm-sage/15 hover:shadow-lg hover:shadow-gm-sage/25': variant === 'primary',
-            'bg-white/[0.08] text-gm-cream hover:bg-white/[0.14] border border-white/[0.1]': variant === 'secondary',
+            'bg-white/[0.12] text-gm-cream hover:bg-white/[0.20] border border-white/[0.15]': variant === 'secondary',
             'text-gm-cream/60 hover:text-gm-cream hover:bg-white/[0.06]': variant === 'ghost',
             'bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/20': variant === 'danger',
             'border border-white/[0.12] text-gm-cream/80 hover:text-gm-cream hover:bg-white/[0.06] hover:border-white/[0.2]': variant === 'outline',

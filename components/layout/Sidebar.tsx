@@ -65,8 +65,8 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
               className={cn(
                 'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-gm-sage/15 text-gm-sage shadow-sm shadow-gm-sage/5 border border-gm-sage/10'
-                  : 'text-gm-cream/45 hover:text-gm-cream/80 hover:bg-white/[0.04]'
+                  ? 'bg-gm-sage/20 text-gm-sage shadow-sm shadow-gm-sage/10 border border-gm-sage/25'
+                  : 'text-gm-cream/50 hover:text-gm-cream/90 hover:bg-white/[0.06]'
               )}
             >
               {Icon && <Icon className={cn('w-[18px] h-[18px]', isActive ? 'text-gm-sage' : '')} />}

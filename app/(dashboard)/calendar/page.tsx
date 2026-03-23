@@ -353,23 +353,23 @@ export default function CalendarPage() {
           <select
             value={filterMarket}
             onChange={(e) => setFilterMarket(e.target.value)}
-            className="px-2 py-1 text-xs bg-white/[0.05] border border-white/[0.08] rounded-md text-gm-cream focus:outline-none"
+            className="px-2.5 py-1.5 text-xs bg-white border border-white/20 rounded-lg text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gm-sage/60"
           >
-            <option value="all" className="bg-gm-dark">All Markets</option>
+            <option value="all" className="bg-white text-gray-900">All Markets</option>
             {Object.entries(MARKETS).map(([id, m]) => (
-              <option key={id} value={id} className="bg-gm-dark">{m.emoji} {m.name}</option>
+              <option key={id} value={id} className="bg-white text-gray-900">{m.emoji} {m.name}</option>
             ))}
           </select>
           <select
             value={filterPlatform}
             onChange={(e) => setFilterPlatform(e.target.value)}
-            className="px-2 py-1 text-xs bg-white/[0.05] border border-white/[0.08] rounded-md text-gm-cream focus:outline-none"
+            className="px-2.5 py-1.5 text-xs bg-white border border-white/20 rounded-lg text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gm-sage/60"
           >
-            <option value="all" className="bg-gm-dark">All Platforms</option>
-            <option value="instagram" className="bg-gm-dark">Instagram</option>
-            <option value="linkedin" className="bg-gm-dark">LinkedIn</option>
-            <option value="stories" className="bg-gm-dark">Stories</option>
-            <option value="facebook" className="bg-gm-dark">Facebook</option>
+            <option value="all" className="bg-white text-gray-900">All Platforms</option>
+            <option value="instagram" className="bg-white text-gray-900">Instagram</option>
+            <option value="linkedin" className="bg-white text-gray-900">LinkedIn</option>
+            <option value="stories" className="bg-white text-gray-900">Stories</option>
+            <option value="facebook" className="bg-white text-gray-900">Facebook</option>
           </select>
         </div>
         <div className="flex items-center gap-4 flex-wrap">

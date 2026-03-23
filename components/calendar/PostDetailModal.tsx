@@ -65,7 +65,7 @@ function StorySlideEditor({ postId, variantId, initialSlides, onUpdate }: {
                       updated[i] = { ...updated[i], text: e.target.value }
                       setSlides(updated)
                     }}
-                    className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-white/20 rounded-xl text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-gm-sage/60"
                     autoFocus
                   />
                 </div>
@@ -78,7 +78,7 @@ function StorySlideEditor({ postId, variantId, initialSlides, onUpdate }: {
                       updated[i] = { ...updated[i], visual: e.target.value }
                       setSlides(updated)
                     }}
-                    className="w-full px-3 py-2 text-xs bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream/60 focus:outline-none focus:ring-1 focus:ring-gm-sage/30"
+                    className="w-full px-3.5 py-2.5 text-xs bg-white border border-white/20 rounded-xl text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-gm-sage/60"
                   />
                 </div>
                 <Button variant="primary" size="sm" loading={saving} onClick={() => saveSlides(slides)}>Save</Button>
@@ -146,7 +146,7 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
             onChange={(e) => setFcValue(e.target.value)}
             placeholder={isLinkedIn ? 'Put the link here — never in the post body' : 'Link or additional context...'}
             rows={2}
-            className="w-full px-3 py-2 text-sm bg-white/[0.05] border border-white/[0.1] rounded-lg text-gm-cream placeholder:text-gm-cream/15 focus:outline-none focus:ring-1 focus:ring-gm-sage/30 resize-none"
+            className="w-full px-3.5 py-2.5 text-sm bg-white border border-white/20 rounded-xl text-gray-900 shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gm-sage/60 resize-none"
             autoFocus
           />
           <div className="flex gap-2">
@@ -749,9 +749,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <input type="date" value={scheduleDate} onChange={(e) => setScheduleDate(e.target.value)}
-                    className="bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                    className="bg-white text-sm text-gray-900 rounded-xl px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                   <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}
-                    className="bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                    className="bg-white text-sm text-gray-900 rounded-xl px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="primary" size="sm" loading={savingSchedule} onClick={saveSchedule}>Save</Button>
@@ -851,7 +851,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
                 rows={6}
-                className="w-full bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg p-4 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none font-sans leading-relaxed"
+                className="w-full bg-white text-sm text-gray-900 rounded-xl p-4 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none font-sans leading-relaxed"
               />
             </div>
             <div>
@@ -860,7 +860,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 value={editHashtags}
                 onChange={(e) => setEditHashtags(e.target.value)}
                 rows={3}
-                className="w-full bg-white/[0.05] text-sm text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none"
+                className="w-full bg-white text-sm text-gray-700 rounded-xl p-3 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none"
               />
             </div>
             <div>
@@ -873,7 +873,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                 onChange={(e) => setEditFirstComment(e.target.value)}
                 rows={2}
                 placeholder={slot.platform === 'linkedin' ? 'Put the link here — never in the post body' : 'Optional first comment'}
-                className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
+                className="w-full bg-white text-sm text-gray-900 rounded-xl p-3 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none placeholder:text-gray-400"
               />
             </div>
             <div className="flex gap-2">
@@ -917,7 +917,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                           value={rewriteInstruction}
                           onChange={(e) => setRewriteInstruction(e.target.value)}
                           placeholder="Optional: make it shorter, more punchy, different angle..."
-                          className="flex-1 bg-white/[0.05] text-sm text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none placeholder:text-gm-cream/20"
+                          className="flex-1 bg-white text-sm text-gray-900 rounded-xl px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:outline-none placeholder:text-gray-400"
                         />
                         <Button
                           variant="primary"
@@ -1133,7 +1133,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               onChange={(e) => setRejectComment(e.target.value)}
               placeholder="Reason for rejection (required)..."
               rows={2}
-              className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/15"
+              className="w-full bg-white text-sm text-gray-900 rounded-xl p-3 border border-red-300 shadow-sm focus:ring-2 focus:ring-red-400/30 focus:border-red-400 focus:outline-none resize-none placeholder:text-gray-400"
             />
             <div className="flex gap-2 mt-3">
               <Button variant="danger" size="sm" loading={approving === 'REJECT'}

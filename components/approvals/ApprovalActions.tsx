@@ -77,7 +77,7 @@ export function ApprovalActions({ postId, currentStatus }: ApprovalActionsProps)
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Reason..."
-            className="flex-1 bg-white/[0.05] text-xs text-gm-cream/70 rounded px-3 py-1.5 border border-red-500/20 focus:border-red-500/40 focus:outline-none placeholder:text-gm-cream/15"
+            className="flex-1 bg-white text-xs text-gray-900 rounded-lg px-3 py-1.5 border border-red-300 shadow-sm focus:border-red-400 focus:ring-2 focus:ring-red-400/30 focus:outline-none placeholder:text-gray-400"
           />
           <Button
             variant="danger"

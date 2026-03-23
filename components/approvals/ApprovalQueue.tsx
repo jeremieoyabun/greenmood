@@ -399,12 +399,12 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                 <div>
                   <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Caption</label>
                   <textarea value={editText} onChange={(e) => setEditText(e.target.value)} rows={6}
-                    className="w-full bg-white/[0.05] text-sm text-gm-cream/90 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none font-sans leading-relaxed" />
+                    className="w-full bg-white text-sm text-gray-900 rounded-xl p-3 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none font-sans leading-relaxed" />
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">Hashtags</label>
                   <textarea value={editHashtags} onChange={(e) => setEditHashtags(e.target.value)} rows={2}
-                    className="w-full bg-white/[0.05] text-sm text-gm-sage/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none" />
+                    className="w-full bg-white text-sm text-gray-700 rounded-xl p-3 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none" />
                 </div>
                 <div>
                   <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-1">
@@ -412,7 +412,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                   </label>
                   <textarea value={editFirstComment} onChange={(e) => setEditFirstComment(e.target.value)} rows={2}
                     placeholder={selectedPost.platform === 'linkedin' ? 'Link goes here — never in the post body' : 'Optional'}
-                    className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded-lg p-3 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none resize-none placeholder:text-gm-cream/10" />
+                    className="w-full bg-white text-sm text-gray-900 rounded-xl p-3 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none resize-none placeholder:text-gray-400" />
                 </div>
                 <div className="flex gap-2">
                   <Button variant="primary" size="sm" loading={saving} onClick={saveEdit}>Save</Button>
@@ -551,7 +551,7 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                     <div>
                       <textarea value={rejectComment} onChange={(e) => setRejectComment(e.target.value)}
                         placeholder="Reason for rejection..." rows={2}
-                        className="w-full bg-white/[0.05] text-sm text-gm-cream/70 rounded p-3 border border-red-500/20 focus:border-red-500/40 focus:outline-none resize-none placeholder:text-gm-cream/10 mb-2" />
+                        className="w-full bg-white text-sm text-gray-900 rounded-xl p-3 border border-red-300 shadow-sm focus:ring-2 focus:ring-red-400/30 focus:border-red-400 focus:outline-none resize-none placeholder:text-gray-400 mb-2" />
                       <div className="flex gap-2">
                         <Button variant="danger" size="sm" loading={approving === 'REJECT'}
                           onClick={() => { if (!rejectComment.trim()) { alert('Comment required'); return }; handleApproval('REJECT', rejectComment) }}>
@@ -567,12 +567,12 @@ export function ApprovalQueue({ posts, history }: ApprovalQueueProps) {
                             <label className="text-xs uppercase tracking-wider text-gm-cream/40 block mb-1">Date</label>
                             <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)}
                               min={new Date().toISOString().split('T')[0]}
-                              className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                              className="w-full bg-white text-xs text-gray-900 rounded-lg px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                           </div>
                           <div className="w-24">
                             <label className="text-xs uppercase tracking-wider text-gm-cream/40 block mb-1">Time</label>
                             <input type="time" value={scheduleTime} onChange={e => setScheduleTime(e.target.value)}
-                              className="w-full bg-white/[0.05] text-xs text-gm-cream/80 rounded-lg px-3 py-2 border border-white/[0.1] focus:border-gm-sage/40 focus:outline-none" />
+                              className="w-full bg-white text-xs text-gray-900 rounded-lg px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                           </div>
                         </div>
                         <div className="flex gap-2">
