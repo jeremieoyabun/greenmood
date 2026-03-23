@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Marketing OS — P·XEL Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;color:#1a1a1a;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.s{width:1920px;height:1080px;padding:90px 130px;display:flex;flex-direction:column;justify-content:center;page-break-after:always;position:relative;overflow:hidden}
+.bd{background:#111;color:#fff}
+.bf{background:#F3F5F8}
+.bw{background:#fff}
+.bg{background:linear-gradient(145deg,#0f0f1a,#1a1a30);color:#fff}
+.br{background:#B61F2A;color:#fff}
+.ey{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#B61F2A;margin-bottom:24px}
+.eyl{color:rgba(255,255,255,0.3)}
+h1{font-size:76px;font-weight:900;line-height:.92;letter-spacing:-3px;word-spacing:5px}
+h2{font-size:52px;font-weight:800;line-height:1.08;letter-spacing:-2px;word-spacing:3px}
+h3{font-size:22px;font-weight:700;letter-spacing:-0.3px;word-spacing:2px;margin-bottom:10px}
+.sub{font-size:20px;line-height:1.65;color:#666;max-width:560px;margin-top:20px;word-spacing:1px}
+.subl{color:rgba(255,255,255,0.45)}
+.bn{font-size:100px;font-weight:900;line-height:1;letter-spacing:-4px;color:#B61F2A}
+.row{display:flex;gap:60px;align-items:center}
+.col{flex:1}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:36px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px}
+.mt{margin-top:52px}
+.ce{text-align:center}
+.cd{background:#fff;border:2px solid #e2e2e6;border-radius:16px;padding:32px;box-shadow:0 2px 10px rgba(0,0,0,0.04)}
+.cdd{background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:16px;padding:36px}
+.cd h3{font-size:17px;margin-bottom:6px}
+.cd p{font-size:14px;line-height:1.6;color:#777}
+.cdd p{color:rgba(255,255,255,0.4)}
+.mc{text-align:center;padding:40px 24px;background:#F8F9FB;border-radius:16px;border:2px solid #e2e2e6}
+.mcv{font-size:44px;font-weight:800;color:#B61F2A;line-height:1}
+.mcl{font-size:14px;color:#888;font-weight:500;margin-top:10px}
+.ss{background:#EFF1F4;border:2px dashed #ccc;border-radius:14px;padding:56px;text-align:center;color:#aaa;font-size:14px;font-weight:500;min-height:300px;display:flex;align-items:center;justify-content:center}
+.ssd{background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.06);color:rgba(255,255,255,0.2)}
+.fl{list-style:none;margin-top:20px}
+.fl li{display:flex;align-items:flex-start;gap:14px;padding:11px 0;font-size:16px;color:#444;word-spacing:1px}
+.fl li::before{content:"";width:7px;height:7px;border-radius:50%;background:#B61F2A;margin-top:8px;flex-shrink:0}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;padding:14px 18px;font-weight:700;color:#333;border-bottom:2px solid rgba(255,255,255,0.08);font-size:12px;text-transform:uppercase;letter-spacing:1.5px}
+.thd{background:rgba(255,255,255,0.03);color:#777}
+td{padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.05);color:#bbb}
+.bd2{display:inline-block;padding:6px 16px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;min-width:130px;text-align:center;background:#B61F2A;color:#fff}
+.pc{background:#fff;border:2px solid #e2e2e6;border-radius:20px;padding:52px 44px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,0.04)}
+.pc.pop{border:3px solid #B61F2A}
+.pca{font-size:56px;font-weight:900;color:#111;letter-spacing:-2px}
+.pcp{font-size:17px;color:#999;margin-top:6px}
+.pcf{list-style:none;margin-top:28px;text-align:left}
+.pcf li{padding:11px 0;font-size:15px;color:#555;border-bottom:1px solid #f3f3f3}
+.pcf li::before{content:"✓  ";color:#B61F2A;font-weight:800}
+.dv{width:64px;height:4px;background:#B61F2A;margin:24px 0;border-radius:2px}
+.dvc{margin:24px auto}
+.pn{position:absolute;bottom:36px;right:56px;font-size:12px;color:#ccc;font-weight:600;letter-spacing:1px}
+.pnl{color:rgba(255,255,255,0.2)}
+@media print{.s{width:1920px;height:1080px}}
+</style>
+</head>
+<body>
+
+<!-- 01 COVER -->
+<div class="s bd ce">
+<div>
+<div class="ey eyl">Intelligence Marketing Platform</div>
+<h1 style="margin-bottom:28px">Marketing<br>OS</h1>
+<div class="dv dvc"></div>
+<p class="sub subl" style="margin:24px auto 0;max-width:560px">Création, publication, analytics, veille, publicité —<br>une IA qui pilote votre marketing 24/7.</p>
+</div>
+<span class="pn pnl">01</span>
+</div>
+
+<!-- 02 PROBLÈME + SOLUTION -->
+<div class="s bw">
+<div class="row">
+<div class="col">
+<div class="ey">Le problème</div>
+<div class="bn">73%</div>
+<h2 style="margin-top:16px">du temps marketing<br>est perdu en<br>coordination</h2>
+<p class="sub">5 à 10 outils. 14 étapes entre l'idée et la publication. Des contenus qui ne sortent jamais.</p>
+</div>
+<div class="col">
+<div class="ey">La solution</div>
+<h2><span style="color:#B61F2A">Un seul outil.</span><br>Tout automatisé.</h2>
+<p class="sub" style="margin-top:16px">Connectez vos comptes. L'IA génère, adapte par marché et par langue, publie à l'heure optimale, analyse et s'améliore en continu.</p>
+<div class="g3" style="margin-top:32px;gap:16px">
+<div class="mc" style="padding:24px 16px"><div class="mcv" style="font-size:32px">-70%</div><div class="mcl">de temps passé</div></div>
+<div class="mc" style="padding:24px 16px"><div class="mcv" style="font-size:32px">×3</div><div class="mcl">plus de contenu</div></div>
+<div class="mc" style="padding:24px 16px"><div class="mcv" style="font-size:32px">24/7</div><div class="mcl">agents autonomes</div></div>
+</div>
+</div>
+</div>
+<span class="pn">02</span>
+</div>
+
+<!-- 03 FEATURES PRINCIPALES -->
+<div class="s bf">
+<div class="ey">Les modules</div>
+<h2 style="margin-bottom:48px">Tout ce dont vous avez besoin.</h2>
+<div class="g3" style="gap:24px">
+<div class="cd"><h3>📅 Calendrier éditorial</h3><p>Vue mois, semaine, agenda. Drag & drop. Multi-marché, multi-langue. Posts programmés visibles d'un coup d'œil.</p></div>
+<div class="cd"><h3>✨ Création IA</h3><p>Briefez l'IA en une phrase. Elle génère des propositions ancrées dans vos données produit. Zéro hallucination.</p></div>
+<div class="cd"><h3>📤 Publication auto</h3><p>Instagram, LinkedIn, TikTok, Facebook. À l'heure exacte, sur le bon compte, dans la bonne langue.</p></div>
+<div class="cd"><h3>✅ Approbation</h3><p>3 actions : Approuver, Programmer, Supprimer. Édition directe du texte et des visuels.</p></div>
+<div class="cd"><h3>📁 Assets cloud</h3><p>Bibliothèque intelligente. Détection IA des produits. Tags automatiques. Organisation par projet.</p></div>
+<div class="cd"><h3>🔍 Veille + Analytics</h3><p>Signaux concurrentiels quotidiens. Performance par marché. L'IA analyse et recommande.</p></div>
+</div>
+<span class="pn">03</span>
+</div>
+
+<!-- 04 SCREENSHOT PRINCIPAL -->
+<div class="s bd">
+<div class="ey" style="color:#B61F2A">La plateforme</div>
+<h2>Votre cockpit marketing.</h2>
+<p class="sub subl">Calendrier, posts, analytics, veille — tout centralisé. Chaque marché, chaque plateforme, en temps réel.</p>
+<div class="ss ssd mt">[ Insérer screenshot du Dashboard ou Calendar ]</div>
+<span class="pn pnl">04</span>
+</div>
+
+<!-- 05 AGENTS IA -->
+<div class="s bg">
+<div class="ey eyl">Le moteur</div>
+<h2>Le moteur IA.<br>Autonome. 24/7.</h2>
+<table class="mt" style="color:#ccc">
+<thead><tr><th class="thd">Agent</th><th class="thd">Rôle</th><th class="thd">Fréquence</th></tr></thead>
+<tbody>
+<tr><td><span class="bd2">Intelligence</span></td><td>Veille sectorielle et concurrentielle</td><td>Chaque matin</td></tr>
+<tr><td><span class="bd2">Éditorial</span></td><td>Propose des posts basés sur l'actualité</td><td>Chaque matin</td></tr>
+<tr><td><span class="bd2">Fact-checker</span></td><td>Vérifie la cohérence technique</td><td>Automatique</td></tr>
+<tr><td><span class="bd2">Performance</span></td><td>Analyse les stats, recommande</td><td>Chaque soir</td></tr>
+<tr><td><span class="bd2">Ads Optimizer</span></td><td>Optimise budgets, pause les campagnes faibles</td><td>Quotidien</td></tr>
+<tr><td><span class="bd2">Publisher</span></td><td>Publie à l'heure exacte sur le bon compte</td><td>Toutes les 5 min</td></tr>
+<tr><td><span class="bd2">Comments</span></td><td>Surveille, classifie, suggère des réponses</td><td>Toutes les 30 min</td></tr>
+<tr><td><span class="bd2">Repurpose</span></td><td>Adapte un post pour d'autres plateformes</td><td>Quotidien</td></tr>
+</tbody>
+</table>
+<span class="pn pnl">05</span>
+</div>
+
+<!-- 06 MULTI-MARCHÉ -->
+<div class="s bw ce">
+<div class="ey">Multi-marché</div>
+<h2>Un outil. Tous vos marchés.</h2>
+<div class="g4 mt" style="max-width:960px;margin-left:auto;margin-right:auto">
+<div class="cd ce" style="padding:40px 20px"><div style="font-size:40px;margin-bottom:14px">🌍</div><h3>Multi-langue</h3><p>Adaptation automatique par marché.</p></div>
+<div class="cd ce" style="padding:40px 20px"><div style="font-size:40px;margin-bottom:14px">👥</div><h3>Multi-équipe</h3><p>Admin, Coordinateur, Viewer.</p></div>
+<div class="cd ce" style="padding:40px 20px"><div style="font-size:40px;margin-bottom:14px">📱</div><h3>Multi-plateforme</h3><p>IG, LinkedIn, TikTok, Facebook.</p></div>
+<div class="cd ce" style="padding:40px 20px"><div style="font-size:40px;margin-bottom:14px">📊</div><h3>Ads intégrés</h3><p>Création et optimisation Meta Ads.</p></div>
+</div>
+<span class="pn">06</span>
+</div>
+
+<!-- 07 PRIX -->
+<div class="s bf ce">
+<div class="ey">Investissement</div>
+<h2>Simple. Transparent.</h2>
+<div class="g2 mt" style="max-width:740px;margin-left:auto;margin-right:auto">
+<div class="pc">
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:20px">Setup</div>
+<div class="pca">8-10K €</div>
+<div class="pcp">one-time</div>
+<ul class="pcf">
+<li>Configuration complète</li>
+<li>Branding à vos couleurs</li>
+<li>Base de connaissances produit</li>
+<li>Connexion réseaux sociaux</li>
+<li>Cloud d'assets</li>
+<li>Onboarding équipe</li>
+</ul>
+</div>
+<div class="pc pop">
+<div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#B61F2A;margin-bottom:20px">Mensuel</div>
+<div class="pca">500 €</div>
+<div class="pcp">/ mois</div>
+<ul class="pcf">
+<li>Hébergement + maintenance</li>
+<li>IA autonome multi-tâches</li>
+<li>Publication illimitée</li>
+<li>Veille concurrentielle</li>
+<li>Analytics + reporting</li>
+<li>Support + évolutions</li>
+</ul>
+</div>
+</div>
+<span class="pn">07</span>
+</div>
+
+<!-- 08 CONTACT -->
+<div class="s bd ce">
+<div>
+<div style="margin-bottom:40px">
+<span style="font-family:monospace;font-size:44px;font-weight:900;color:#7C3AED;letter-spacing:3px">:P<span style="color:white">·XEL</span></span>
+<span style="font-size:22px;color:rgba(255,255,255,0.3);margin-left:10px;font-weight:500">Studio</span>
+</div>
+<h2 style="font-size:52px;color:white;margin-bottom:20px">Prêt à transformer<br>votre marketing ?</h2>
+<div class="dv dvc" style="background:#7C3AED"></div>
+<p style="color:rgba(255,255,255,0.4);font-size:19px;margin-top:24px">Demandez une démo personnalisée.</p>
+<div style="margin-top:56px;display:flex;gap:60px;justify-content:center;align-items:center">
+<div style="text-align:center">
+<p style="color:rgba(255,255,255,0.2);font-size:11px;text-transform:uppercase;letter-spacing:3px;margin-bottom:10px;font-weight:600">Téléphone</p>
+<p style="color:white;font-size:18px;font-weight:500">+32 (0)497 38 29 54</p>
+</div>
+<div style="width:1px;height:48px;background:rgba(255,255,255,0.08)"></div>
+<div style="text-align:center">
+<p style="color:rgba(255,255,255,0.2);font-size:11px;text-transform:uppercase;letter-spacing:3px;margin-bottom:10px;font-weight:600">Email</p>
+<p style="color:white;font-size:18px;font-weight:500">hello@p-xel.be</p>
+</div>
+</div>
+</div>
+<span class="pn pnl">08</span>
+</div>
+
+</body>
+</html>
