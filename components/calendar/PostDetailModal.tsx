@@ -7,6 +7,7 @@ import { CarouselEditor } from '@/components/posts/CarouselEditor'
 import { SocialIcon } from '@/components/ui/SocialIcon'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
+import { FlagIcon } from '@/components/ui/FlagIcon'
 import { useState, useRef, useEffect } from 'react'
 
 function StorySlideEditor({ postId, variantId, initialSlides, onUpdate }: {
@@ -629,13 +630,14 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
               <button
                 key={s.id}
                 onClick={() => onSwitchSlot?.(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                   isActive
                     ? 'bg-gm-sage/20 text-gm-sage border-gm-sage/30'
                     : 'bg-white/[0.03] text-gm-cream/50 border-white/[0.08] hover:border-white/20 hover:text-gm-cream/70'
                 }`}
               >
-                {m?.emoji} {m?.name || s.market}
+                <FlagIcon market={s.market} size="md" />
+                {m?.name || s.market}
               </button>
             )
           })}
