@@ -364,15 +364,11 @@ async function publishMultiStories(media: Array<{ url: string; media_type: strin
 
 async function publishToLinkedIn(variant: any, accessToken: string) {
 
-  try {
-    // Get LinkedIn profile URN
-    const profileRes = await fetch('https://api.linkedin.com/v2/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-    const profile = await profileRes.json()
-    if (!profile.sub) return { success: false, error: 'Failed to get LinkedIn profile: ' + JSON.stringify(profile) }
+  // Greenmood LinkedIn Organization ID
+  const LINKEDIN_ORG_ID = '10001157'
 
-    const authorUrn = `urn:li:person:${profile.sub}`
+  try {
+    const authorUrn = `urn:li:organization:${LINKEDIN_ORG_ID}`
 
     // Build post
     const postBody: any = {
