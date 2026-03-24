@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { SocialIcon, MarketBadge } from '@/components/ui/SocialIcon'
 import { MARKETS } from '@/lib/constants'
+import { Clock, CheckCircle2, Send, BookOpen, Radio, PenSquare, Calendar, ClipboardCheck, Satellite, ArrowUpRight, Hand } from 'lucide-react'
 
 async function getDashboardData() {
   const workspaceId = await getWorkspaceId()
@@ -98,16 +99,23 @@ export default async function DashboardPage() {
       {/* Key Metrics */}
       <div className="grid grid-cols-5 gap-4 mb-8">
         {[
-          { label: 'Pending Approval', value: data.pendingApprovals, color: 'text-amber-400', href: '/approvals' },
-          { label: 'Ready to Publish', value: data.scheduledPosts, color: 'text-emerald-400', href: '/approvals' },
-          { label: 'Published', value: data.publishedPosts, color: 'text-sky-400', href: '/calendar' },
-          { label: 'Knowledge Base', value: data.kbCount, color: 'text-purple-400', href: '/knowledge-base' },
-          { label: 'Intel Signals', value: data.signalCount, color: 'text-pink-400', href: '/intelligence' },
+          { label: 'Pending Approval', value: data.pendingApprovals, color: 'text-amber-400', barColor: 'bg-amber-400', icon: Clock, href: '/approvals', max: Math.max(data.totalPosts, 1) },
+          { label: 'Ready to Publish', value: data.scheduledPosts, color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2, href: '/approvals', max: Math.max(data.totalPosts, 1) },
+          { label: 'Published', value: data.publishedPosts, color: 'text-sky-400', barColor: 'bg-sky-400', icon: Send, href: '/calendar', max: Math.max(data.totalPosts, 1) },
+          { label: 'Knowledge Base', value: data.kbCount, color: 'text-purple-400', barColor: 'bg-purple-400', icon: BookOpen, href: '/knowledge-base', max: 50 },
+          { label: 'Intel Signals', value: data.signalCount, color: 'text-pink-400', barColor: 'bg-pink-400', icon: Radio, href: '/intelligence', max: 100 },
         ].map((stat) => (
           <a key={stat.label} href={stat.href}>
             <Card hover>
-              <span className="text-sm uppercase tracking-wider text-gm-cream/40 font-medium">{stat.label}</span>
-              <p className={`text-3xl font-bold mt-2 ${stat.color}`}>{stat.value}</p>
+              <div className="flex items-center justify-between mb-3">
+                <stat.icon className={`w-5 h-5 ${stat.color} opacity-70`} />
+                <ArrowUpRight className="w-4 h-4 text-gm-cream/20" />
+              </div>
+              <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium mt-1 block">{stat.label}</span>
+              <div className="mt-3 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                <div className={`h-full rounded-full ${stat.barColor} opacity-60 transition-all duration-500`} style={{ width: `${Math.min((stat.value / stat.max) * 100, 100)}%` }} />
+              </div>
             </Card>
           </a>
         ))}
@@ -139,9 +147,10 @@ export default async function DashboardPage() {
                       <p className="text-sm text-gm-cream/80 truncate">{action.detail}</p>
                     </div>
                     <span className="text-sm text-gm-cream/30 whitespace-nowrap">{action.time}</span>
-                    <span className="text-sm">
-                      {action.type === 'post' ? '📤' : '✋'}
-                    </span>
+                    {action.type === 'post'
+                      ? <Send className="w-4 h-4 text-emerald-400/70" />
+                      : <Hand className="w-4 h-4 text-amber-400/70" />
+                    }
                   </div>
                 ))}
               </div>
@@ -156,19 +165,19 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="space-y-1">
                 {[
-                  { label: 'Create New Post', href: '/composer', icon: '✏️' },
-                  { label: 'View Calendar', href: '/calendar', icon: '📅' },
-                  { label: 'Review Approvals', href: '/approvals', icon: '✅', count: data.pendingApprovals },
-                  { label: 'Intelligence Hub', href: '/intelligence', icon: '📡', count: data.signalCount },
+                  { label: 'Create New Post', href: '/composer', icon: PenSquare, iconColor: 'text-gm-sage' },
+                  { label: 'View Calendar', href: '/calendar', icon: Calendar, iconColor: 'text-sky-400' },
+                  { label: 'Review Approvals', href: '/approvals', icon: ClipboardCheck, iconColor: 'text-amber-400', count: data.pendingApprovals },
+                  { label: 'Intelligence Hub', href: '/intelligence', icon: Satellite, iconColor: 'text-pink-400', count: data.signalCount },
                 ].map((action) => (
                   <a
                     key={action.href}
                     href={action.href}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gm-cream/60 hover:text-gm-cream hover:bg-white/[0.04] transition-all"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gm-cream/60 hover:text-gm-cream hover:bg-white/[0.06] transition-all group"
                   >
-                    <span className="text-base">{action.icon}</span>
+                    <action.icon className={`w-4 h-4 ${action.iconColor} opacity-70 group-hover:opacity-100 transition-opacity`} />
                     <span className="flex-1">{action.label}</span>
-                    {action.count ? <Badge variant="info" size="sm">{action.count}</Badge> : null}
+                    {action.count ? <Badge variant="info" size="sm">{action.count}</Badge> : <ArrowUpRight className="w-3.5 h-3.5 text-gm-cream/15 group-hover:text-gm-cream/40 transition-colors" />}
                   </a>
                 ))}
               </div>
@@ -181,7 +190,7 @@ export default async function DashboardPage() {
               <CardContent>
                 <div className="space-y-2.5">
                   {data.topSignals.map((signal) => (
-                    <a key={signal.id} href="/intelligence" className="block p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] transition-all">
+                    <a key={signal.id} href="/intelligence" className="block p-3 rounded-xl bg-white/[0.03] border border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.05] transition-all">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className={`text-sm font-bold ${
                           (signal.score || 0) >= 90 ? 'text-emerald-400' :
@@ -220,13 +229,16 @@ export default async function DashboardPage() {
               const isToday = i === 0
 
               return (
-                <div key={i} className={`rounded-xl p-3 border ${
-                  isToday ? 'border-gm-sage/20 bg-gm-sage/5' : 'border-white/[0.04] bg-white/[0.01]'
+                <div key={i} className={`rounded-xl p-4 border transition-all ${
+                  isToday ? 'border-gm-sage/30 bg-gm-sage/8 shadow-sm shadow-gm-sage/5' : 'border-white/[0.08] bg-white/[0.02] hover:border-white/[0.12]'
                 }`}>
-                  <p className={`text-xs font-semibold mb-2 ${isToday ? 'text-gm-sage' : 'text-gm-cream/40'}`}>
-                    {DAY_NAMES[day.getDay()]} {day.getDate()}
-                    {isToday && <span className="ml-1.5 text-xs text-gm-sage/60">TODAY</span>}
-                  </p>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className={`text-xs font-semibold ${isToday ? 'text-gm-sage' : 'text-gm-cream/40'}`}>
+                      {DAY_NAMES[day.getDay()]} {day.getDate()}
+                    </p>
+                    {isToday && <span className="text-[10px] font-bold uppercase tracking-widest text-gm-sage bg-gm-sage/10 px-1.5 py-0.5 rounded">Today</span>}
+                    {!isToday && daySlots.length > 0 && <span className="text-[10px] text-gm-cream/25">{daySlots.length}</span>}
+                  </div>
                   {daySlots.length === 0 ? (
                     <p className="text-sm text-gm-cream/15">No posts</p>
                   ) : (
@@ -254,7 +266,7 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="space-y-2">
               {data.recentRuns.map((run) => (
-                <div key={run.id} className="flex items-center gap-3 py-2 border-b border-white/[0.04] last:border-0">
+                <div key={run.id} className="flex items-center gap-3 py-3 border-b border-white/[0.08] last:border-0">
                   <StatusDot status={run.status} />
                   <span className="text-sm text-gm-cream/60 flex-1">{run.agentType.replace(/_/g, ' ')}</span>
                   <Badge variant={run.status === 'COMPLETED' ? 'success' : run.status === 'FAILED' ? 'danger' : 'warning'} size="sm">

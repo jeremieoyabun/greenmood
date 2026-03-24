@@ -8,8 +8,8 @@ export function Card({ className, hover, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-2xl bg-[#1a2a1a]/80 border border-white/[0.06] p-6 backdrop-blur-sm',
-        hover && 'hover:bg-[#1e2e1e] hover:border-white/[0.12] hover:shadow-lg hover:shadow-black/20 transition-all duration-200 cursor-pointer',
+        'rounded-2xl bg-[#152015] border border-white/[0.10] p-6',
+        hover && 'hover:bg-[#1a2a1a] hover:border-white/[0.18] hover:shadow-lg hover:shadow-black/30 transition-all duration-200 cursor-pointer',
         className
       )}
       {...props}
@@ -21,7 +21,7 @@ export function Card({ className, hover, children, ...props }: CardProps) {
 
 export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('flex items-center justify-between mb-5 pb-3 border-b border-white/[0.06]', className)} {...props}>
+    <div className={cn('flex items-center justify-between mb-5 pb-3 border-b border-white/[0.10]', className)} {...props}>
       {children}
     </div>
   )
