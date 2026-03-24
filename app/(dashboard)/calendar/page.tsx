@@ -793,6 +793,15 @@ export default function CalendarPage() {
                     <span className="text-4xl opacity-20">+</span>
                     <span className="text-sm text-gm-cream/30">Click to add image or video</span>
                     <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
+                    <span className="text-[10px] text-gm-sage/30 mt-1">{
+                      {
+                        instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+                        linkedin: '1200 × 627 px (1.91:1) or 1080 × 1080 px (1:1)',
+                        stories: '1080 × 1920 px (9:16)',
+                        facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+                        tiktok: '1080 × 1920 px (9:16)',
+                      }[multiPlatforms[0] || newSlot.platform] || '1080 × 1080 px'
+                    }</span>
                   </button>
                 )}
               </div>

@@ -241,6 +241,14 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
 
   const isStory = slot?.platform === 'stories'
 
+  const RECOMMENDED_SIZES: Record<string, string> = {
+    instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+    linkedin: '1200 × 627 px (1.91:1) or 1080 × 1080 px (1:1)',
+    stories: '1080 × 1920 px (9:16)',
+    facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+    tiktok: '1080 × 1920 px (9:16)',
+  }
+
   // Fetch real imageUrl + multi-media when opening a post
   useEffect(() => {
     setImageUrl(null)
@@ -670,6 +678,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                       <span className="text-3xl opacity-15">+</span>
                       <span className="text-sm text-gm-cream/25">Add story slides</span>
                       <span className="text-xs text-gm-cream/15">Images & videos</span>
+                      <span className="text-[10px] text-gm-sage/30 mt-1">1080 × 1920 px (9:16)</span>
                     </>
                   )}
                 </button>
@@ -757,6 +766,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                         <>
                           <span className="text-2xl opacity-15">+</span>
                           <span className="text-xs text-gm-cream/25">Add image or video</span>
+                          <span className="text-[10px] text-gm-sage/30 mt-1">{RECOMMENDED_SIZES[slot?.platform || 'instagram'] || '1080 × 1080 px'}</span>
                         </>
                       )}
                     </button>
