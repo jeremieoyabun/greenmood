@@ -25,7 +25,7 @@ const INITIAL_ACCOUNTS: SocialAccount[] = [
   { id: '4', platform: 'instagram', handle: '@greenmood.fr', market: 'fr', status: 'disconnected' },
   { id: '5', platform: 'instagram', handle: '@greenmood.pl', market: 'pl', status: 'disconnected' },
   { id: '6', platform: 'instagram', handle: '@greenmood.co.uk', market: 'uk', status: 'disconnected' },
-  { id: '7', platform: 'linkedin', handle: 'Greenmood', market: 'hq', status: 'disconnected' },
+  { id: '7', platform: 'linkedin', handle: 'Greenmood', market: 'global', status: 'disconnected' },
   { id: '9', platform: 'tiktok', handle: '@greenmood.uae', market: 'ae', status: 'disconnected' },
   { id: '10', platform: 'facebook', handle: 'GreenmoodPoland', market: 'pl', status: 'disconnected' },
 ]
@@ -64,7 +64,7 @@ export function SocialAccountsPanel() {
     const account = accounts.find(a => a.id === tokenModal)
     // Map account ID to market code
     const marketMap: Record<string, string> = {
-      '1': 'hq', '2': 'us', '3': 'uk', '4': 'ae', '5': 'fr', '6': 'pl', '7': 'linkedin-hq',
+      '1': 'hq', '2': 'us', '3': 'uk', '4': 'ae', '5': 'fr', '6': 'pl', '7': 'hq',
     }
     const market = account?.market || marketMap[tokenModal] || 'hq'
     const platform = account?.platform || 'instagram'
@@ -221,7 +221,7 @@ export function SocialAccountsPanel() {
                         <span className="text-base">{p?.icon}</span>
                         <div>
                           <p className="text-sm text-gm-cream/80 font-medium">{account.handle}</p>
-                          <p className="text-xs text-gm-cream/30">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
+                          <p className="text-xs text-gm-cream/30">{p?.label}{MARKETS[account.market] ? ` · ${MARKETS[account.market].emoji} ${MARKETS[account.market].name}` : ''}</p>
                         </div>
                       </div>
                       <Badge variant="success">Connected</Badge>
@@ -246,7 +246,7 @@ export function SocialAccountsPanel() {
                       <span className="text-base">{p?.icon}</span>
                       <div>
                         <p className="text-sm text-gm-cream/60">{account.handle}</p>
-                        <p className="text-xs text-gm-cream/25">{p?.label} · {MARKETS[account.market]?.emoji} {MARKETS[account.market]?.name}</p>
+                        <p className="text-xs text-gm-cream/25">{p?.label}{MARKETS[account.market] ? ` · ${MARKETS[account.market].emoji} ${MARKETS[account.market].name}` : ''}</p>
                       </div>
                     </div>
                     <div className="flex gap-1.5">
