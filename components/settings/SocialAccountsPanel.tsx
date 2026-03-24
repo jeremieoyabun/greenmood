@@ -187,7 +187,7 @@ export function SocialAccountsPanel() {
       if (!tiktokKey) { alert('TikTok API not configured yet.'); setConnecting(null); return }
       window.location.href = `https://www.tiktok.com/v2/auth/authorize/?client_key=${tiktokKey}&scope=user.info.basic,video.upload,video.publish&response_type=code&redirect_uri=${encodeURIComponent(baseUrl + '/api/auth/callback/tiktok')}&state=${accountId}`
     } else if (account.platform === 'linkedin') {
-      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=77cfx3q0hjhjdk&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/linkedin')}&scope=openid%20profile%20w_member_social&state=${accountId}`
+      window.location.href = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=78g6q05x6veqzd&redirect_uri=${encodeURIComponent('https://app.greenmood.be/api/auth/callback/linkedin')}&scope=openid%20profile%20w_member_social%20w_organization_social&state=${accountId}`
     }
   }
 
