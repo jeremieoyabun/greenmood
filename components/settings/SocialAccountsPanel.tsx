@@ -54,7 +54,7 @@ export function SocialAccountsPanel() {
           setAccounts(prev => prev.map(account => {
             const hasToken = connectedTokens.some(t =>
               t.platform === account.platform && (
-                account.platform === 'linkedin' || t.market === account.market
+                account.platform === 'linkedin' || t.market === account.market || (account.market === 'global' && t.market === 'hq')
               )
             )
             return { ...account, status: hasToken ? 'connected' : account.status }
@@ -166,10 +166,7 @@ export function SocialAccountsPanel() {
     }
   }, [searchParams])
 
-  // Save to localStorage on changes
-  useEffect(() => {
-    localStorage.setItem('gm-social-accounts', JSON.stringify(accounts))
-  }, [accounts])
+  // No more localStorage — DB is the source of truth
 
   const handleConnect = (accountId: string) => {
     setConnecting(accountId)
@@ -253,9 +250,8 @@ export function SocialAccountsPanel() {
                           onClick={async () => {
                             if (!confirm(`Disconnect ${account.handle}?`)) return
                             try {
-                              await fetch(`/api/social-accounts?platform=${account.platform}&market=${account.market}`, { method: 'DELETE' })
+                              await fetch(`/api/social-accounts?platform=${account.platform}&market=${account.market === 'global' ? 'hq' : account.market}`, { method: 'DELETE' })
                               setAccounts(prev => prev.map(a => a.id === account.id ? { ...a, status: 'disconnected' } : a))
-                              localStorage.removeItem('gm-social-accounts')
                               setSuccessMessage(`${account.handle} disconnected`)
                               setTimeout(() => setSuccessMessage(''), 3000)
                             } catch { /* */ }
