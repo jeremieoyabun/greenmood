@@ -34,6 +34,7 @@ Style references: Dezeen, Wallpaper*, Monocle.
 RULES:
 - Never use em dashes
 - Never invent product facts
+- NEVER invent URLs. greenmood.com DOES NOT EXIST. Use [INSERT LINK] as placeholder
 - Product names stay in English in all languages
 - Instagram: short, punchy, photo-first
 - LinkedIn: data-driven, thought leadership, NO link in post body

@@ -42,12 +42,13 @@ LINKEDIN FIRST COMMENT RULES:
 - Start with a compelling hook or CTA before the link
 - Add 2-3 relevant hashtags after the link
 - Example format: "Discover the full case study → [link]\n\n#BiophilicDesign #Acoustics #WellBuilding"
-- If you don't know the exact URL, suggest a placeholder like [greenmood.be/product-name]
+- NEVER invent URLs. greenmood.com DOES NOT EXIST. Always use [INSERT LINK] as placeholder
 ` : `
 INSTAGRAM FIRST COMMENT RULES:
-- Links ARE clickable in Instagram comments — always include a direct link when relevant
+- Links ARE clickable in Instagram comments — always include a link placeholder when relevant
 - Engage the audience with a question or CTA
-- NEVER say "link in bio" — put the actual link in the comment instead
+- NEVER say "link in bio"
+- NEVER invent URLs. greenmood.com DOES NOT EXIST. Always use [INSERT LINK] as placeholder
 - Keep it conversational and on-brand
 - Can add extra context that didn't fit in the caption
 `}
