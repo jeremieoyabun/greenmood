@@ -114,7 +114,7 @@ PLATFORM DIMENSIONS:
 - Instagram Feed: 1080x1080 (square) or 1080x1350 (portrait, higher engagement)
 - Instagram Stories: 1080x1920 (9:16 vertical)
 - Instagram Carousel: 1080x1080 or 1080x1350 (consistent across slides)
-- LinkedIn Feed: 1200x627 (landscape) or 1080x1080 (square)
+- LinkedIn Feed: 1080x1080 (square, recommended) or 1200x627 (landscape)
 - LinkedIn Article: 1200x627 (landscape header)
 
 VISUAL STYLE:

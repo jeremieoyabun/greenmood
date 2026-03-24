@@ -38,8 +38,8 @@ const PLATFORM_SPECS: Record<string, PlatformSpec> = {
   linkedin: {
     name: 'LinkedIn',
     ratios: [
-      { label: '1.91:1 landscape', ratio: 1.91, ideal: { w: 1200, h: 627 } },
       { label: '1:1 square', ratio: 1, ideal: { w: 1080, h: 1080 } },
+      { label: '1.91:1 landscape', ratio: 1.91, ideal: { w: 1200, h: 627 } },
     ],
     criticalFail: () => false, // LinkedIn is more forgiving
   },

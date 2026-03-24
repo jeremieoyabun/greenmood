@@ -33,7 +33,7 @@ ${brandRules || 'Premium biophilic design brand. Calm, refined, architecturally 
 PLATFORM REQUIREMENTS:
 - Instagram Feed: 1080×1080 (1:1) or 1080×1350 (4:5). Portrait or square only.
 - Instagram Stories: 1080×1920 (9:16). Full-screen vertical.
-- LinkedIn: 1200×627 (landscape) or 1080×1080 (square).
+- LinkedIn: 1080×1080 (square, recommended) or 1200×627 (landscape).
 - TikTok: 1080×1920 (9:16).
 
 You will receive an image from a published post. Analyze it carefully and check:

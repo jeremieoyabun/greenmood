@@ -246,7 +246,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
 
   const RECOMMENDED_SIZES: Record<string, string> = {
     instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
-    linkedin: '1200 × 627 px (1.91:1) or 1080 × 1080 px (1:1)',
+    linkedin: '1080 × 1080 px (1:1) recommended',
     stories: '1080 × 1920 px (9:16)',
     facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
     tiktok: '1080 × 1920 px (9:16)',

@@ -72,7 +72,7 @@ Your job:
 Platform size guidelines:
 - Instagram feed: 1080×1080 (square) or 1080×1350 (portrait 4:5) preferred
 - Instagram Stories/Reels: 1080×1920 (9:16)
-- LinkedIn: 1200×627 (landscape) or 1080×1080 (square)
+- LinkedIn: 1080×1080 (square, recommended) or 1200×627 (landscape)
 - Carousel slides: 1080×1350 each`
 
     const userMessage = `Analyze this image for Greenmood social media use.
