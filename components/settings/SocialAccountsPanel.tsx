@@ -25,8 +25,7 @@ const INITIAL_ACCOUNTS: SocialAccount[] = [
   { id: '4', platform: 'instagram', handle: '@greenmood.fr', market: 'fr', status: 'disconnected' },
   { id: '5', platform: 'instagram', handle: '@greenmood.pl', market: 'pl', status: 'disconnected' },
   { id: '6', platform: 'instagram', handle: '@greenmood.co.uk', market: 'uk', status: 'disconnected' },
-  { id: '7', platform: 'linkedin', handle: 'Greenmood HQ', market: 'hq', status: 'disconnected' },
-  { id: '8', platform: 'linkedin', handle: 'Greenmood France', market: 'fr', status: 'disconnected' },
+  { id: '7', platform: 'linkedin', handle: 'Greenmood', market: 'hq', status: 'disconnected' },
   { id: '9', platform: 'tiktok', handle: '@greenmood.uae', market: 'ae', status: 'disconnected' },
   { id: '10', platform: 'facebook', handle: 'GreenmoodPoland', market: 'pl', status: 'disconnected' },
 ]

@@ -48,12 +48,12 @@ const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; 
   'pl--instagram': { label: 'IG PL', bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-l-rose-400', dot: 'bg-rose-400' },
   'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-500/15', text: 'text-cyan-300', border: 'border-l-cyan-400', dot: 'bg-cyan-400' },
   // LinkedIn — all markets (sky blue = LinkedIn brand)
-  'hq--linkedin': { label: 'LI BE', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'us--linkedin': { label: 'LI US', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'uk--linkedin': { label: 'LI UK', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'fr--linkedin': { label: 'LI FR', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'ae--linkedin': { label: 'LI UAE', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'pl--linkedin': { label: 'LI PL', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'us--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'uk--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'fr--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'ae--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'pl--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
   // Stories
   'hq--stories': { label: 'Stories BE', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
   'us--stories': { label: 'Stories US', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
@@ -392,7 +392,7 @@ export default function CalendarPage() {
           </div>
         )}
         <div className="flex items-center gap-2">
-          <FlagIcon market={slot.market} size="sm" />
+          {slot.platform !== 'linkedin' && <FlagIcon market={slot.market} size="sm" />}
           <SocialIcon platform={slot.platform} size="sm" />
           {hasImage && <span className="text-xs text-gm-cream/30">🖼</span>}
           {slot.time && <span className="text-xs text-gm-cream/30 ml-auto font-medium">{slot.time}</span>}
