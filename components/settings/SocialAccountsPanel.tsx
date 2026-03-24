@@ -245,7 +245,26 @@ export function SocialAccountsPanel() {
                           <p className="text-xs text-gm-cream/30">{p?.label}{MARKETS[account.market] ? ` · ${MARKETS[account.market].emoji} ${MARKETS[account.market].name}` : ''}</p>
                         </div>
                       </div>
-                      <Badge variant="success">Connected</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success">Connected</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={async () => {
+                            if (!confirm(`Disconnect ${account.handle}?`)) return
+                            try {
+                              await fetch(`/api/social-accounts?platform=${account.platform}&market=${account.market}`, { method: 'DELETE' })
+                              setAccounts(prev => prev.map(a => a.id === account.id ? { ...a, status: 'disconnected' } : a))
+                              localStorage.removeItem('gm-social-accounts')
+                              setSuccessMessage(`${account.handle} disconnected`)
+                              setTimeout(() => setSuccessMessage(''), 3000)
+                            } catch { /* */ }
+                          }}
+                          className="text-red-400/50 hover:text-red-400"
+                        >
+                          Disconnect
+                        </Button>
+                      </div>
                     </div>
                   )
                 })}
