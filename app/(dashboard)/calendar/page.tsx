@@ -79,6 +79,8 @@ export default function CalendarPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>('')
   const [newSlot, setNewSlot] = useState({ market: 'hq', platform: 'instagram', time: '12:00', notes: '' })
+  const [multiMarkets, setMultiMarkets] = useState<string[]>([])
+  const [multiPlatforms, setMultiPlatforms] = useState<string[]>([])
   const [selectedSlot, setSelectedSlot] = useState<CalendarSlot | null>(null)
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
   const [filterMarket, setFilterMarket] = useState<string>('all')
@@ -94,7 +96,7 @@ export default function CalendarPage() {
   const [storySlides, setStorySlides] = useState<Array<{ text: string; media: string | null }>>([
     { text: '', media: null },
   ])
-  const isStoryMode = newSlot.platform === 'stories'
+  const isStoryMode = multiPlatforms.length === 1 && multiPlatforms[0] === 'stories' || (multiPlatforms.length === 0 && newSlot.platform === 'stories')
   const [genStory, setGenStory] = useState(false)
 
   const generateStoryTexts = async () => {
@@ -180,6 +182,8 @@ export default function CalendarPage() {
     setNewImage(null)
     setNewSlot({ market: 'hq', platform: 'instagram', time: '12:00', notes: '' })
     setStorySlides([{ text: '', media: null }])
+    setMultiMarkets([])
+    setMultiPlatforms([])
   }
 
   const openAddModal = (date?: Date) => {
@@ -188,33 +192,43 @@ export default function CalendarPage() {
     setShowAddModal(true)
   }
 
-  // Create post with text, image, hashtags
+  // Create post with text, image, hashtags — supports multi-market/platform
   const createPost = async () => {
     if (!selectedDate || !newText.trim()) return
     setCreating(true)
+
+    // Build list of market+platform combos
+    const markets = multiMarkets.length > 0 ? multiMarkets : [newSlot.market]
+    const platforms = multiPlatforms.length > 0 ? multiPlatforms : [newSlot.platform]
+    const combos = markets.flatMap(m => platforms.map(p => ({ market: m, platform: p })))
+
     try {
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: selectedDate,
-          time: newSlot.time,
-          market: newSlot.market,
-          platform: newSlot.platform,
-          text: newText,
-          hashtags: newHashtags || null,
-          firstComment: newFirstComment || null,
-          imageUrl: newImage || null,
-          notes: newSlot.notes || null,
-        }),
-      })
-      const data = await res.json()
-      if (data.success) {
+      let successCount = 0
+      for (const combo of combos) {
+        const res = await fetch('/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: selectedDate,
+            time: newSlot.time,
+            market: combo.market,
+            platform: combo.platform,
+            text: newText,
+            hashtags: newHashtags || null,
+            firstComment: newFirstComment || null,
+            imageUrl: newImage || null,
+            notes: newSlot.notes || null,
+          }),
+        })
+        const data = await res.json()
+        if (data.success) successCount++
+      }
+      if (successCount > 0) {
         setShowAddModal(false)
         resetForm()
         fetchSlots()
       } else {
-        alert('Failed: ' + data.error)
+        alert('Failed to create posts')
       }
     } catch { alert('Failed to create post') }
     setCreating(false)
@@ -270,6 +284,69 @@ export default function CalendarPage() {
       })
       if (!(await res.json()).success) fetchSlots()
     } catch { fetchSlots() }
+  }
+
+  // Group slots with identical content (same campaign or same text) across markets
+  const groupSlots = (daySlots: CalendarSlot[]) => {
+    const groups: { key: string; slots: CalendarSlot[] }[] = []
+    const used = new Set<string>()
+
+    for (const slot of daySlots) {
+      if (used.has(slot.id)) continue
+      const text = slot.post?.variants?.[0]?.text || ''
+      const campaignId = slot.campaign?.title || ''
+      // Group by same campaign title + same platform + same time, or same text content
+      const siblings = text ? daySlots.filter(s =>
+        !used.has(s.id) &&
+        s.platform === slot.platform &&
+        s.time === slot.time &&
+        s.id !== slot.id &&
+        s.post?.variants?.[0]?.text === text
+      ) : []
+
+      if (siblings.length > 0) {
+        const group = [slot, ...siblings]
+        group.forEach(s => used.add(s.id))
+        groups.push({ key: slot.id, slots: group })
+      } else {
+        used.add(slot.id)
+        groups.push({ key: slot.id, slots: [slot] })
+      }
+    }
+    return groups
+  }
+
+  const GroupedChip = ({ slots, compact = false }: { slots: CalendarSlot[]; compact?: boolean }) => {
+    if (slots.length === 1) return <SlotChip slot={slots[0]} compact={compact} />
+    const first = slots[0]
+    const style = getAccountStyle(first.market, first.platform)
+    const postStatus = first.post?.status || ''
+    const isScheduled = postStatus === 'SCHEDULED' || postStatus === 'READY_TO_SCHEDULE'
+    const isPublished = postStatus === 'PUBLISHED'
+    const previewText = first.post?.variants?.[0]?.text?.split('\n')[0]?.substring(0, 40) || ''
+
+    return (
+      <button
+        onClick={(e) => { e.stopPropagation(); setSelectedSlot(first) }}
+        className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-pointer ${
+          isPublished
+            ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
+            : isScheduled
+            ? 'border-l-green-400 bg-green-500/20 ring-2 ring-green-400/30 shadow-md shadow-green-500/10'
+            : `${style.border} ${style.bg} hover:brightness-125`
+        }`}
+      >
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <SocialIcon platform={first.platform} size="sm" />
+          {slots.map(s => <FlagIcon key={s.id} market={s.market} size="sm" />)}
+          <span className="text-[10px] text-gm-sage/60 font-semibold ml-auto">{slots.length} markets</span>
+          {first.time && <span className="text-xs text-gm-cream/30 font-medium">{first.time}</span>}
+        </div>
+        {!compact && previewText && (
+          <p className="text-xs truncate mt-1 text-gm-cream/40 group-hover:text-gm-cream/60">{previewText}</p>
+        )}
+      </button>
+    )
   }
 
   const SlotChip = ({ slot, compact = false }: { slot: CalendarSlot; compact?: boolean }) => {
@@ -422,15 +499,15 @@ export default function CalendarPage() {
                     )}
                   </div>
                   <div className="space-y-[3px]">
-                    {daySlots.slice(0, 4).map(slot => (
-                      <SlotChip key={slot.id} slot={slot} compact={daySlots.length > 3} />
+                    {groupSlots(daySlots).slice(0, 4).map(group => (
+                      <GroupedChip key={group.key} slots={group.slots} compact={daySlots.length > 3} />
                     ))}
-                    {daySlots.length > 4 && (
+                    {groupSlots(daySlots).length > 4 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setCurrentDate(day); setView('week' as ViewMode) }}
                         className="text-xs text-gm-sage/50 hover:text-gm-sage pl-1 transition-colors"
                       >
-                        +{daySlots.length - 4} more
+                        +{groupSlots(daySlots).length - 4} more
                       </button>
                     )}
                   </div>
@@ -531,13 +608,72 @@ export default function CalendarPage() {
       {/* Create Post Modal — Full-width, spacious */}
       <Modal open={showAddModal} onClose={() => { setShowAddModal(false); resetForm() }} title={isStoryMode ? 'Create Story' : 'Create New Post'} size="xl">
         {/* Schedule Settings — always visible at top */}
-        <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06] mb-6">
-          <div className="grid grid-cols-4 gap-4">
+        <div className="bg-white/[0.03] rounded-xl p-5 border border-white/[0.06] mb-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             <Input label="Date" type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} />
             <Input label="Time" type="time" value={newSlot.time} onChange={(e) => setNewSlot(p => ({ ...p, time: e.target.value }))} />
-            <Select label="Market" value={newSlot.market} onChange={(e) => setNewSlot(p => ({ ...p, market: e.target.value }))} options={Object.entries(MARKETS).map(([id, m]) => ({ value: id, label: `${m.emoji} ${m.name}` }))} />
-            <Select label="Platform" value={newSlot.platform} onChange={(e) => setNewSlot(p => ({ ...p, platform: e.target.value }))} options={Object.entries(PLATFORMS).map(([id, p]) => ({ value: id, label: p.name }))} />
           </div>
+
+          {/* Multi-market selection */}
+          <div>
+            <label className="block text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2">Markets</label>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(MARKETS).map(([id, m]) => {
+                const selected = multiMarkets.includes(id)
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setMultiMarkets(prev => selected ? prev.filter(x => x !== id) : [...prev, id])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                      selected
+                        ? 'bg-gm-sage/20 text-gm-sage border-gm-sage/30'
+                        : 'bg-white/[0.03] text-gm-cream/50 border-white/[0.08] hover:border-white/20'
+                    }`}
+                  >
+                    {m.emoji} {m.name}
+                  </button>
+                )
+              })}
+              <button
+                type="button"
+                onClick={() => setMultiMarkets(prev => prev.length === Object.keys(MARKETS).length ? [] : Object.keys(MARKETS))}
+                className="text-xs text-gm-sage/50 hover:text-gm-sage ml-1"
+              >
+                {multiMarkets.length === Object.keys(MARKETS).length ? 'Deselect all' : 'Select all'}
+              </button>
+            </div>
+          </div>
+
+          {/* Multi-platform selection */}
+          <div>
+            <label className="block text-xs font-semibold text-gm-cream/80 uppercase tracking-wide mb-2">Platforms</label>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(PLATFORMS).map(([id, p]) => {
+                const selected = multiPlatforms.includes(id)
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setMultiPlatforms(prev => selected ? prev.filter(x => x !== id) : [...prev, id])}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                      selected
+                        ? 'bg-gm-sage/20 text-gm-sage border-gm-sage/30'
+                        : 'bg-white/[0.03] text-gm-cream/50 border-white/[0.08] hover:border-white/20'
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {(multiMarkets.length > 0 || multiPlatforms.length > 0) && (
+            <p className="text-xs text-gm-sage/60">
+              Will create {Math.max(multiMarkets.length, 1) * Math.max(multiPlatforms.length, 1)} post{(Math.max(multiMarkets.length, 1) * Math.max(multiPlatforms.length, 1)) > 1 ? 's' : ''}
+            </p>
+          )}
         </div>
 
         {isStoryMode ? (
@@ -713,7 +849,10 @@ export default function CalendarPage() {
 
               {/* Submit */}
               <Button onClick={createPost} disabled={creating || !newText.trim()} size="lg" className="w-full">
-                {creating ? 'Creating...' : 'Create Post'}
+                {creating ? 'Creating...' : (() => {
+                  const count = Math.max(multiMarkets.length, 1) * Math.max(multiPlatforms.length, 1)
+                  return count > 1 ? `Create ${count} Posts` : 'Create Post'
+                })()}
               </Button>
             </div>
           </div>

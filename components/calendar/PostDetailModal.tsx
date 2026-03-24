@@ -367,6 +367,22 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
   }
 
   const multiInputRef = useRef<HTMLInputElement>(null)
+  const [dragMediaIdx, setDragMediaIdx] = useState<number | null>(null)
+
+  const handleMediaReorder = async (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx || !slot?.post?.id) return
+    const reordered = [...mediaItems]
+    const [moved] = reordered.splice(fromIdx, 1)
+    reordered.splice(toIdx, 0, moved)
+    setMediaItems(reordered)
+    setDragMediaIdx(null)
+    // Persist new order via API
+    await fetch(`/api/posts/${slot.post.id}/media`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mediaIds: reordered.map(m => m.id) }),
+    })
+  }
 
   const startEditingSchedule = () => {
     setScheduleDate(slot?.date?.split('T')[0] || new Date().toISOString().split('T')[0])
@@ -543,6 +559,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
         break
       case 'SCHEDULED':
         actions.push({ action: 'PUBLISH_NOW', label: 'Publish Now', variant: 'primary', nextStatus: 'PUBLISHED' })
+        actions.push({ action: 'UNSCHEDULE', label: 'Unschedule', variant: 'outline', nextStatus: 'READY_TO_SCHEDULE' })
         break
       case 'REJECTED':
         actions.push({ action: 'APPROVE', label: 'Move to Draft', variant: 'secondary', nextStatus: 'DRAFT' })
@@ -575,6 +592,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
                     setShowRejectInput(true)
                   } else if (action === 'PUBLISH_NOW') {
                     handlePublish()
+                  } else if (action === 'UNSCHEDULE') {
+                    if (confirm('Unschedule this post? It will go back to Ready to Schedule.')) {
+                      handleApproval('UNSCHEDULE')
+                    }
                   } else {
                     handleApproval(action)
                   }
@@ -608,7 +629,15 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               {mediaItems.length > 0 ? (
                 <div className="grid grid-cols-3 gap-2">
                   {mediaItems.map((m, i) => (
-                    <div key={m.id} className="relative rounded-lg overflow-hidden border border-white/[0.08] aspect-[9/16] bg-black/20 group">
+                    <div
+                      key={m.id}
+                      draggable
+                      onDragStart={() => setDragMediaIdx(i)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => { if (dragMediaIdx !== null) handleMediaReorder(dragMediaIdx, i) }}
+                      onDragEnd={() => setDragMediaIdx(null)}
+                      className={`relative rounded-lg overflow-hidden border border-white/[0.08] aspect-[9/16] bg-black/20 group cursor-grab active:cursor-grabbing transition-opacity ${dragMediaIdx === i ? 'opacity-40' : ''}`}
+                    >
                       <div className="absolute top-1 left-1 z-10 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-[10px] text-white font-bold">{i + 1}</div>
                       {m.media_type === 'video' ? (
                         <video src={m.url} className="w-full h-full object-cover" muted />
@@ -1010,30 +1039,27 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
           </>
         )}
 
-        {/* Visual Direction */}
-        {!editing && meta.visualDirection && (
-          <div>
-            <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">Visual Direction</span>
-            <p className="text-sm text-gm-cream/50 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
-              {meta.visualDirection}
-            </p>
-          </div>
-        )}
-
-        {/* Pomelli Prompt */}
-        {!editing && meta.pomelliPrompt && (
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">Pomelli Prompt</span>
-              <Button variant="ghost" size="sm" onClick={() => copy(meta.pomelliPrompt, 'pomelli')}>
-                {copied === 'pomelli' ? 'Copied!' : 'Copy'}
-              </Button>
+        {/* Image Suggestion — from notes field or meta */}
+        {!editing && (() => {
+          const notesRaw = variant?.notes || ''
+          const imageSuggestion = meta.pomelliPrompt || meta.visualDirection || meta.image_suggestion
+            || (notesRaw.startsWith('Image:') ? notesRaw : notesRaw.match(/Image:\s*(.+)/)?.[1])
+          if (!imageSuggestion) return null
+          const displayText = typeof imageSuggestion === 'string'
+            ? imageSuggestion.replace(/^Image:\s*/i, '')
+            : imageSuggestion
+          return (
+            <div className="bg-amber-500/5 border border-amber-500/15 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs uppercase tracking-wider text-amber-400/70 font-semibold">Image Suggestion</span>
+                <Button variant="ghost" size="sm" onClick={() => copy(displayText, 'img-suggestion')}>
+                  {copied === 'img-suggestion' ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
+              <p className="text-sm text-amber-400/70 leading-relaxed">{displayText}</p>
             </div>
-            <p className="text-sm text-amber-400/70 bg-amber-500/5 rounded-lg p-3 border border-amber-500/10">
-              {meta.pomelliPrompt}
-            </p>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Stories Slides — editable inline */}
         {meta.storiesSlides && meta.storiesSlides.length > 0 && (

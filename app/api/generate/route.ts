@@ -69,11 +69,14 @@ EDITORIAL STYLE (match this exactly):
 - LinkedIn: NO link in post body (put in first_comment). Hook on first line. Data-driven.
 - Stories: use --- to separate slides (3 slides max).
 
-IMAGE SUGGESTIONS:
-- For each post, suggest in "notes" field either:
-  - A Pomelli AI prompt for product imagery (detailed, photographic style)
+IMAGE SUGGESTIONS (MANDATORY for every post):
+- EVERY post MUST have an image suggestion in the "notes" field. Never leave it empty.
+- Format: "Image: [detailed description]"
+- Either suggest:
+  - A Pomelli AI prompt for product imagery (detailed, photographic style, specify lighting, angle, setting)
   - OR "Check Nextcloud for [specific photo type]" for real photos
 - Priority: real photos from Nextcloud > Pomelli AI-generated
+- For LinkedIn: suggest professional/architectural imagery. For Instagram: product-focused or lifestyle.
 
 Generate content for each market × platform combination.
 Respond ONLY with valid JSON.
