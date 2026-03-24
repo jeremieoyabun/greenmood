@@ -189,6 +189,8 @@ interface PostDetailModalProps {
   onClose: () => void
   onUpdate?: () => void
   onDelete?: () => void
+  siblingSlots?: PostDetail[]
+  onSwitchSlot?: (slot: PostDetail) => void
 }
 
 const DUPLICATE_TARGETS = [
@@ -199,7 +201,7 @@ const DUPLICATE_TARGETS = [
   { market: 'fr', label: 'IG FR' },
 ]
 
-export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: PostDetailModalProps) {
+export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, siblingSlots = [], onSwitchSlot }: PostDetailModalProps) {
   const [copied, setCopied] = useState('')
   const [imageAnalysis, setImageAnalysis] = useState<any>(null)
   const [analyzing, setAnalyzing] = useState(false)
@@ -613,6 +615,30 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete }: Pos
               </Button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Market tabs for grouped posts */}
+      {siblingSlots.length > 1 && (
+        <div className="flex items-center gap-2 mb-5 pb-4 border-b border-white/[0.06]">
+          <span className="text-xs text-gm-cream/30 uppercase tracking-wider font-semibold mr-2">Markets</span>
+          {siblingSlots.map(s => {
+            const m = MARKETS[s.market]
+            const isActive = s.id === slot.id
+            return (
+              <button
+                key={s.id}
+                onClick={() => onSwitchSlot?.(s)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                  isActive
+                    ? 'bg-gm-sage/20 text-gm-sage border-gm-sage/30'
+                    : 'bg-white/[0.03] text-gm-cream/50 border-white/[0.08] hover:border-white/20 hover:text-gm-cream/70'
+                }`}
+              >
+                {m?.emoji} {m?.name || s.market}
+              </button>
+            )
+          })}
         </div>
       )}
 

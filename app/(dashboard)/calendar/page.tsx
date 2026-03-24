@@ -82,6 +82,7 @@ export default function CalendarPage() {
   const [multiMarkets, setMultiMarkets] = useState<string[]>([])
   const [multiPlatforms, setMultiPlatforms] = useState<string[]>([])
   const [selectedSlot, setSelectedSlot] = useState<CalendarSlot | null>(null)
+  const [groupedSlots, setGroupedSlots] = useState<CalendarSlot[]>([])
   const [filterPlatform, setFilterPlatform] = useState<string>('all')
   const [filterMarket, setFilterMarket] = useState<string>('all')
 
@@ -327,7 +328,7 @@ export default function CalendarPage() {
 
     return (
       <button
-        onClick={(e) => { e.stopPropagation(); setSelectedSlot(first) }}
+        onClick={(e) => { e.stopPropagation(); setGroupedSlots(slots); setSelectedSlot(first) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-pointer ${
           isPublished
             ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
@@ -368,7 +369,7 @@ export default function CalendarPage() {
           e.dataTransfer.setData('text/plain', slot.id)
         }}
         onDragEnd={() => { setDragSlotId(null); setDragOverDate(null) }}
-        onClick={(e) => { e.stopPropagation(); setSelectedSlot(slot) }}
+        onClick={(e) => { e.stopPropagation(); setGroupedSlots([]); setSelectedSlot(slot) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
           isPublished
             ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
@@ -569,7 +570,7 @@ export default function CalendarPage() {
               return (
                 <button
                   key={slot.id}
-                  onClick={() => setSelectedSlot(slot)}
+                  onClick={() => { setGroupedSlots([]); setSelectedSlot(slot) }}
                   className={`w-full text-left rounded-xl p-4 border-l-[4px] ${style.border} bg-white/[0.035] border border-white/[0.08] hover:bg-white/[0.05] transition-all`}
                 >
                   <div className="flex items-center gap-3">
@@ -598,11 +599,13 @@ export default function CalendarPage() {
       <PostDetailModal
         slot={selectedSlot}
         open={!!selectedSlot}
-        onClose={() => setSelectedSlot(null)}
+        onClose={() => { setSelectedSlot(null); setGroupedSlots([]) }}
         onUpdate={() => fetchSlots()}
         onDelete={() => {
           if (selectedSlot) deleteSlot(selectedSlot.id, selectedSlot.post?.id)
         }}
+        siblingSlots={groupedSlots}
+        onSwitchSlot={(slot) => setSelectedSlot(slot)}
       />
 
       {/* Create Post Modal — Full-width, spacious */}
