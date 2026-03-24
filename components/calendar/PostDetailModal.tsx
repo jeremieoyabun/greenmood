@@ -99,12 +99,15 @@ function StorySlideEditor({ postId, variantId, initialSlides, onUpdate }: {
   )
 }
 
-function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCopy, copied }: {
+function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCopy, copied, postText, platform, market }: {
   postId: string; variantId: string; initialValue: string; isLinkedIn: boolean; onCopy: (text: string) => void; copied: boolean
+  postText?: string; platform?: string; market?: string
 }) {
   const [editingFC, setEditingFC] = useState(false)
   const [fcValue, setFcValue] = useState(initialValue)
   const [savingFC, setSavingFC] = useState(false)
+  const [generating, setGenerating] = useState(false)
+  const [suggestions, setSuggestions] = useState<Array<{ text: string; approach: string }>>([])
 
   useEffect(() => { setFcValue(initialValue) }, [initialValue])
 
@@ -118,8 +121,33 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
         body: JSON.stringify({ variantId, firstComment: fcValue }),
       })
       setEditingFC(false)
+      setSuggestions([])
     } catch { /* */ }
     setSavingFC(false)
+  }
+
+  const generateSuggestions = async () => {
+    if (!postText) return
+    setGenerating(true)
+    setSuggestions([])
+    try {
+      const res = await fetch(`/api/posts/${postId}/first-comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: postText, platform, market }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSuggestions(data.data.suggestions || [])
+        if (!editingFC) setEditingFC(true)
+      }
+    } catch { /* */ }
+    setGenerating(false)
+  }
+
+  const useSuggestion = (text: string) => {
+    setFcValue(text)
+    setSuggestions([])
   }
 
   return (
@@ -132,6 +160,9 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
           {isLinkedIn && <Badge variant="warning" size="sm">Required for LinkedIn</Badge>}
         </div>
         <div className="flex gap-1">
+          <Button variant="ghost" size="sm" loading={generating} onClick={generateSuggestions} disabled={!postText}>
+            {generating ? 'Generating...' : '✨ AI Suggest'}
+          </Button>
           {!editingFC && <Button variant="ghost" size="sm" onClick={() => setEditingFC(true)}>{fcValue ? 'Edit' : 'Add'}</Button>}
           {fcValue && !editingFC && (
             <Button variant="ghost" size="sm" onClick={() => onCopy(fcValue)}>
@@ -140,6 +171,22 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
           )}
         </div>
       </div>
+
+      {/* AI Suggestions */}
+      {suggestions.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {suggestions.map((s, i) => (
+            <div key={i} className="bg-white/[0.03] rounded-lg p-3 border border-white/[0.06]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] text-gm-sage/60 font-semibold uppercase tracking-wider">{s.approach}</span>
+                <Button variant="primary" size="sm" onClick={() => useSuggestion(s.text)}>Use this</Button>
+              </div>
+              <p className="text-sm text-gm-cream/70 leading-relaxed whitespace-pre-wrap">{s.text}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
       {editingFC ? (
         <div className="space-y-2">
           <textarea
@@ -152,7 +199,7 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
           />
           <div className="flex gap-2">
             <Button variant="primary" size="sm" loading={savingFC} onClick={saveFC}>Save</Button>
-            <Button variant="ghost" size="sm" onClick={() => { setEditingFC(false); setFcValue(initialValue) }}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={() => { setEditingFC(false); setFcValue(initialValue); setSuggestions([]) }}>Cancel</Button>
           </div>
         </div>
       ) : fcValue ? (
@@ -224,10 +271,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
   // Approval state
   const [approving, setApproving] = useState<string | null>(null)
   const [localStatus, setLocalStatus] = useState<string | null>(null)
+  const [localCarousel, setLocalCarousel] = useState<boolean | null>(null)
 
-  // Reset local status when slot changes
+  // Reset local state when slot changes
   useEffect(() => {
     setLocalStatus(null)
+    setLocalCarousel(null)
   }, [slot?.post?.id])
   const [rejectComment, setRejectComment] = useState('')
   const [showRewrite, setShowRewrite] = useState(false)
@@ -717,34 +766,39 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
             /* REGULAR POST: Single or Carousel */
             <div className="space-y-3">
               {/* Carousel toggle */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={async () => {
-                    if (!slot?.post?.id) return
-                    const newVal = !slot.post.isCarousel
-                    await fetch(`/api/posts/${slot.post.id}`, {
-                      method: 'PATCH',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ isCarousel: newVal }),
-                    })
-                    onUpdate?.()
-                  }}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
-                    slot?.post?.isCarousel
-                      ? 'bg-gm-sage/20 border-gm-sage/40 text-gm-sage'
-                      : 'bg-white/[0.03] border-white/[0.08] text-gm-cream/40 hover:text-gm-cream/60'
-                  }`}
-                >
-                  {slot?.post?.isCarousel ? 'Carousel ON' : 'Carousel OFF'}
-                </button>
-                {slot?.post?.isCarousel && (
-                  <span className="text-xs text-gm-cream/30">Upload multiple images, drag to reorder</span>
-                )}
-              </div>
+              {(() => {
+                const isCarousel = localCarousel !== null ? localCarousel : !!slot?.post?.isCarousel
+                return (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={async () => {
+                          if (!slot?.post?.id) return
+                          const newVal = !isCarousel
+                          setLocalCarousel(newVal)
+                          await fetch(`/api/posts/${slot.post.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ isCarousel: newVal }),
+                          })
+                          onUpdate?.()
+                        }}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                          isCarousel
+                            ? 'bg-gm-sage/20 border-gm-sage/40 text-gm-sage'
+                            : 'bg-white/[0.03] border-white/[0.08] text-gm-cream/40 hover:text-gm-cream/60'
+                        }`}
+                      >
+                        {isCarousel ? 'Carousel ON' : 'Carousel OFF'}
+                      </button>
+                      {isCarousel && (
+                        <span className="text-xs text-gm-cream/30">Upload multiple images, drag to reorder</span>
+                      )}
+                    </div>
 
-              {/* Carousel editor or single image */}
-              {slot?.post?.isCarousel ? (
-                <CarouselEditor postId={slot.post.id} onUpdate={onUpdate} />
+                    {/* Carousel editor or single image */}
+                    {isCarousel ? (
+                <CarouselEditor postId={slot.post!.id} onUpdate={onUpdate} />
               ) : (
                 <>
                   {(imageUrl || variant?.imageUrl) ? (() => {
@@ -801,6 +855,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                   )}
                 </>
               )}
+                  </>
+                )
+              })()}
             </div>
           )}
 
@@ -1073,6 +1130,9 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
               isLinkedIn={slot.platform === 'linkedin'}
               onCopy={(text) => copy(text, 'fc')}
               copied={copied === 'fc'}
+              postText={postText}
+              platform={slot.platform}
+              market={slot.market}
             />
           </>
         )}
