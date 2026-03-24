@@ -120,7 +120,7 @@ async function main() {
     { key: 'linkedin_no_link_body', value: 'LinkedIn: NEVER put links in the post body — it kills organic reach. Always put the link in the first comment instead.' },
     { key: 'linkedin_hook_first_line', value: 'LinkedIn: The first line IS the hook. It must be compelling, specific, and scroll-stopping. No greetings.' },
     { key: 'instagram_hashtags', value: 'Instagram: Place hashtags after 3 dots on new lines. Use 20 relevant hashtags. Mix broad and niche.' },
-    { key: 'instagram_no_links', value: 'Instagram: Links are not clickable in captions. Direct to "link in bio" if needed.' },
+    { key: 'instagram_links', value: 'Instagram: Links are NOT clickable in captions, but ARE clickable in comments. Always put relevant links in the first comment. Never say "link in bio".' },
     { key: 'facebook_links_ok', value: 'Facebook: Links can be included directly in the post body.' },
   ]
 

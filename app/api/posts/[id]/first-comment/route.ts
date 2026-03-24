@@ -45,8 +45,9 @@ LINKEDIN FIRST COMMENT RULES:
 - If you don't know the exact URL, suggest a placeholder like [greenmood.be/product-name]
 ` : `
 INSTAGRAM FIRST COMMENT RULES:
+- Links ARE clickable in Instagram comments — always include a direct link when relevant
 - Engage the audience with a question or CTA
-- Can include a call to action like "Link in bio" or "DM for info"
+- NEVER say "link in bio" — put the actual link in the comment instead
 - Keep it conversational and on-brand
 - Can add extra context that didn't fit in the caption
 `}
