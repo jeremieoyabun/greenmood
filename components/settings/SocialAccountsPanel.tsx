@@ -42,13 +42,34 @@ export function SocialAccountsPanel() {
   const [accounts, setAccounts] = useState<SocialAccount[]>(INITIAL_ACCOUNTS)
   const [hydrated, setHydrated] = useState(false)
 
-  // Load from localStorage after hydration to avoid React #418
+  // Load real token status from DB, fall back to localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('gm-social-accounts')
-    if (saved) {
-      try { setAccounts(JSON.parse(saved)) } catch { /* ignore */ }
+    const loadStatus = async () => {
+      try {
+        const res = await fetch('/api/social-accounts')
+        const data = await res.json()
+        if (data.success && data.data) {
+          // Mark accounts as connected if they have a token in DB
+          const connectedTokens = data.data as Array<{ platform: string; market: string; account_handle: string }>
+          setAccounts(prev => prev.map(account => {
+            const hasToken = connectedTokens.some(t =>
+              t.platform === account.platform && (
+                account.platform === 'linkedin' || t.market === account.market
+              )
+            )
+            return { ...account, status: hasToken ? 'connected' : account.status }
+          }))
+        }
+      } catch {
+        // Fallback to localStorage
+        const saved = localStorage.getItem('gm-social-accounts')
+        if (saved) {
+          try { setAccounts(JSON.parse(saved)) } catch { /* ignore */ }
+        }
+      }
+      setHydrated(true)
     }
-    setHydrated(true)
+    loadStatus()
   }, [])
   const [connecting, setConnecting] = useState<string | null>(null)
   const [showAddAccount, setShowAddAccount] = useState(false)
