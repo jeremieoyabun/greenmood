@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Chip } from '@/components/ui/Chip'
 import { Textarea } from '@/components/ui/Input'
 import { MARKETS, PLATFORMS, CONTENT_TYPES } from '@/lib/constants'
+import { FileText, Building2, Leaf, MapPin, GraduationCap, Wrench } from 'lucide-react'
 
 type Step = 'type' | 'brief' | 'generating' | 'results'
 
@@ -131,7 +132,11 @@ export default function ComposerPage() {
               onClick={() => { setContentType(type.id); setStep('brief') }}
             >
               <div className="text-center py-4">
-                <p className="text-2xl mb-2">{type.icon === 'FileText' ? '📝' : type.icon === 'Building2' ? '🏢' : type.icon === 'Leaf' ? '🌿' : type.icon === 'MapPin' ? '📍' : type.icon === 'GraduationCap' ? '📊' : '🔧'}</p>
+                {(() => {
+                  const iconMap: Record<string, React.ElementType> = { FileText, Building2, Leaf, MapPin, GraduationCap, Wrench }
+                  const Icon = iconMap[type.icon] || FileText
+                  return <Icon className={`w-6 h-6 mx-auto mb-2 ${contentType === type.id ? 'text-gm-sage' : 'text-gm-cream/40'}`} />
+                })()}
                 <p className="text-sm font-medium text-gm-cream">{type.label}</p>
                 <p className="text-xs text-gm-cream/40 mt-1">{type.description}</p>
               </div>
@@ -202,7 +207,7 @@ export default function ComposerPage() {
           </Card>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-300 rounded-xl text-xs text-red-600 font-medium">
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-300 font-medium">
               {error}
             </div>
           )}

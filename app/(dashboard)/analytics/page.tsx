@@ -5,6 +5,7 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { SocialIcon } from '@/components/ui/SocialIcon'
+import { Eye, Heart, MessageCircle, Bookmark, Share2, BarChart3 } from 'lucide-react'
 
 async function getAnalyticsData() {
   // Overall stats
@@ -82,16 +83,17 @@ export default async function AnalyticsPage() {
       {/* Key Metrics */}
       <div className="grid grid-cols-6 gap-4 mb-8">
         {[
-          { label: 'Total Reach', value: totalReach.toLocaleString(), color: 'text-sky-400' },
-          { label: 'Likes', value: totalLikes.toLocaleString(), color: 'text-pink-400' },
-          { label: 'Comments', value: totalComments.toLocaleString(), color: 'text-amber-400' },
-          { label: 'Saves', value: totalSaves.toLocaleString(), color: 'text-emerald-400' },
-          { label: 'Shares', value: totalShares.toLocaleString(), color: 'text-purple-400' },
-          { label: 'Posts Tracked', value: totalPosts.toLocaleString(), color: 'text-gm-cream' },
+          { label: 'Total Reach', value: totalReach.toLocaleString(), color: 'text-sky-400', icon: Eye },
+          { label: 'Likes', value: totalLikes.toLocaleString(), color: 'text-pink-400', icon: Heart },
+          { label: 'Comments', value: totalComments.toLocaleString(), color: 'text-amber-400', icon: MessageCircle },
+          { label: 'Saves', value: totalSaves.toLocaleString(), color: 'text-emerald-400', icon: Bookmark },
+          { label: 'Shares', value: totalShares.toLocaleString(), color: 'text-purple-400', icon: Share2 },
+          { label: 'Posts Tracked', value: totalPosts.toLocaleString(), color: 'text-gm-cream', icon: BarChart3 },
         ].map(s => (
           <Card key={s.label}>
-            <span className="text-xs uppercase tracking-wider text-gm-cream/40">{s.label}</span>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+            <s.icon className={`w-4 h-4 ${s.color} opacity-60 mb-2`} />
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 mt-1 block">{s.label}</span>
           </Card>
         ))}
       </div>
@@ -206,7 +208,7 @@ export default async function AnalyticsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.06]">
+                    <tr className="border-b border-white/[0.10]">
                       <th className="text-left py-2 text-gm-cream/40 font-medium">Platform</th>
                       <th className="text-left py-2 text-gm-cream/40 font-medium">Market</th>
                       <th className="text-right py-2 text-gm-cream/40 font-medium">Posts</th>

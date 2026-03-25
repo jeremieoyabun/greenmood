@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { AgentPanel } from './AgentPanel'
+import { Activity, CheckCircle2, XCircle, Cpu, DollarSign } from 'lucide-react'
 
 async function getAgentRuns() {
   const workspaceId = await getWorkspaceId()
@@ -64,15 +65,16 @@ export default async function AgentRunsPage() {
       {/* Stats */}
       <div className="grid grid-cols-5 gap-4 mb-8">
         {[
-          { label: 'Total Runs', value: totalRuns, color: 'text-gm-cream' },
-          { label: 'Completed', value: completedRuns, color: 'text-emerald-400' },
-          { label: 'Failed', value: failedRuns, color: 'text-red-400' },
-          { label: 'Tokens Used', value: totalTokens.toLocaleString(), color: 'text-amber-400' },
-          { label: 'Est. Cost', value: `€${costEUR}`, color: 'text-sky-400' },
+          { label: 'Total Runs', value: totalRuns, color: 'text-gm-cream', icon: Activity },
+          { label: 'Completed', value: completedRuns, color: 'text-emerald-400', icon: CheckCircle2 },
+          { label: 'Failed', value: failedRuns, color: 'text-red-400', icon: XCircle },
+          { label: 'Tokens Used', value: totalTokens.toLocaleString(), color: 'text-amber-400', icon: Cpu },
+          { label: 'Est. Cost', value: `€${costEUR}`, color: 'text-sky-400', icon: DollarSign },
         ].map(s => (
           <Card key={s.label}>
-            <span className="text-xs uppercase tracking-wider text-gm-cream/40">{s.label}</span>
-            <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
+            <s.icon className={`w-4 h-4 ${s.color} opacity-60 mb-2`} />
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <span className="text-xs uppercase tracking-wider text-gm-cream/40 mt-1 block">{s.label}</span>
           </Card>
         ))}
       </div>

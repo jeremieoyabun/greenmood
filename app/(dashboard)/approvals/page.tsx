@@ -3,6 +3,7 @@ import { getWorkspaceId } from '@/lib/workspace'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { ApprovalQueue } from '@/components/approvals/ApprovalQueue'
+import { Eye, CalendarCheck, CheckCircle2, LayoutGrid } from 'lucide-react'
 
 async function getApprovalData() {
   const workspaceId = await getWorkspaceId()
@@ -88,17 +89,20 @@ export default async function ApprovalsPage() {
       {/* Status Pipeline */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {([
-          { label: 'To Review', count: statusCounts['To Review'], color: 'bg-amber-400', accent: 'border-amber-400/40' },
-          { label: 'Scheduled', count: statusCounts['Scheduled'], color: 'bg-indigo-400', accent: 'border-indigo-400/40' },
-          { label: 'Published', count: statusCounts['Published'], color: 'bg-emerald-400', accent: 'border-emerald-400/40' },
-          { label: 'Total', count: statusCounts['Total'], color: 'bg-gm-sage', accent: 'border-gm-sage/40' },
+          { label: 'To Review', count: statusCounts['To Review'], color: 'text-amber-400', barColor: 'bg-amber-400', icon: Eye },
+          { label: 'Scheduled', count: statusCounts['Scheduled'], color: 'text-indigo-400', barColor: 'bg-indigo-400', icon: CalendarCheck },
+          { label: 'Published', count: statusCounts['Published'], color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2 },
+          { label: 'Total', count: statusCounts['Total'], color: 'text-gm-sage', barColor: 'bg-gm-sage', icon: LayoutGrid },
         ]).map((item) => (
-          <Card key={item.label} className={`border-l-[3px] ${item.accent}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`inline-block w-2 h-2 rounded-full ${item.color}`} />
-              <span className="text-[10px] uppercase tracking-wider text-gm-cream/50 font-semibold">{item.label}</span>
+          <Card key={item.label}>
+            <div className="flex items-center justify-between mb-3">
+              <item.icon className={`w-5 h-5 ${item.color} opacity-70`} />
+              <span className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold">{item.label}</span>
             </div>
-            <p className="text-2xl font-semibold text-gm-cream">{item.count}</p>
+            <p className={`text-3xl font-bold ${item.color}`}>{item.count}</p>
+            <div className="mt-3 h-1 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className={`h-full rounded-full ${item.barColor} opacity-60`} style={{ width: `${Math.min((item.count / Math.max(statusCounts['Total'], 1)) * 100, 100)}%` }} />
+            </div>
           </Card>
         ))}
       </div>
