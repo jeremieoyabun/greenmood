@@ -3,6 +3,8 @@
 import { useRouter } from 'next/navigation'
 import { Search, LogOut } from 'lucide-react'
 import { NotificationBell } from '@/components/layout/NotificationBell'
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { useI18n } from '@/lib/i18n'
 
 interface TopBarProps {
   userName: string
@@ -11,6 +13,7 @@ interface TopBarProps {
 
 export function TopBar({ userName, userRole }: TopBarProps) {
   const router = useRouter()
+  const { t } = useI18n()
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -19,13 +22,13 @@ export function TopBar({ userName, userRole }: TopBarProps) {
   }
 
   return (
-    <header className="h-16 border-b border-white/[0.06] bg-[#0d180d]/80 backdrop-blur-md flex items-center justify-between px-8">
+    <header className="h-16 border-b border-white/[0.10] bg-[#0d180d]/80 backdrop-blur-md flex items-center justify-between px-8">
       {/* Search */}
       <div className="flex items-center gap-3 bg-white border border-white/20 rounded-xl px-4 py-2 w-80 shadow-sm transition-all focus-within:ring-2 focus-within:ring-gm-sage/60 focus-within:border-gm-sage/60">
         <Search className="w-4 h-4 text-gray-400" />
         <input
           type="text"
-          placeholder="Search posts, campaigns, assets..."
+          placeholder={t.common.search}
           className="bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none w-full"
         />
         <kbd className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md font-mono">⌘K</kbd>
@@ -33,6 +36,7 @@ export function TopBar({ userName, userRole }: TopBarProps) {
 
       {/* Right side */}
       <div className="flex items-center gap-5">
+        <LanguageSwitcher />
         <NotificationBell />
 
         <div className="flex items-center gap-3 pl-5 border-l border-white/[0.08]">

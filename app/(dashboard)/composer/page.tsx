@@ -135,7 +135,7 @@ export default function ComposerPage() {
                 {(() => {
                   const iconMap: Record<string, React.ElementType> = { FileText, Building2, Leaf, MapPin, GraduationCap, Wrench }
                   const Icon = iconMap[type.icon] || FileText
-                  return <Icon className={`w-6 h-6 mx-auto mb-2 ${contentType === type.id ? 'text-gm-sage' : 'text-gm-cream/40'}`} />
+                  return <Icon className={`w-8 h-8 mx-auto mb-3 ${contentType === type.id ? 'text-gm-sage' : 'text-gm-cream/40'}`} />
                 })()}
                 <p className="text-sm font-medium text-gm-cream">{type.label}</p>
                 <p className="text-xs text-gm-cream/40 mt-1">{type.description}</p>

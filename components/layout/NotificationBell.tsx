@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, CheckCircle2, CalendarCheck, Send, MessageCircle, BellRing, Pin } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 interface Notification {
   id: string
@@ -17,6 +18,7 @@ export function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const { t } = useI18n()
 
   const fetchNotifications = async () => {
     try {
@@ -66,20 +68,21 @@ export function NotificationBell() {
 
   const timeAgo = (date: string) => {
     const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000)
-    if (mins < 1) return 'now'
+    if (mins < 1) return t.notifications.now
     if (mins < 60) return `${mins}m`
     if (mins < 1440) return `${Math.floor(mins / 60)}h`
     return `${Math.floor(mins / 1440)}d`
   }
 
   const typeIcon = (type: string) => {
+    const cls = 'w-4 h-4'
     switch (type) {
-      case 'post_approved': return '✅'
-      case 'post_scheduled': return '📅'
-      case 'post_published': return '📤'
-      case 'comment': return '💬'
-      case 'system': return '🔔'
-      default: return '📌'
+      case 'post_approved': return <CheckCircle2 className={`${cls} text-emerald-400`} />
+      case 'post_scheduled': return <CalendarCheck className={`${cls} text-indigo-400`} />
+      case 'post_published': return <Send className={`${cls} text-sky-400`} />
+      case 'comment': return <MessageCircle className={`${cls} text-amber-400`} />
+      case 'system': return <BellRing className={`${cls} text-gm-sage`} />
+      default: return <Pin className={`${cls} text-gm-cream/40`} />
     }
   }
 
@@ -100,17 +103,17 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 bg-[#1a2a1a] border border-white/[0.1] rounded-xl shadow-2xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-            <span className="text-sm font-semibold text-gm-cream">Notifications</span>
+            <span className="text-sm font-semibold text-gm-cream">{t.notifications.title}</span>
             {unreadCount > 0 && (
               <button onClick={markAllRead} className="text-xs text-gm-sage hover:text-gm-sage/80">
-                Mark all read
+                {t.notifications.markAllRead}
               </button>
             )}
           </div>
 
           <div className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="py-8 text-center text-sm text-gm-cream/30">No notifications</div>
+              <div className="py-8 text-center text-sm text-gm-cream/30">{t.notifications.noNotifications}</div>
             ) : (
               notifications.map(n => (
                 <button
@@ -121,7 +124,7 @@ export function NotificationBell() {
                   }`}
                 >
                   <div className="flex items-start gap-2.5">
-                    <span className="text-sm mt-0.5">{typeIcon(n.type)}</span>
+                    <span className="mt-0.5">{typeIcon(n.type)}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-sm ${!n.is_read ? 'font-semibold text-gm-cream' : 'text-gm-cream/60'}`}>

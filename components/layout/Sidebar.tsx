@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 import {
   LayoutDashboard, Calendar, PenTool, Image, CheckCircle,
   Database, Radar, BarChart3, Megaphone, Bot, Settings,
@@ -14,17 +15,17 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 }
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Dashboard', icon: 'LayoutDashboard', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
-  { href: '/calendar', label: 'Calendar', icon: 'Calendar', roles: ['OPERATOR', 'COORDINATOR'] },
-  { href: '/composer', label: 'Composer', icon: 'PenTool', roles: ['OPERATOR'] },
-  { href: '/assets', label: 'Assets', icon: 'Image', roles: ['OPERATOR', 'COORDINATOR'] },
-  { href: '/approvals', label: 'Approvals', icon: 'CheckCircle', roles: ['OPERATOR', 'COORDINATOR'] },
-  { href: '/knowledge-base', label: 'Knowledge Base', icon: 'Database', roles: ['OPERATOR', 'COORDINATOR'] },
-  { href: '/intelligence', label: 'Intelligence', icon: 'Radar', roles: ['OPERATOR', 'COORDINATOR'] },
-  { href: '/analytics', label: 'Analytics', icon: 'BarChart3', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
-  { href: '/ads', label: 'Ads', icon: 'Megaphone', roles: ['OPERATOR'] },
-  { href: '/agent-runs', label: 'Agent Runs', icon: 'Bot', roles: ['OPERATOR'] },
-  { href: '/settings', label: 'Settings', icon: 'Settings', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/', key: 'dashboard' as const, icon: 'LayoutDashboard', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
+  { href: '/calendar', key: 'calendar' as const, icon: 'Calendar', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/composer', key: 'composer' as const, icon: 'PenTool', roles: ['OPERATOR'] },
+  { href: '/assets', key: 'assets' as const, icon: 'Image', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/approvals', key: 'approvals' as const, icon: 'CheckCircle', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/knowledge-base', key: 'knowledgeBase' as const, icon: 'Database', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/intelligence', key: 'intelligence' as const, icon: 'Radar', roles: ['OPERATOR', 'COORDINATOR'] },
+  { href: '/analytics', key: 'analytics' as const, icon: 'BarChart3', roles: ['OPERATOR', 'COORDINATOR', 'VIEWER'] },
+  { href: '/ads', key: 'ads' as const, icon: 'Megaphone', roles: ['OPERATOR'] },
+  { href: '/agent-runs', key: 'agentRuns' as const, icon: 'Bot', roles: ['OPERATOR'] },
+  { href: '/settings', key: 'settings' as const, icon: 'Settings', roles: ['OPERATOR', 'COORDINATOR'] },
 ]
 
 interface SidebarProps {
@@ -34,10 +35,11 @@ interface SidebarProps {
 
 export function Sidebar({ userRole, userName }: SidebarProps) {
   const pathname = usePathname()
+  const { t } = useI18n()
   const filteredItems = NAV_ITEMS.filter((item) => item.roles.includes(userRole))
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-60 bg-[#0a140a] border-r border-white/[0.06] flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-screen w-60 bg-[#0a140a] border-r border-white/[0.10] flex flex-col z-40">
       {/* Logo */}
       <div className="px-6 py-6 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
@@ -46,7 +48,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
           </div>
           <div>
             <h1 className="text-base font-bold text-gm-cream tracking-tight">Greenmood</h1>
-            <p className="text-xs text-gm-cream/35 font-medium">Marketing OS</p>
+            <p className="text-xs text-gm-cream/35 font-medium">{t.brand.subtitle}</p>
           </div>
         </div>
       </div>
@@ -70,7 +72,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
               )}
             >
               {Icon && <Icon className={cn('w-[18px] h-[18px]', isActive ? 'text-gm-sage' : '')} />}
-              {item.label}
+              {t.nav[item.key]}
             </Link>
           )
         })}
@@ -86,7 +88,7 @@ export function Sidebar({ userRole, userName }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gm-cream/80 font-medium truncate">{userName}</p>
-            <p className="text-xs text-gm-cream/30">{userRole === 'OPERATOR' ? 'Admin' : userRole === 'COORDINATOR' ? 'Coordinator' : 'Viewer'}</p>
+            <p className="text-xs text-gm-cream/30">{t.roles[userRole as keyof typeof t.roles] || userRole}</p>
           </div>
         </div>
       </div>
