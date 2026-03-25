@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { SocialIcon, MarketBadge } from '@/components/ui/SocialIcon'
 import { MARKETS } from '@/lib/constants'
+import { getServerTranslations } from '@/lib/i18n/server'
 import { Clock, CheckCircle2, Send, BookOpen, Radio, PenSquare, Calendar, ClipboardCheck, Satellite, ArrowUpRight, Hand } from 'lucide-react'
 
 async function getDashboardData() {
@@ -71,7 +72,7 @@ async function getDashboardData() {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default async function DashboardPage() {
-  const [data, currentUser] = await Promise.all([getDashboardData(), getCurrentUser()])
+  const [data, currentUser, t] = await Promise.all([getDashboardData(), getCurrentUser(), getServerTranslations()])
   const userRole = currentUser?.role || 'VIEWER'
 
   const todayActions: { market: string; platform: string; time: string; type: 'post' | 'approve' | 'alert'; detail: string }[] = []
@@ -92,18 +93,18 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        title="Dashboard"
+        title={t.nav.dashboard}
         description={new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
       />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-5 gap-4 mb-8">
         {[
-          { label: 'Pending Approval', value: data.pendingApprovals, color: 'text-amber-400', barColor: 'bg-amber-400', icon: Clock, href: '/approvals', max: Math.max(data.totalPosts, 1) },
-          { label: 'Ready to Publish', value: data.scheduledPosts, color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2, href: '/approvals', max: Math.max(data.totalPosts, 1) },
-          { label: 'Published', value: data.publishedPosts, color: 'text-sky-400', barColor: 'bg-sky-400', icon: Send, href: '/calendar', max: Math.max(data.totalPosts, 1) },
-          { label: 'Knowledge Base', value: data.kbCount, color: 'text-purple-400', barColor: 'bg-purple-400', icon: BookOpen, href: '/knowledge-base', max: 50 },
-          { label: 'Intel Signals', value: data.signalCount, color: 'text-pink-400', barColor: 'bg-pink-400', icon: Radio, href: '/intelligence', max: 100 },
+          { label: t.dashboard.pendingApproval, value: data.pendingApprovals, color: 'text-amber-400', barColor: 'bg-amber-400', icon: Clock, href: '/approvals', max: Math.max(data.totalPosts, 1) },
+          { label: t.dashboard.readyToPublish, value: data.scheduledPosts, color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2, href: '/approvals', max: Math.max(data.totalPosts, 1) },
+          { label: t.dashboard.published, value: data.publishedPosts, color: 'text-sky-400', barColor: 'bg-sky-400', icon: Send, href: '/calendar', max: Math.max(data.totalPosts, 1) },
+          { label: t.dashboard.knowledgeBase, value: data.kbCount, color: 'text-purple-400', barColor: 'bg-purple-400', icon: BookOpen, href: '/knowledge-base', max: 50 },
+          { label: t.dashboard.intelSignals, value: data.signalCount, color: 'text-pink-400', barColor: 'bg-pink-400', icon: Radio, href: '/intelligence', max: 100 },
         ].map((stat) => (
           <a key={stat.label} href={stat.href}>
             <Card hover>
@@ -125,14 +126,14 @@ export default async function DashboardPage() {
         {/* Today's Actions */}
         <Card className="col-span-2">
           <CardHeader>
-            <CardTitle className="text-base">Today&apos;s Actions</CardTitle>
+            <CardTitle className="text-base">{t.dashboard.todaysActions}</CardTitle>
             <Badge variant="info">{todayActions.length} items</Badge>
           </CardHeader>
           <CardContent>
             {todayActions.length === 0 ? (
               <div className="py-8 text-center">
-                <p className="text-sm text-gm-cream/40">No posts scheduled for today</p>
-                <a href="/composer" className="text-sm text-gm-sage hover:underline mt-2 inline-block">Create content in Composer</a>
+                <p className="text-sm text-gm-cream/40">{t.dashboard.noActions}</p>
+                <a href="/composer" className="text-sm text-gm-sage hover:underline mt-2 inline-block">{t.dashboard.createNewPost}</a>
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -161,14 +162,14 @@ export default async function DashboardPage() {
         {/* Quick Actions + Top Signals */}
         <div className="space-y-5">
           <Card>
-            <CardHeader><CardTitle className="text-base">Quick Actions</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{t.dashboard.quickActions}</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-1">
                 {[
-                  { label: 'Create New Post', href: '/composer', icon: PenSquare, iconColor: 'text-gm-sage' },
-                  { label: 'View Calendar', href: '/calendar', icon: Calendar, iconColor: 'text-sky-400' },
-                  { label: 'Review Approvals', href: '/approvals', icon: ClipboardCheck, iconColor: 'text-amber-400', count: data.pendingApprovals },
-                  { label: 'Intelligence Hub', href: '/intelligence', icon: Satellite, iconColor: 'text-pink-400', count: data.signalCount },
+                  { label: t.dashboard.createNewPost, href: '/composer', icon: PenSquare, iconColor: 'text-gm-sage' },
+                  { label: t.dashboard.viewCalendar, href: '/calendar', icon: Calendar, iconColor: 'text-sky-400' },
+                  { label: t.dashboard.reviewApprovals, href: '/approvals', icon: ClipboardCheck, iconColor: 'text-amber-400', count: data.pendingApprovals },
+                  { label: t.dashboard.intelligenceHub, href: '/intelligence', icon: Satellite, iconColor: 'text-pink-400', count: data.signalCount },
                 ].map((action) => (
                   <a
                     key={action.href}
@@ -186,7 +187,7 @@ export default async function DashboardPage() {
 
           {data.topSignals.length > 0 && (
             <Card>
-              <CardHeader><CardTitle className="text-base">Top Signals</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-base">{t.dashboard.topSignals}</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2.5">
                   {data.topSignals.map((signal) => (
@@ -211,7 +212,7 @@ export default async function DashboardPage() {
       {/* Week Overview */}
       <Card className="mt-5">
         <CardHeader>
-          <CardTitle className="text-base">This Week</CardTitle>
+          <CardTitle className="text-base">{t.dashboard.weekOverview}</CardTitle>
           <Badge variant="default">{data.weekSlots.length} posts planned</Badge>
         </CardHeader>
         <CardContent>
@@ -236,7 +237,7 @@ export default async function DashboardPage() {
                     <p className={`text-xs font-semibold ${isToday ? 'text-gm-sage' : 'text-gm-cream/40'}`}>
                       {DAY_NAMES[day.getDay()]} {day.getDate()}
                     </p>
-                    {isToday && <span className="text-[10px] font-bold uppercase tracking-widest text-gm-sage bg-gm-sage/10 px-1.5 py-0.5 rounded">Today</span>}
+                    {isToday && <span className="text-[10px] font-bold uppercase tracking-widest text-gm-sage bg-gm-sage/10 px-1.5 py-0.5 rounded">{t.common.today}</span>}
                     {!isToday && daySlots.length > 0 && <span className="text-[10px] text-gm-cream/25">{daySlots.length}</span>}
                   </div>
                   {daySlots.length === 0 ? (
@@ -262,7 +263,7 @@ export default async function DashboardPage() {
       {/* Recent Agent Activity — Operator only */}
       {userRole === 'OPERATOR' && data.recentRuns.length > 0 && (
         <Card className="mt-5">
-          <CardHeader><CardTitle className="text-base">Recent Agent Activity</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t.dashboard.agentActivity}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-2">
               {data.recentRuns.map((run) => (

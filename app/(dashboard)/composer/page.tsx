@@ -9,6 +9,7 @@ import { Chip } from '@/components/ui/Chip'
 import { Textarea } from '@/components/ui/Input'
 import { MARKETS, PLATFORMS, CONTENT_TYPES } from '@/lib/constants'
 import { FileText, Building2, Leaf, MapPin, GraduationCap, Wrench } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 type Step = 'type' | 'brief' | 'generating' | 'results'
 
@@ -28,6 +29,7 @@ interface GenerationResult {
 }
 
 export default function ComposerPage() {
+  const { t } = useI18n()
   const [step, setStep] = useState<Step>('type')
   const [contentType, setContentType] = useState('')
   const [brief, setBrief] = useState('')
@@ -110,12 +112,12 @@ export default function ComposerPage() {
   return (
     <>
       <PageHeader
-        title="Content Composer"
-        description="Create multi-market, multi-platform content with AI assistance"
+        title={t.composer.title}
+        description={t.composer.description}
         actions={
           step !== 'type' && (
             <Button variant="ghost" size="sm" onClick={reset}>
-              Start Over
+              {t.composer.startOver}
             </Button>
           )
         }
@@ -150,12 +152,12 @@ export default function ComposerPage() {
         <div className="space-y-5 max-w-3xl">
           <Card>
             <CardHeader>
-              <CardTitle>Content Brief</CardTitle>
+              <CardTitle>{t.composer.contentBrief}</CardTitle>
               <Badge variant="info">{CONTENT_TYPES.find(t => t.id === contentType)?.label}</Badge>
             </CardHeader>
             <CardContent>
               <Textarea
-                placeholder="Describe what you want to create. Be specific about the topic, angle, key messages, and any product references..."
+                placeholder={t.composer.briefPlaceholder}
                 value={brief}
                 onChange={(e) => setBrief(e.target.value)}
                 className="min-h-[120px]"
@@ -164,7 +166,7 @@ export default function ComposerPage() {
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Markets</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t.composer.markets}</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(MARKETS).map(([id, market]) => (
@@ -184,13 +186,13 @@ export default function ComposerPage() {
                   selectedMarkets.length === Object.keys(MARKETS).length ? [] : Object.keys(MARKETS)
                 )}
               >
-                {selectedMarkets.length === Object.keys(MARKETS).length ? 'Deselect all' : 'Select all'}
+                {selectedMarkets.length === Object.keys(MARKETS).length ? t.composer.deselectAll : t.composer.selectAll}
               </button>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader><CardTitle>Platforms</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t.composer.platforms}</CardTitle></CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {Object.entries(PLATFORMS).map(([id, platform]) => (
@@ -218,7 +220,7 @@ export default function ComposerPage() {
             disabled={!brief.trim() || !selectedMarkets.length || !selectedPlatforms.length}
             className="w-full"
           >
-            Generate Content ({selectedMarkets.length} markets × {selectedPlatforms.length} platforms)
+            {t.composer.generate} ({selectedMarkets.length} {t.composer.markets.toLowerCase()} × {selectedPlatforms.length} {t.composer.platforms.toLowerCase()})
           </Button>
         </div>
       )}
@@ -228,7 +230,7 @@ export default function ComposerPage() {
         <Card className="max-w-lg mx-auto">
           <div className="text-center py-12">
             <div className="inline-block w-8 h-8 border-2 border-gm-sage/30 border-t-gm-sage rounded-full animate-spin mb-4" />
-            <p className="text-sm text-gm-cream/70 mb-1">Generating content...</p>
+            <p className="text-sm text-gm-cream/70 mb-1">{t.composer.generating}</p>
             <p className="text-xs text-gm-cream/30">
               {selectedMarkets.length} markets × {selectedPlatforms.length} platforms
             </p>
@@ -243,7 +245,7 @@ export default function ComposerPage() {
             <CardHeader>
               <CardTitle>{results.title}</CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="success">{Object.keys(results.posts).length} variants generated</Badge>
+                <Badge variant="success">{Object.keys(results.posts).length} {t.composer.variantsGenerated}</Badge>
                 {(results as any).postsCreated && (
                   <Badge variant="info">{(results as any).postsCreated} saved to DB</Badge>
                 )}
@@ -251,10 +253,10 @@ export default function ComposerPage() {
             </CardHeader>
             <div className="flex gap-2 mt-3">
               <Button variant="primary" size="sm" onClick={() => window.location.href = '/approvals'}>
-                Review in Approvals
+                {t.composer.reviewInApprovals}
               </Button>
               <Button variant="secondary" size="sm" onClick={() => window.location.href = '/calendar'}>
-                View in Calendar
+                {t.composer.viewInCalendar}
               </Button>
             </div>
           </Card>
@@ -288,13 +290,13 @@ export default function ComposerPage() {
                   {/* Post Text */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">Post</span>
+                      <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">{t.composer.post}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => copyToClipboard(results.posts[activePost].text, `${activePost}-text`)}
                       >
-                        {copied === `${activePost}-text` ? 'Copied!' : 'Copy'}
+                        {copied === `${activePost}-text` ? t.composer.copied : t.composer.copy}
                       </Button>
                     </div>
                     <pre className="text-sm text-gm-cream/80 whitespace-pre-wrap font-sans leading-relaxed bg-white/[0.02] rounded-lg p-4 border border-white/[0.05]">
@@ -306,13 +308,13 @@ export default function ComposerPage() {
                   {results.posts[activePost].first_comment && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">First Comment</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">{t.composer.firstComment}</span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(results.posts[activePost].first_comment!, `${activePost}-fc`)}
                         >
-                          {copied === `${activePost}-fc` ? 'Copied!' : 'Copy'}
+                          {copied === `${activePost}-fc` ? t.composer.copied : t.composer.copy}
                         </Button>
                       </div>
                       <p className="text-sm text-gm-cream/60 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
@@ -325,13 +327,13 @@ export default function ComposerPage() {
                   {results.posts[activePost].hashtags && (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">Hashtags</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-medium">{t.composer.hashtags}</span>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => copyToClipboard(results.posts[activePost].hashtags!, `${activePost}-hash`)}
                         >
-                          {copied === `${activePost}-hash` ? 'Copied!' : 'Copy'}
+                          {copied === `${activePost}-hash` ? t.composer.copied : t.composer.copy}
                         </Button>
                       </div>
                       <p className="text-sm text-gm-sage/70 bg-white/[0.02] rounded-lg p-3 border border-white/[0.05]">
@@ -344,13 +346,13 @@ export default function ComposerPage() {
                   <div className="flex gap-4 pt-2 border-t border-white/[0.05]">
                     {results.posts[activePost].timing && (
                       <div>
-                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">Timing</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">{t.composer.timing}</span>
                         <p className="text-sm text-gm-cream/60 mt-0.5">{results.posts[activePost].timing}</p>
                       </div>
                     )}
                     {results.posts[activePost].notes && (
                       <div>
-                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">Notes</span>
+                        <span className="text-xs uppercase tracking-wider text-gm-cream/30">{t.composer.notes}</span>
                         <p className="text-sm text-gm-cream/60 mt-0.5">{results.posts[activePost].notes}</p>
                       </div>
                     )}
@@ -363,7 +365,7 @@ export default function ComposerPage() {
           {/* Image Prompts */}
           {results.image_prompts && results.image_prompts.length > 0 && (
             <Card>
-              <CardHeader><CardTitle>Image Generation Prompts</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t.composer.imagePrompts}</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
                   {results.image_prompts.map((prompt, i) => (

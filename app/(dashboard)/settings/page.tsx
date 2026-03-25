@@ -3,14 +3,15 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { SocialAccountsPanel } from '@/components/settings/SocialAccountsPanel'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 export default async function SettingsPage() {
-  const user = await getCurrentUser()
+  const [user, t] = await Promise.all([getCurrentUser(), getServerTranslations()])
 
   return (
     <>
       <PageHeader
-        title="Settings"
+        title={t.settings.title}
         description="Workspace configuration, accounts, and integrations"
       />
 

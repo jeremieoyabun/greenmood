@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { SocialIcon } from '@/components/ui/SocialIcon'
 import { Eye, Heart, MessageCircle, Bookmark, Share2, BarChart3 } from 'lucide-react'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 async function getAnalyticsData() {
   // Overall stats
@@ -64,7 +65,7 @@ async function getAnalyticsData() {
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export default async function AnalyticsPage() {
-  const data = await getAnalyticsData()
+  const [data, t] = await Promise.all([getAnalyticsData(), getServerTranslations()])
 
   const totalLikes = data.snapshots.reduce((s: number, r: any) => s + Number(r.total_likes || 0), 0)
   const totalReach = data.snapshots.reduce((s: number, r: any) => s + Number(r.total_reach || 0), 0)
@@ -76,19 +77,19 @@ export default async function AnalyticsPage() {
   return (
     <>
       <PageHeader
-        title="Analytics"
-        description="Content performance across all platforms and markets"
+        title={t.analytics.title}
+        description={t.analytics.description}
       />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-6 gap-4 mb-8">
         {[
-          { label: 'Total Reach', value: totalReach.toLocaleString(), color: 'text-sky-400', icon: Eye },
-          { label: 'Likes', value: totalLikes.toLocaleString(), color: 'text-pink-400', icon: Heart },
-          { label: 'Comments', value: totalComments.toLocaleString(), color: 'text-amber-400', icon: MessageCircle },
-          { label: 'Saves', value: totalSaves.toLocaleString(), color: 'text-emerald-400', icon: Bookmark },
-          { label: 'Shares', value: totalShares.toLocaleString(), color: 'text-purple-400', icon: Share2 },
-          { label: 'Posts Tracked', value: totalPosts.toLocaleString(), color: 'text-gm-cream', icon: BarChart3 },
+          { label: t.analytics.totalReach, value: totalReach.toLocaleString(), color: 'text-sky-400', icon: Eye },
+          { label: t.analytics.likes, value: totalLikes.toLocaleString(), color: 'text-pink-400', icon: Heart },
+          { label: t.analytics.comments, value: totalComments.toLocaleString(), color: 'text-amber-400', icon: MessageCircle },
+          { label: t.analytics.saves, value: totalSaves.toLocaleString(), color: 'text-emerald-400', icon: Bookmark },
+          { label: t.analytics.shares, value: totalShares.toLocaleString(), color: 'text-purple-400', icon: Share2 },
+          { label: t.analytics.postsTracked, value: totalPosts.toLocaleString(), color: 'text-gm-cream', icon: BarChart3 },
         ].map(s => (
           <Card key={s.label}>
             <s.icon className={`w-4 h-4 ${s.color} opacity-60 mb-2`} />
@@ -101,7 +102,7 @@ export default async function AnalyticsPage() {
       <div className="grid grid-cols-2 gap-6">
         {/* Top Posts */}
         <Card>
-          <CardHeader><CardTitle>Top Performing Posts</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t.analytics.topPosts}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
               {data.topPosts.map((post: any, i: number) => (
@@ -128,7 +129,7 @@ export default async function AnalyticsPage() {
 
         {/* Best Days */}
         <Card>
-          <CardHeader><CardTitle>Best Days to Post</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t.analytics.bestDays}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-2">
               {data.byDayOfWeek.map((d: any, i: number) => {
@@ -158,7 +159,7 @@ export default async function AnalyticsPage() {
 
         {/* Recent Trend */}
         <Card>
-          <CardHeader><CardTitle>Recent Performance</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t.analytics.recentPerformance}</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-1.5">
               {data.recentTrend.map((d: any, i: number) => {
@@ -182,7 +183,7 @@ export default async function AnalyticsPage() {
         {/* AI Performance Insight */}
         <Card>
           <CardHeader>
-            <CardTitle>AI Performance Analysis</CardTitle>
+            <CardTitle>{t.analytics.aiAnalysis}</CardTitle>
             {data.insight?.updatedAt && (
               <Badge variant="default" size="sm">
                 Updated {new Date(data.insight.updatedAt).toLocaleDateString()}
@@ -203,7 +204,7 @@ export default async function AnalyticsPage() {
         {/* By Platform */}
         {data.snapshots.length > 0 && (
           <Card className="col-span-2">
-            <CardHeader><CardTitle>Performance by Platform & Market</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t.analytics.byPlatformMarket}</CardTitle></CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

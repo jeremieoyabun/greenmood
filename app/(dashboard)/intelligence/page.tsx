@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { AddCompetitorButton } from '@/components/intelligence/AddCompetitorButton'
 import { SignalActions } from '@/components/intelligence/SignalActions'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 async function getIntelData() {
   const [competitors, signals, sources] = await Promise.all([
@@ -36,7 +37,7 @@ const URGENCY_STYLES: Record<string, { label: string; color: 'danger' | 'warning
 }
 
 export default async function IntelligencePage() {
-  const { competitors, signals, sources } = await getIntelData()
+  const [{ competitors, signals, sources }, t] = await Promise.all([getIntelData(), getServerTranslations()])
 
   const highPriority = signals.filter(s => s.urgency === 'HIGH')
   const topSignals = signals.slice(0, 3)
@@ -44,8 +45,8 @@ export default async function IntelligencePage() {
   return (
     <>
       <PageHeader
-        title="Intelligence Hub"
-        description={`${signals.length} signals from ${sources.length} sources — ${competitors.length} competitors tracked`}
+        title={t.intelligence.title}
+        description={`${signals.length} ${t.intelligence.signals} — ${sources.length} ${t.intelligence.sources} — ${competitors.length} ${t.intelligence.competitors}`}
         actions={<AddCompetitorButton />}
       />
 

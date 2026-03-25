@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card'
 import { AdsFilters } from '@/components/ads/AdsFilters'
 import { AdsCreateButton } from '@/components/ads/AdsCreateButton'
 import { Wallet, Eye, MousePointerClick, TrendingUp, Target, Users } from 'lucide-react'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 interface MetaCampaignInsights {
   spend: string
@@ -100,7 +101,7 @@ interface PageProps {
 }
 
 export default async function AdsPage({ searchParams }: PageProps) {
-  const params = await searchParams
+  const [params, t] = await Promise.all([searchParams, getServerTranslations()])
   const statusFilter = params.status || 'ALL'
   const datePreset = params.datePreset || 'last_30d'
 
@@ -129,8 +130,8 @@ export default async function AdsPage({ searchParams }: PageProps) {
   return (
     <>
       <PageHeader
-        title="Ads Control Center"
-        description={`Meta Ads performance overview. ${dateLabel}`}
+        title={t.ads.title}
+        description={`${t.ads.description}. ${dateLabel}`}
         actions={<AdsCreateButton />}
       />
 
@@ -143,12 +144,12 @@ export default async function AdsPage({ searchParams }: PageProps) {
       {/* Key Metrics */}
       <div className="grid grid-cols-6 gap-4 mb-8">
         {[
-          { label: 'Total Spend', value: `\u20AC${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-sky-400', icon: Wallet },
-          { label: 'Impressions', value: totalImpressions.toLocaleString(), color: 'text-purple-400', icon: Eye },
-          { label: 'Clicks', value: totalClicks.toLocaleString(), color: 'text-pink-400', icon: MousePointerClick },
-          { label: 'CTR', value: `${avgCtr.toFixed(2)}%`, color: 'text-emerald-400', icon: TrendingUp },
-          { label: 'Avg CPC', value: `\u20AC${avgCpc.toFixed(2)}`, color: 'text-amber-400', icon: Target },
-          { label: 'Leads', value: totalLeads.toLocaleString(), color: 'text-gm-cream', icon: Users },
+          { label: t.ads.totalSpend, value: `\u20AC${totalSpend.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, color: 'text-sky-400', icon: Wallet },
+          { label: t.ads.impressions, value: totalImpressions.toLocaleString(), color: 'text-purple-400', icon: Eye },
+          { label: t.ads.clicks, value: totalClicks.toLocaleString(), color: 'text-pink-400', icon: MousePointerClick },
+          { label: t.ads.ctr, value: `${avgCtr.toFixed(2)}%`, color: 'text-emerald-400', icon: TrendingUp },
+          { label: t.ads.avgCpc, value: `\u20AC${avgCpc.toFixed(2)}`, color: 'text-amber-400', icon: Target },
+          { label: t.ads.leads, value: totalLeads.toLocaleString(), color: 'text-gm-cream', icon: Users },
         ].map((s) => (
           <Card key={s.label}>
             <s.icon className={`w-4 h-4 ${s.color} opacity-60 mb-2`} />

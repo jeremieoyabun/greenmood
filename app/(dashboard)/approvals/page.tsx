@@ -3,6 +3,7 @@ import { getWorkspaceId } from '@/lib/workspace'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { ApprovalQueue } from '@/components/approvals/ApprovalQueue'
+import { getServerTranslations } from '@/lib/i18n/server'
 import { Eye, CalendarCheck, CheckCircle2, LayoutGrid } from 'lucide-react'
 
 async function getApprovalData() {
@@ -70,7 +71,7 @@ async function getApprovalData() {
 }
 
 export default async function ApprovalsPage() {
-  const { posts, history } = await getApprovalData()
+  const [{ posts, history }, t] = await Promise.all([getApprovalData(), getServerTranslations()])
 
   const statusCounts = {
     'To Review': posts.filter(p => ['DRAFT', 'AI_GENERATED', 'FACT_CHECKED', 'BRAND_APPROVED'].includes(p.status)).length,
@@ -82,17 +83,17 @@ export default async function ApprovalsPage() {
   return (
     <>
       <PageHeader
-        title="Approval Queue"
-        description={`${posts.length} items in pipeline`}
+        title={t.approvals.title}
+        description={`${posts.length} ${t.approvals.itemsInPipeline}`}
       />
 
       {/* Status Pipeline */}
       <div className="grid grid-cols-4 gap-3 mb-6">
         {([
-          { label: 'To Review', count: statusCounts['To Review'], color: 'text-amber-400', barColor: 'bg-amber-400', icon: Eye },
-          { label: 'Scheduled', count: statusCounts['Scheduled'], color: 'text-indigo-400', barColor: 'bg-indigo-400', icon: CalendarCheck },
-          { label: 'Published', count: statusCounts['Published'], color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2 },
-          { label: 'Total', count: statusCounts['Total'], color: 'text-gm-sage', barColor: 'bg-gm-sage', icon: LayoutGrid },
+          { label: t.approvals.toReview, count: statusCounts['To Review'], color: 'text-amber-400', barColor: 'bg-amber-400', icon: Eye },
+          { label: t.approvals.scheduled, count: statusCounts['Scheduled'], color: 'text-indigo-400', barColor: 'bg-indigo-400', icon: CalendarCheck },
+          { label: t.approvals.published, count: statusCounts['Published'], color: 'text-emerald-400', barColor: 'bg-emerald-400', icon: CheckCircle2 },
+          { label: t.approvals.total, count: statusCounts['Total'], color: 'text-gm-sage', barColor: 'bg-gm-sage', icon: LayoutGrid },
         ]).map((item) => (
           <Card key={item.label}>
             <div className="flex items-center justify-between mb-3">

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { AgentPanel } from './AgentPanel'
 import { Activity, CheckCircle2, XCircle, Cpu, DollarSign } from 'lucide-react'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 async function getAgentRuns() {
   const workspaceId = await getWorkspaceId()
@@ -34,7 +35,7 @@ const AGENT_LABELS: Record<string, { label: string; color: string }> = {
 }
 
 export default async function AgentRunsPage() {
-  const runs = await getAgentRuns()
+  const [runs, t] = await Promise.all([getAgentRuns(), getServerTranslations()])
 
   // Stats
   const totalRuns = runs.length
@@ -58,18 +59,18 @@ export default async function AgentRunsPage() {
   return (
     <>
       <PageHeader
-        title="Agent Control Center"
-        description="Manage autonomous agents and on-demand AI tools"
+        title={t.agentRuns.title}
+        description={t.agentRuns.description}
       />
 
       {/* Stats */}
       <div className="grid grid-cols-5 gap-4 mb-8">
         {[
-          { label: 'Total Runs', value: totalRuns, color: 'text-gm-cream', icon: Activity },
-          { label: 'Completed', value: completedRuns, color: 'text-emerald-400', icon: CheckCircle2 },
-          { label: 'Failed', value: failedRuns, color: 'text-red-400', icon: XCircle },
-          { label: 'Tokens Used', value: totalTokens.toLocaleString(), color: 'text-amber-400', icon: Cpu },
-          { label: 'Est. Cost', value: `€${costEUR}`, color: 'text-sky-400', icon: DollarSign },
+          { label: t.agentRuns.totalRuns, value: totalRuns, color: 'text-gm-cream', icon: Activity },
+          { label: t.agentRuns.completed, value: completedRuns, color: 'text-emerald-400', icon: CheckCircle2 },
+          { label: t.agentRuns.failed, value: failedRuns, color: 'text-red-400', icon: XCircle },
+          { label: t.agentRuns.tokensUsed, value: totalTokens.toLocaleString(), color: 'text-amber-400', icon: Cpu },
+          { label: t.agentRuns.estCost, value: `€${costEUR}`, color: 'text-sky-400', icon: DollarSign },
         ].map(s => (
           <Card key={s.label}>
             <s.icon className={`w-4 h-4 ${s.color} opacity-60 mb-2`} />

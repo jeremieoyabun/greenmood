@@ -28,6 +28,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   const setLocale = useCallback((newLocale: Locale) => {
     setLocaleState(newLocale)
     localStorage.setItem('gm-locale', newLocale)
+    document.cookie = `gm-locale=${newLocale};path=/;max-age=${60 * 60 * 24 * 365}`
   }, [])
 
   return (

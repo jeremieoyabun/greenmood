@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db'
 import { getWorkspaceId } from '@/lib/workspace'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { KBBrowser } from '@/components/knowledge-base/KBBrowser'
+import { getServerTranslations } from '@/lib/i18n/server'
 
 async function getKBData() {
   const workspaceId = await getWorkspaceId()
@@ -25,13 +26,13 @@ async function getKBData() {
 }
 
 export default async function KnowledgeBasePage() {
-  const { entries, categories, total } = await getKBData()
+  const [{ entries, categories, total }, t] = await Promise.all([getKBData(), getServerTranslations()])
 
   return (
     <>
       <PageHeader
-        title="Knowledge Base"
-        description={`Source of truth — ${total} entries grounding all AI-generated content`}
+        title={t.kb.title}
+        description={`${t.kb.description} — ${total} ${t.kb.entries}`}
       />
       <KBBrowser
         entries={JSON.parse(JSON.stringify(entries))}
