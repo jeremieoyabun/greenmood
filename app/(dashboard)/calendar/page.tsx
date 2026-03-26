@@ -777,7 +777,7 @@ export default function CalendarPage() {
               {/* Carousel toggle — Instagram & LinkedIn only */}
               {(() => {
                 const activePlatforms = multiPlatforms.length > 0 ? multiPlatforms : [newSlot.platform]
-                const showCarousel = activePlatforms.some(p => p === 'instagram' || p === 'linkedin')
+                const showCarousel = activePlatforms.some(p => p === 'instagram' || p === 'linkedin' || p === 'stories')
                 if (!showCarousel) return null
                 return (
                   <div className="flex items-center gap-3">
