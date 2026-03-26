@@ -6,9 +6,11 @@ import { PostStatus } from '@prisma/client'
 import { validateImageDimensions, getImageDimensionsFromUrl } from '@/lib/image-validation'
 
 // Valid approval state transitions
+// Valid approval state transitions — SCHEDULE only from READY_TO_SCHEDULE
+// Posts MUST go through the full approval pipeline: DRAFT → AI_GENERATED → FACT_CHECKED → BRAND_APPROVED → READY_TO_SCHEDULE → SCHEDULED
 const VALID_TRANSITIONS: Record<string, Record<string, PostStatus>> = {
-  DRAFT: { APPROVE: PostStatus.AI_GENERATED, SCHEDULE: PostStatus.SCHEDULED },
-  AI_GENERATED: { APPROVE: PostStatus.FACT_CHECKED, REJECT: PostStatus.REJECTED, SCHEDULE: PostStatus.SCHEDULED },
+  DRAFT: { APPROVE: PostStatus.AI_GENERATED },
+  AI_GENERATED: { APPROVE: PostStatus.FACT_CHECKED, REJECT: PostStatus.REJECTED },
   FACT_CHECKED: { APPROVE: PostStatus.BRAND_APPROVED, REJECT: PostStatus.REJECTED, REQUEST_CHANGES: PostStatus.REJECTED, SCHEDULE: PostStatus.SCHEDULED },
   BRAND_APPROVED: { APPROVE: PostStatus.READY_TO_SCHEDULE, REJECT: PostStatus.REJECTED, SCHEDULE: PostStatus.SCHEDULED },
   READY_TO_SCHEDULE: { APPROVE: PostStatus.SCHEDULED, SCHEDULE: PostStatus.SCHEDULED },

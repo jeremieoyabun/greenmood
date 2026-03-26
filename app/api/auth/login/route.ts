@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
 
     response.cookies.set('gm-session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'strict',
       maxAge: 30 * 24 * 60 * 60, // 30 days
       path: '/',
     })
