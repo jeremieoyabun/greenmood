@@ -233,7 +233,7 @@ export default function CalendarPage() {
           successCount++
           // Upload carousel images if any
           if (newCarousel && newCarouselImages.length > 0 && data.data?.id) {
-            const cloudName = 'drl0illsh'
+            const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
             const folder = `greenmood/social/${combo.platform}/${combo.market}`
             for (let i = 0; i < newCarouselImages.length; i++) {
               try {
