@@ -877,6 +877,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                   <input type="time" value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)}
                     className="bg-white text-sm text-gray-900 rounded-xl px-3 py-2 border border-white/20 shadow-sm focus:ring-2 focus:ring-gm-sage/60 focus:border-gm-sage/60 focus:outline-none" />
                 </div>
+                <p className="text-[10px] text-gm-cream/25">Timezone: {market?.timezone || 'Europe/Brussels'}</p>
                 <div className="flex gap-2">
                   <Button variant="primary" size="sm" loading={savingSchedule} onClick={saveSchedule}>Save</Button>
                   <Button variant="ghost" size="sm" onClick={() => setEditingSchedule(false)}>Cancel</Button>
@@ -886,7 +887,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
               <div className="flex items-center gap-4">
                 <div>
                   <p className="text-lg font-semibold text-gm-cream">{slot.date?.split('T')[0]}</p>
-                  <p className="text-sm text-gm-cream/50">{slot.time || 'No time set'}</p>
+                  <p className="text-sm text-gm-cream/50">{slot.time || 'No time set'} <span className="text-gm-cream/25 text-xs">({market?.timezone || 'Europe/Brussels'})</span></p>
                 </div>
               </div>
             )}

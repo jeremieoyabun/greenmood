@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { MARKETS } from '@/lib/constants'
 
 /**
  * Cron job: Auto-publish scheduled posts at their scheduled time.
@@ -7,9 +8,24 @@ import { prisma } from '@/lib/db'
  *
  * IMPORTANT: Only publishes posts where:
  * 1. Status is SCHEDULED (not READY_TO_SCHEDULE — must be explicitly scheduled)
- * 2. The calendar slot date+time has passed (in Brussels timezone CET/CEST)
+ * 2. The calendar slot date+time has passed (in the market's local timezone)
  * 3. Uses the correct Instagram token per market
  */
+
+function getNowInTimezone(tz: string): { date: string; time: string } {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  })
+  const parts = formatter.formatToParts(new Date())
+  const getVal = (type: string) => parts.find(p => p.type === type)?.value || '00'
+  return {
+    date: `${getVal('year')}-${getVal('month')}-${getVal('day')}`,
+    time: `${getVal('hour')}:${getVal('minute')}`,
+  }
+}
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -18,17 +34,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Current time in Brussels timezone
   const now = new Date()
-  const brusselsFormatter = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Brussels',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  })
-  const parts = brusselsFormatter.formatToParts(now)
-  const getVal = (type: string) => parts.find(p => p.type === type)?.value || '00'
-  const brusselsDate = `${getVal('year')}-${getVal('month')}-${getVal('day')}`
-  const brusselsTime = `${getVal('hour')}:${getVal('minute')}`
 
   try {
     // Only SCHEDULED posts (not READY_TO_SCHEDULE)
@@ -48,16 +54,20 @@ export async function GET(req: NextRequest) {
       },
     })
 
-    // Filter: only publish if the scheduled time has passed in Brussels timezone
+    // Filter: only publish if the scheduled time has passed in the market's timezone
     const dueSlots = readySlots.filter(slot => {
+      const market = slot.post?.market || 'hq'
+      const tz = MARKETS[market]?.timezone || 'Europe/Brussels'
+      const { date: nowDate, time: nowTime } = getNowInTimezone(tz)
+
       const slotDate = new Date(slot.date).toISOString().split('T')[0]
       const slotTime = slot.time || '00:00'
 
       // Past days = overdue, publish immediately
-      if (slotDate < brusselsDate) return true
+      if (slotDate < nowDate) return true
 
-      // Today = check if time has passed
-      if (slotDate === brusselsDate && slotTime <= brusselsTime) return true
+      // Today = check if time has passed in market's timezone
+      if (slotDate === nowDate && slotTime <= nowTime) return true
 
       return false
     })
@@ -98,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      brusselsTime: `${brusselsDate} ${brusselsTime}`,
+      serverTime: now.toISOString(),
       checked: readySlots.length,
       due: dueSlots.length,
       published: results.filter(r => r.success).length,
