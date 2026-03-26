@@ -93,6 +93,8 @@ export default function CalendarPage() {
   const [newFirstComment, setNewFirstComment] = useState('')
   const [newImage, setNewImage] = useState<string | null>(null)
   const [newCarousel, setNewCarousel] = useState(false)
+  const [newCarouselImages, setNewCarouselImages] = useState<Array<{ data: string; file: File }>>([])
+  const [dragNewIdx, setDragNewIdx] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
   const [genHash, setGenHash] = useState(false)
   // Story slides
@@ -188,6 +190,7 @@ export default function CalendarPage() {
     setMultiMarkets([])
     setMultiPlatforms([])
     setNewCarousel(false)
+    setNewCarouselImages([])
   }
 
   const openAddModal = (date?: Date) => {
@@ -226,7 +229,32 @@ export default function CalendarPage() {
           }),
         })
         const data = await res.json()
-        if (data.success) successCount++
+        if (data.success) {
+          successCount++
+          // Upload carousel images if any
+          if (newCarousel && newCarouselImages.length > 0 && data.data?.id) {
+            const cloudName = 'drl0illsh'
+            const folder = `greenmood/social/${combo.platform}/${combo.market}`
+            for (let i = 0; i < newCarouselImages.length; i++) {
+              try {
+                const formData = new FormData()
+                formData.append('file', newCarouselImages[i].file)
+                formData.append('upload_preset', 'greenmood_upload')
+                formData.append('folder', folder)
+                formData.append('tags', `${combo.platform},${combo.market},post:${data.data.id},carousel`)
+                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: formData })
+                const cloudData = await cloudRes.json()
+                if (cloudData.secure_url) {
+                  await fetch(`/api/posts/${data.data.id}/media/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: cloudData.secure_url, mediaType: 'image', sortOrder: i }),
+                  })
+                }
+              } catch (e) { console.error('Carousel upload failed:', e) }
+            }
+          }
+        }
       }
       if (successCount > 0) {
         setShowAddModal(false)
@@ -793,47 +821,113 @@ export default function CalendarPage() {
                       {newCarousel ? 'Carousel ON' : 'Carousel OFF'}
                     </button>
                     {newCarousel && (
-                      <span className="text-xs text-gm-cream/30">You can add multiple images after creation</span>
+                      <span className="text-xs text-gm-cream/30">Upload up to 10 images, drag to reorder</span>
                     )}
                   </div>
                 )
               })()}
               <div>
-                <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Media</label>
-                <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
-                  const f = e.target.files?.[0]
-                  if (f) {
-                    const r = new FileReader()
-                    r.onload = (ev) => setNewImage(ev.target?.result as string)
-                    r.readAsDataURL(f)
-                  }
-                }} />
-                {newImage ? (
-                  <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
-                    {newImage.startsWith('data:video') ? (
-                      <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
-                    ) : (
-                      <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
+                <label className="text-sm font-semibold text-gm-cream/70 block mb-3">
+                  Media {newCarousel && newCarouselImages.length > 0 && <span className="text-gm-cream/30 font-normal">({newCarouselImages.length}/10)</span>}
+                </label>
+
+                {newCarousel ? (
+                  /* ─── CAROUSEL: Multi-image upload ─── */
+                  <>
+                    <input type="file" accept="image/*" multiple id="new-carousel-imgs" className="hidden" onChange={(e) => {
+                      const files = e.target.files
+                      if (!files) return
+                      const remaining = 10 - newCarouselImages.length
+                      Array.from(files).slice(0, remaining).forEach(f => {
+                        const r = new FileReader()
+                        r.onload = (ev) => setNewCarouselImages(prev => [...prev, { data: ev.target?.result as string, file: f }])
+                        r.readAsDataURL(f)
+                      })
+                      e.target.value = ''
+                    }} />
+
+                    {newCarouselImages.length > 0 && (
+                      <div className="grid grid-cols-5 gap-2 mb-3">
+                        {newCarouselImages.map((img, idx) => (
+                          <div
+                            key={idx}
+                            draggable
+                            onDragStart={() => setDragNewIdx(idx)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => {
+                              if (dragNewIdx === null || dragNewIdx === idx) return
+                              const reordered = [...newCarouselImages]
+                              const [moved] = reordered.splice(dragNewIdx, 1)
+                              reordered.splice(idx, 0, moved)
+                              setNewCarouselImages(reordered)
+                              setDragNewIdx(null)
+                            }}
+                            className={`relative rounded-lg overflow-hidden border cursor-grab active:cursor-grabbing group aspect-square ${
+                              dragNewIdx === idx ? 'border-gm-sage/50 opacity-50' : 'border-white/[0.08]'
+                            }`}
+                          >
+                            <img src={img.data} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                              {idx + 1}
+                            </div>
+                            <button
+                              onClick={() => setNewCarouselImages(prev => prev.filter((_, i) => i !== idx))}
+                              className="absolute top-1 right-1 bg-black/60 hover:bg-red-500/80 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     )}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
-                      <span className="text-sm text-white font-medium">Click to change</span>
-                    </div>
-                  </div>
+
+                    {newCarouselImages.length < 10 && (
+                      <button onClick={() => document.getElementById('new-carousel-imgs')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/[0.02]">
+                        <span className="text-2xl opacity-20">+</span>
+                        <span className="text-sm text-gm-cream/30">{newCarouselImages.length === 0 ? 'Add carousel images' : 'Add more images'}</span>
+                        <span className="text-xs text-gm-cream/15">Select multiple files at once</span>
+                      </button>
+                    )}
+                  </>
                 ) : (
-                  <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
-                    <span className="text-4xl opacity-20">+</span>
-                    <span className="text-sm text-gm-cream/30">Click to add image or video</span>
-                    <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
-                    <span className="text-[10px] text-gm-sage/30 mt-1">{
-                      {
-                        instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
-                        linkedin: '1080 × 1080 px (1:1) recommended',
-                        stories: '1080 × 1920 px (9:16)',
-                        facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
-                        tiktok: '1080 × 1920 px (9:16)',
-                      }[multiPlatforms[0] || newSlot.platform] || '1080 × 1080 px'
-                    }</span>
-                  </button>
+                  /* ─── SINGLE: One image/video ─── */
+                  <>
+                    <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) {
+                        const r = new FileReader()
+                        r.onload = (ev) => setNewImage(ev.target?.result as string)
+                        r.readAsDataURL(f)
+                      }
+                    }} />
+                    {newImage ? (
+                      <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
+                        {newImage.startsWith('data:video') ? (
+                          <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
+                        ) : (
+                          <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
+                        )}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                          <span className="text-sm text-white font-medium">Click to change</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
+                        <span className="text-4xl opacity-20">+</span>
+                        <span className="text-sm text-gm-cream/30">Click to add image or video</span>
+                        <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
+                        <span className="text-[10px] text-gm-sage/30 mt-1">{
+                          {
+                            instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+                            linkedin: '1080 × 1080 px (1:1) recommended',
+                            stories: '1080 × 1920 px (9:16)',
+                            facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
+                            tiktok: '1080 × 1920 px (9:16)',
+                          }[multiPlatforms[0] || newSlot.platform] || '1080 × 1080 px'
+                        }</span>
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
