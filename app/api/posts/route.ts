@@ -6,7 +6,7 @@ const WORKSPACE_ID = 'cmmvt7qrr0000tcg4mgcwdxxg'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { date, time, market, platform, text, hashtags, firstComment, imageUrl, notes } = body
+    const { date, time, market, platform, text, hashtags, firstComment, imageUrl, notes, isCarousel } = body
 
     if (!date || !text) {
       return NextResponse.json({ success: false, error: 'date and text are required' }, { status: 400 })
@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
         market: market || 'hq',
         platform: platform || 'instagram',
         status: 'DRAFT',
+        isCarousel: isCarousel || false,
         variants: {
           create: {
             version: 1,

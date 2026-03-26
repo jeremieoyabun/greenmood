@@ -92,6 +92,7 @@ export default function CalendarPage() {
   const [newHashtags, setNewHashtags] = useState('')
   const [newFirstComment, setNewFirstComment] = useState('')
   const [newImage, setNewImage] = useState<string | null>(null)
+  const [newCarousel, setNewCarousel] = useState(false)
   const [creating, setCreating] = useState(false)
   const [genHash, setGenHash] = useState(false)
   // Story slides
@@ -186,6 +187,7 @@ export default function CalendarPage() {
     setStorySlides([{ text: '', media: null }])
     setMultiMarkets([])
     setMultiPlatforms([])
+    setNewCarousel(false)
   }
 
   const openAddModal = (date?: Date) => {
@@ -220,6 +222,7 @@ export default function CalendarPage() {
             firstComment: newFirstComment || null,
             imageUrl: newImage || null,
             notes: newSlot.notes || null,
+            isCarousel: newCarousel,
           }),
         })
         const data = await res.json()
@@ -771,6 +774,30 @@ export default function CalendarPage() {
           <div className="grid grid-cols-2 gap-8">
             {/* Left column — Media */}
             <div className="space-y-6">
+              {/* Carousel toggle — Instagram & LinkedIn only */}
+              {(() => {
+                const activePlatforms = multiPlatforms.length > 0 ? multiPlatforms : [newSlot.platform]
+                const showCarousel = activePlatforms.some(p => p === 'instagram' || p === 'linkedin')
+                if (!showCarousel) return null
+                return (
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setNewCarousel(!newCarousel)}
+                      className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                        newCarousel
+                          ? 'bg-gm-sage/20 border-gm-sage/40 text-gm-sage'
+                          : 'bg-white/[0.03] border-white/[0.08] text-gm-cream/40 hover:text-gm-cream/60'
+                      }`}
+                    >
+                      {newCarousel ? 'Carousel ON' : 'Carousel OFF'}
+                    </button>
+                    {newCarousel && (
+                      <span className="text-xs text-gm-cream/30">You can add multiple images after creation</span>
+                    )}
+                  </div>
+                )
+              })()}
               <div>
                 <label className="text-sm font-semibold text-gm-cream/70 block mb-3">Media</label>
                 <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
