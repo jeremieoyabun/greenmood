@@ -165,7 +165,6 @@ async function publishToInstagram(variant: any, type: string, token: string, pos
     // If media is base64, serve it via our public API endpoint so Instagram can fetch it
     if (mediaUrl.startsWith('data:')) {
       mediaUrl = `https://app.greenmood.be/api/image/${variant.id}`
-      console.log('Publish: converted base64 to proxy URL:', mediaUrl)
     }
 
     // Step 1: Get Instagram user ID
@@ -181,6 +180,11 @@ async function publishToInstagram(variant: any, type: string, token: string, pos
     let caption = variant.text || ''
     if (variant.hashtags) {
       caption += '\n.\n.\n.\n' + variant.hashtags
+    }
+
+    // ─── CAROUSEL POST (2+ images) ───
+    if (type !== 'stories' && postMedia.length >= 2) {
+      return await publishInstagramCarousel(userId, caption, postMedia, token)
     }
 
     if (type === 'stories') {
@@ -357,6 +361,94 @@ async function publishMultiStories(media: Array<{ url: string; media_type: strin
     }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Multi-story publish failed' }
+  }
+}
+
+// ─── INSTAGRAM CAROUSEL PUBLISHER ───
+
+async function publishInstagramCarousel(
+  userId: string,
+  caption: string,
+  media: Array<{ url: string; media_type: string }>,
+  token: string
+) {
+  try {
+    // Step 1: Create individual item containers for each image/video
+    const childContainerIds: string[] = []
+
+    for (const item of media) {
+      const isVideo = item.media_type === 'video' || item.url.match(/\.(mp4|mov|webm)/i)
+
+      const params = new URLSearchParams({
+        is_carousel_item: 'true',
+        access_token: token,
+      })
+
+      if (isVideo) {
+        params.set('media_type', 'VIDEO')
+        params.set('video_url', item.url)
+      } else {
+        params.set('image_url', item.url)
+      }
+
+      const res = await fetch(
+        `https://graph.instagram.com/v25.0/${userId}/media`,
+        { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params }
+      )
+      const container = await res.json()
+      if (container.error) {
+        return { success: false, error: `Carousel item failed: ${container.error.message}` }
+      }
+
+      // Wait for video processing
+      if (isVideo) {
+        await waitForMediaReady(container.id, token)
+      }
+
+      childContainerIds.push(container.id)
+    }
+
+    // Step 2: Wait for all containers to process
+    await new Promise(resolve => setTimeout(resolve, 5000))
+
+    // Step 3: Create carousel container
+    const carouselParams = new URLSearchParams({
+      media_type: 'CAROUSEL',
+      caption,
+      children: childContainerIds.join(','),
+      access_token: token,
+    })
+
+    const carouselRes = await fetch(
+      `https://graph.instagram.com/v25.0/${userId}/media`,
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: carouselParams }
+    )
+    const carousel = await carouselRes.json()
+    if (carousel.error) {
+      return { success: false, error: `Carousel creation failed: ${carousel.error.message}` }
+    }
+
+    // Step 4: Wait for carousel to be ready
+    await new Promise(resolve => setTimeout(resolve, 5000))
+
+    // Step 5: Publish the carousel
+    const pubParams = new URLSearchParams({ creation_id: carousel.id, access_token: token })
+    const publishRes = await fetch(
+      `https://graph.instagram.com/v25.0/${userId}/media_publish`,
+      { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: pubParams }
+    )
+    const published = await publishRes.json()
+    if (published.error) {
+      return { success: false, error: `Carousel publish failed: ${published.error.message}` }
+    }
+
+    return {
+      success: true,
+      platformId: published.id,
+      message: `Carousel published (${childContainerIds.length} slides)`,
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Carousel publish failed' }
   }
 }
 
