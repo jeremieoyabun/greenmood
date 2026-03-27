@@ -285,6 +285,10 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
   const [rewriteVersions, setRewriteVersions] = useState<Array<{ text: string; reasoning: string }>>([])
   const [showRejectInput, setShowRejectInput] = useState(false)
 
+  // Image Director state
+  const [loadingVisual, setLoadingVisual] = useState(false)
+  const [visualBrief, setVisualBrief] = useState<any>(null)
+
   // Schedule edit state
   const [editingSchedule, setEditingSchedule] = useState(false)
   const [scheduleDate, setScheduleDate] = useState('')
@@ -1245,6 +1249,78 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                 )}
 
                 <p className="text-sm text-gm-cream/50 mt-2">{imageAnalysis.summary}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* AI Visual Brief */}
+        {!editing && (
+          <div className="pt-3 border-t border-white/[0.06]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">AI Visual Brief</span>
+              <Button variant="outline" size="sm" loading={loadingVisual} onClick={async () => {
+                if (!slot?.post?.id) return
+                setLoadingVisual(true)
+                setVisualBrief(null)
+                try {
+                  const res = await fetch('/api/agents/image-director', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId: slot.post.id }),
+                  })
+                  const data = await res.json()
+                  if (data.success) setVisualBrief(data)
+                } catch { /* ignore */ }
+                setLoadingVisual(false)
+              }}>
+                {loadingVisual ? 'Generating...' : '✨ Suggest Visual'}
+              </Button>
+            </div>
+            <p className="text-xs text-gm-cream/25 mb-2">AI suggests visual direction, image source, and an AI generation prompt.</p>
+
+            {visualBrief && (
+              <div className="space-y-3 bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
+                {/* Visual Direction */}
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold mb-1">Direction</p>
+                  <p className="text-sm text-gm-cream/70">{visualBrief.visualDirection?.mood}</p>
+                  <p className="text-xs text-gm-cream/40 mt-1">Lighting: {visualBrief.visualDirection?.lighting} — Angle: {visualBrief.visualDirection?.angle}</p>
+                </div>
+
+                {/* Image Source */}
+                {visualBrief.nextcloudSuggestion && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold mb-1">Image Source</p>
+                    <p className="text-xs text-gm-sage/70 font-medium">{visualBrief.nextcloudSuggestion.primaryFolder}</p>
+                    {visualBrief.nextcloudSuggestion.notes && (
+                      <p className="text-xs text-gm-cream/40 mt-0.5">{visualBrief.nextcloudSuggestion.notes}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Pommeli Prompt */}
+                {visualBrief.pomelliPrompt && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold mb-1">AI Image Prompt (Pommeli)</p>
+                    <div className="relative group">
+                      <p className="text-xs text-gm-cream/50 bg-black/20 rounded-lg p-3 leading-relaxed">{visualBrief.pomelliPrompt}</p>
+                      <button
+                        onClick={() => navigator.clipboard.writeText(visualBrief.pomelliPrompt)}
+                        className="absolute top-2 right-2 text-[10px] text-gm-cream/30 hover:text-gm-cream/60 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 px-2 py-1 rounded"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Dimensions */}
+                {visualBrief.dimensions && (
+                  <p className="text-xs text-gm-cream/30">
+                    Recommended: {visualBrief.dimensions.width}x{visualBrief.dimensions.height} ({visualBrief.dimensions.aspectRatio})
+                  </p>
+                )}
               </div>
             )}
           </div>
