@@ -162,7 +162,11 @@ const FOLDER_TREE: FolderNode[] = [
     { id: 'greenmood/products/belt', label: 'Belt' },
     { id: 'greenmood/products/g-divider', label: 'G-Divider' },
     { id: 'greenmood/products/planters', label: 'Planters' },
-    { id: 'greenmood/products/pouf', label: 'Pouf' },
+    { id: 'greenmood/products/pouf', label: 'Pouf (All)' },
+    { id: 'greenmood/products/pouf/mario-pouf/expanded-cork', label: 'Mario - Expanded Cork' },
+    { id: 'greenmood/products/pouf/mario-pouf/compressed-cork', label: 'Mario - Compressed Cork' },
+    { id: 'greenmood/products/pouf/mario-pouf/sneaker-white', label: 'Mario - Sneaker White' },
+    { id: 'greenmood/products/pouf/mario-pouf/sneaker-black', label: 'Mario - Sneaker Black' },
     { id: 'greenmood/products/green-walls', label: 'Green Walls' },
     { id: 'greenmood/products/semi-natural-trees', label: 'Semi-natural Trees' },
     { id: 'greenmood/products/custom-logos', label: 'Custom Logos' },
@@ -195,8 +199,11 @@ const FOLDER_TREE: FolderNode[] = [
   { id: 'greenmood/press-kit', label: 'Press Kit' },
 ]
 
-// Flatten for upload dropdown
-const ALL_FOLDERS = FOLDER_TREE.flatMap(f => f.children ? [f, ...f.children] : [f]).filter(f => f.id !== 'greenmood')
+// Flatten for upload dropdown (recursive)
+function flattenFolders(nodes: FolderNode[]): FolderNode[] {
+  return nodes.flatMap(f => f.children ? [f, ...flattenFolders(f.children)] : [f])
+}
+const ALL_FOLDERS = flattenFolders(FOLDER_TREE).filter(f => f.id !== 'greenmood')
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([])
