@@ -372,11 +372,11 @@ export default function CalendarPage() {
         <div className="flex items-center gap-1.5 flex-wrap">
           <SocialIcon platform={first.platform} size="sm" />
           {slots.map(s => <FlagIcon key={s.id} market={s.market} size="sm" />)}
-          <span className="text-[10px] text-gray-500 font-semibold ml-auto">{slots.length} markets</span>
-          {first.time && <span className="text-xs text-gray-400 font-medium">{first.time}</span>}
+          <span className="text-[10px] text-gray-700 font-semibold ml-auto">{slots.length} markets</span>
+          {first.time && <span className="text-xs text-gray-600 font-semibold">{first.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className="text-xs truncate mt-1 text-gray-500 group-hover:text-gray-700">{previewText}</p>
+          <p className="text-xs truncate mt-1 text-gray-700">{previewText}</p>
         )}
       </button>
     )
@@ -425,11 +425,11 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           {slot.platform !== 'linkedin' && <FlagIcon market={slot.market} size="sm" />}
           <SocialIcon platform={slot.platform} size="sm" />
-          {hasImage && <span className="text-xs text-gray-400">🖼</span>}
-          {slot.time && <span className="text-xs text-gray-400 ml-auto font-medium">{slot.time}</span>}
+          {hasImage && <span className="text-xs text-gray-600">🖼</span>}
+          {slot.time && <span className="text-xs text-gray-600 ml-auto font-semibold">{slot.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className={`text-xs truncate mt-1 ${isPublished ? 'text-gray-300 line-through' : 'text-gray-500 group-hover:text-gray-700'}`}>{previewText}</p>
+          <p className={`text-xs truncate mt-1 ${isPublished ? 'text-emerald-700/50 line-through' : 'text-gray-700'}`}>{previewText}</p>
         )}
       </button>
     )
@@ -500,8 +500,8 @@ export default function CalendarPage() {
 
       {/* Month View */}
       {view === 'month' && (
-        <div className="rounded-xl border border-gray-300 overflow-hidden bg-white shadow-sm">
-          <div className="grid grid-cols-7 bg-gray-100/80">
+        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-100 shadow-sm">
+          <div className="grid grid-cols-7 bg-gray-200/60">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
               <div key={d} className="px-2 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider text-center border-b border-gray-300">{d}</div>
             ))}
@@ -553,7 +553,7 @@ export default function CalendarPage() {
 
       {/* Week View */}
       {view === 'week' && (
-        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-50 shadow-sm">
+        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-100 shadow-sm">
           <div className="grid grid-cols-7">
             {weekDays.map((day, i) => {
               const daySlots = getSlotsForDate(day)
@@ -563,7 +563,7 @@ export default function CalendarPage() {
 
               return (
                 <div key={i} className="border-r border-gray-200 last:border-r-0">
-                  <div className={`px-3 py-2 border-b border-gray-300 text-center ${today ? 'bg-emerald-50' : 'bg-gray-100'}`}>
+                  <div className={`px-3 py-2 border-b border-gray-300 text-center ${today ? 'bg-emerald-100' : 'bg-gray-200/60'}`}>
                     <p className="text-xs text-gray-500 uppercase">{format(day, 'EEE')}</p>
                     <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gray-600'}`}>{format(day, 'd')}</p>
                   </div>
