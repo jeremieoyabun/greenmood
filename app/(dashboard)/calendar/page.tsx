@@ -237,11 +237,15 @@ export default function CalendarPage() {
             const folder = `greenmood/social/${combo.platform}/${combo.market}`
             for (let i = 0; i < newCarouselImages.length; i++) {
               try {
+                const carouselFile = newCarouselImages[i].file
+                const cleanName = carouselFile.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
                 const formData = new FormData()
-                formData.append('file', newCarouselImages[i].file)
+                formData.append('file', carouselFile)
                 formData.append('upload_preset', 'greenmood_upload')
                 formData.append('folder', folder)
                 formData.append('tags', `${combo.platform},${combo.market},post:${data.data.id},carousel`)
+                formData.append('context', `original_name=${carouselFile.name}|post_id=${data.data.id}|slide=${i+1}`)
+                formData.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
                 const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: formData })
                 const cloudData = await cloudRes.json()
                 if (cloudData.secure_url) {

@@ -34,11 +34,14 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
     for (const file of Array.from(files)) {
       try {
         // Upload directly to Cloudinary from browser (bypasses server size limits)
+        const cleanName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
         const form = new FormData()
         form.append('file', file)
         form.append('upload_preset', 'greenmood_upload')
         form.append('folder', `greenmood/social/instagram`)
         form.append('tags', `carousel,post:${postId}`)
+        form.append('context', `original_name=${file.name}|post_id=${postId}`)
+        form.append('public_id', `greenmood/social/instagram/${cleanName}-${Date.now()}`)
 
         const cloudRes = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,

@@ -386,11 +386,14 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
     for (const file of Array.from(files)) {
       try {
         // Upload directly to Cloudinary from browser (no server size limit)
+        const cleanName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
         const formData = new FormData()
         formData.append('file', file)
         formData.append('upload_preset', 'greenmood_upload')
         formData.append('folder', folder)
         formData.append('tags', `${platform},${market},post:${slot.post.id}`)
+        formData.append('context', `original_name=${file.name}|post_id=${slot.post.id}|market=${market}|platform=${platform}`)
+        formData.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
 
         const cloudRes = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
