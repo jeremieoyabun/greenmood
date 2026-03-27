@@ -1289,12 +1289,12 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                 </div>
 
                 {/* Image Source */}
-                {visualBrief.nextcloudSuggestion && (
+                {visualBrief.cloudinarySuggestion && (
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold mb-1">Image Source</p>
-                    <p className="text-xs text-gm-sage/70 font-medium">{visualBrief.nextcloudSuggestion.primaryFolder}</p>
-                    {visualBrief.nextcloudSuggestion.notes && (
-                      <p className="text-xs text-gm-cream/40 mt-0.5">{visualBrief.nextcloudSuggestion.notes}</p>
+                    <p className="text-xs text-gm-sage/70 font-medium">{visualBrief.cloudinarySuggestion.primaryFolder}</p>
+                    {visualBrief.cloudinarySuggestion.notes && (
+                      <p className="text-xs text-gm-cream/40 mt-0.5">{visualBrief.cloudinarySuggestion.notes}</p>
                     )}
                   </div>
                 )}

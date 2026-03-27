@@ -97,18 +97,43 @@ export async function POST(req: NextRequest) {
 BRAND CONTEXT:
 ${kbContext}
 
-GREENMOOD PRODUCT VISUAL LIBRARY (Nextcloud folders):
-- /Products/Ball Moss — ball moss wall installations, close-ups, textures
-- /Products/Reindeer Moss — flat reindeer moss panels, color variations
-- /Products/Velvet Leaf — velvet leaf close-ups, installations
-- /Products/Forest — forest moss arrangements, natural textures
-- /Products/Cork Tiles — Alain Gilles designed cork panels (Parenthèse, Sillon, Brickx, Morse)
-- /Design Collection — G-Circle, Hoverlight, Cascade, Rings, Pouf, Planters, Modulor, Framed, Perspective Lines
-- /Projects — real installation photos by project name
-- /Factory — Bogdaniec factory, production, behind-the-scenes
-- /Team — team photos, events, trade shows
-- /Lifestyle — mood shots, biophilic interiors, nature details
-- /Events — trade show booths, NeoCon, Maison&Objet, Stockholm Furniture Fair
+GREENMOOD VISUAL LIBRARY (Cloudinary folders — greenmood/):
+PRODUCTS:
+- products/g-circle — G-Circle wall feature
+- products/hoverlight — Hoverlight suspended element
+- products/cascade — Cascade wall installation
+- products/modulor — Modulor room divider
+- products/framed — Framed wall panels
+- products/perspective-lines — Perspective Lines wall art
+- products/moss-frames — Moss Frames
+- products/rings — Rings wall feature
+- products/belt — Belt wall element
+- products/tail — Tail wall element
+- products/planters — Planters (Mario, Cruz, Terra)
+- products/g-divider — G-Divider
+- products/green-walls — Green walls (Ball Moss, Reindeer Moss, Velvet Leaf, Forest)
+- products/semi-natural-trees — Semi-natural trees
+- products/sample-box — Sample box
+- products/custom-logos — Custom moss logos
+
+MARIO POUF COLLECTION (4 versions):
+- products/pouf/mario-pouf/expanded-cork — Expanded Cork version (pure smoked, dark tone, 5.5kg)
+- products/pouf/mario-pouf/compressed-cork — Compressed Cork version (100% recycled, 9kg)
+- products/pouf/mario-pouf/sneaker-white — Sneaker White version (cork + white microfiber, 12kg)
+- products/pouf/mario-pouf/sneaker-black — Sneaker Black version (cork + black microfiber, 10.8kg)
+- products/pouf/ — General pouf gallery images
+
+PROJECTS:
+- projects/loreal-paris, projects/uc-davis, projects/cloud-ix-budapest, projects/ap-rooftop-nj, projects/ci3-yorkshire, projects/jll-brussels, projects/athora-brussels, projects/saltire-edinburgh
+
+OTHER:
+- factory/ — Bogdaniec factory, production, behind-the-scenes
+- team/ — team photos
+- events/neocon, events/workspace-expo, events/icff-2024 — trade shows
+- showrooms/ — showroom photos
+- textures/ — material textures and close-ups
+- press-kit/ — press materials
+- social/ — published social media assets (instagram, linkedin, stories per market)
 
 PLATFORM DIMENSIONS:
 - Instagram Feed: 1080x1080 (square) or 1080x1350 (portrait, higher engagement)
@@ -134,9 +159,9 @@ ${resolvedMarket ? `MARKET: ${resolvedMarket}` : ''}
 
 Respond with this JSON format:
 {
-  "nextcloudSuggestion": {
-    "primaryFolder": "/Products/Ball Moss",
-    "alternativeFolders": ["/Projects", "/Lifestyle"],
+  "cloudinarySuggestion": {
+    "primaryFolder": "greenmood/products/green-walls",
+    "alternativeFolders": ["greenmood/projects", "greenmood/showrooms"],
     "searchTerms": ["ball moss", "office installation", "acoustic"],
     "notes": "Look for close-up texture shots showing NRC acoustic properties"
   },
@@ -198,7 +223,7 @@ Respond with this JSON format:
 
     return NextResponse.json({
       success: true,
-      nextcloudSuggestion: direction.nextcloudSuggestion,
+      cloudinarySuggestion: direction.cloudinarySuggestion,
       pomelliPrompt: direction.pomelliPrompt,
       dimensions: direction.dimensions,
       visualDirection: direction.visualDirection,
