@@ -40,34 +40,34 @@ type ViewMode = 'month' | 'week' | 'agenda'
 
 const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
   // Instagram — all markets
-  'hq--instagram': { label: 'IG BE', bg: 'bg-pink-500/15', text: 'text-pink-300', border: 'border-l-pink-400', dot: 'bg-pink-400' },
-  'us--instagram': { label: 'IG US', bg: 'bg-blue-500/15', text: 'text-blue-300', border: 'border-l-blue-400', dot: 'bg-blue-400' },
-  'uk--instagram': { label: 'IG UK', bg: 'bg-red-500/15', text: 'text-red-300', border: 'border-l-red-400', dot: 'bg-red-400' },
-  'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-500/15', text: 'text-amber-300', border: 'border-l-amber-400', dot: 'bg-amber-400' },
-  'fr--instagram': { label: 'IG FR', bg: 'bg-violet-500/15', text: 'text-violet-300', border: 'border-l-violet-400', dot: 'bg-violet-400' },
-  'pl--instagram': { label: 'IG PL', bg: 'bg-rose-500/15', text: 'text-rose-300', border: 'border-l-rose-400', dot: 'bg-rose-400' },
-  'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-500/15', text: 'text-cyan-300', border: 'border-l-cyan-400', dot: 'bg-cyan-400' },
+  'hq--instagram': { label: 'IG BE', bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-l-pink-400', dot: 'bg-pink-400' },
+  'us--instagram': { label: 'IG US', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-l-blue-400', dot: 'bg-blue-400' },
+  'uk--instagram': { label: 'IG UK', bg: 'bg-red-50', text: 'text-red-700', border: 'border-l-red-400', dot: 'bg-red-400' },
+  'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-l-amber-400', dot: 'bg-amber-400' },
+  'fr--instagram': { label: 'IG FR', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-l-violet-400', dot: 'bg-violet-400' },
+  'pl--instagram': { label: 'IG PL', bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-l-rose-400', dot: 'bg-rose-400' },
+  'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-l-cyan-400', dot: 'bg-cyan-400' },
   // LinkedIn — all markets (sky blue = LinkedIn brand)
-  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'us--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'uk--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'fr--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'ae--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
-  'pl--linkedin': { label: 'LinkedIn', bg: 'bg-sky-500/15', text: 'text-sky-300', border: 'border-l-sky-400', dot: 'bg-sky-400' },
+  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
+  'us--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
+  'uk--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
+  'fr--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
+  'ae--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
+  'pl--linkedin': { label: 'LinkedIn', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-l-sky-500', dot: 'bg-sky-500' },
   // Stories
-  'hq--stories': { label: 'Stories BE', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
-  'us--stories': { label: 'Stories US', bg: 'bg-purple-500/15', text: 'text-purple-300', border: 'border-l-purple-400', dot: 'bg-purple-400' },
-  'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-500/15', text: 'text-orange-300', border: 'border-l-orange-400', dot: 'bg-orange-400' },
+  'hq--stories': { label: 'Stories BE', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-l-purple-400', dot: 'bg-purple-400' },
+  'us--stories': { label: 'Stories US', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-l-purple-400', dot: 'bg-purple-400' },
+  'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-l-orange-400', dot: 'bg-orange-400' },
   // Facebook
-  'hq--facebook': { label: 'FB BE', bg: 'bg-blue-600/15', text: 'text-blue-200', border: 'border-l-blue-500', dot: 'bg-blue-500' },
+  'hq--facebook': { label: 'FB BE', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-l-blue-500', dot: 'bg-blue-500' },
   // TikTok
-  'ae--tiktok': { label: 'TT UAE', bg: 'bg-white/[0.1]', text: 'text-white/80', border: 'border-l-white', dot: 'bg-white' },
+  'ae--tiktok': { label: 'TT UAE', bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-l-gray-500', dot: 'bg-gray-500' },
 }
 
 function getAccountStyle(market: string, platform: string) {
   return ACCOUNT_STYLES[`${market}--${platform}`] || {
     label: `${MARKETS[market]?.emoji || ''} ${platform}`,
-    bg: 'bg-white/[0.05]', text: 'text-gm-cream/50', border: 'border-l-gray-400', dot: 'bg-gray-400',
+    bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-l-gray-400', dot: 'bg-gray-400',
   }
 }
 
@@ -363,20 +363,20 @@ export default function CalendarPage() {
         onClick={(e) => { e.stopPropagation(); setGroupedSlots(slots); setSelectedSlot(first) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-pointer ${
           isPublished
-            ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
+            ? 'border-l-emerald-400 bg-emerald-50 opacity-60 hover:opacity-80'
             : isScheduled
-            ? 'border-l-green-400 bg-green-500/20 ring-2 ring-green-400/30 shadow-md shadow-green-500/10'
-            : `${style.border} ${style.bg} hover:brightness-125`
+            ? 'border-l-green-500 bg-green-50 ring-2 ring-green-300/40 shadow-sm'
+            : `${style.border} ${style.bg} hover:brightness-110`
         }`}
       >
         <div className="flex items-center gap-1.5 flex-wrap">
           <SocialIcon platform={first.platform} size="sm" />
           {slots.map(s => <FlagIcon key={s.id} market={s.market} size="sm" />)}
-          <span className="text-[10px] text-gm-sage/60 font-semibold ml-auto">{slots.length} markets</span>
-          {first.time && <span className="text-xs text-gm-cream/30 font-medium">{first.time}</span>}
+          <span className="text-[10px] text-gray-500 font-semibold ml-auto">{slots.length} markets</span>
+          {first.time && <span className="text-xs text-gray-400 font-medium">{first.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className="text-xs truncate mt-1 text-gm-cream/40 group-hover:text-gm-cream/60">{previewText}</p>
+          <p className="text-xs truncate mt-1 text-gray-500 group-hover:text-gray-700">{previewText}</p>
         )}
       </button>
     )
@@ -404,32 +404,32 @@ export default function CalendarPage() {
         onClick={(e) => { e.stopPropagation(); setGroupedSlots([]); setSelectedSlot(slot) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
           isPublished
-            ? 'border-l-emerald-500/40 bg-emerald-900/20 opacity-45 hover:opacity-65'
+            ? 'border-l-emerald-400 bg-emerald-50 opacity-60 hover:opacity-80'
             : isScheduled
-            ? 'border-l-green-400 bg-green-500/20 ring-2 ring-green-400/30 shadow-md shadow-green-500/10'
-            : `${style.border} ${style.bg} hover:brightness-125`
+            ? 'border-l-green-500 bg-green-50 ring-2 ring-green-300/40 shadow-sm'
+            : `${style.border} ${style.bg} hover:brightness-110`
         }`}
       >
         {isPublished && (
           <div className="flex items-center gap-1 mb-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/60" />
-            <span className="text-[11px] font-bold text-emerald-400/70 uppercase tracking-wider">Published</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Published</span>
           </div>
         )}
         {isScheduled && (
           <div className="flex items-center gap-1 mb-1">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[11px] font-bold text-green-300 uppercase tracking-wider">Scheduled</span>
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[11px] font-bold text-green-600 uppercase tracking-wider">Scheduled</span>
           </div>
         )}
         <div className="flex items-center gap-2">
           {slot.platform !== 'linkedin' && <FlagIcon market={slot.market} size="sm" />}
           <SocialIcon platform={slot.platform} size="sm" />
-          {hasImage && <span className="text-xs text-gm-cream/30">🖼</span>}
-          {slot.time && <span className="text-xs text-gm-cream/30 ml-auto font-medium">{slot.time}</span>}
+          {hasImage && <span className="text-xs text-gray-400">🖼</span>}
+          {slot.time && <span className="text-xs text-gray-400 ml-auto font-medium">{slot.time}</span>}
         </div>
         {!compact && previewText && (
-          <p className={`text-xs truncate mt-1 ${isPublished ? 'text-gm-cream/15 line-through' : 'text-gm-cream/40 group-hover:text-gm-cream/60'}`}>{previewText}</p>
+          <p className={`text-xs truncate mt-1 ${isPublished ? 'text-gray-300 line-through' : 'text-gray-500 group-hover:text-gray-700'}`}>{previewText}</p>
         )}
       </button>
     )
@@ -500,10 +500,10 @@ export default function CalendarPage() {
 
       {/* Month View */}
       {view === 'month' && (
-        <div className="rounded-xl border border-white/[0.08] overflow-hidden">
-          <div className="grid grid-cols-7 bg-white/[0.03]">
+        <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
+          <div className="grid grid-cols-7 bg-gray-50">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <div key={d} className="px-2 py-2 text-xs font-semibold text-gm-cream/40 uppercase tracking-wider text-center border-b border-white/[0.06]">{d}</div>
+              <div key={d} className="px-2 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center border-b border-gray-200">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
@@ -517,18 +517,18 @@ export default function CalendarPage() {
               return (
                 <div
                   key={i}
-                  className={`min-h-[110px] border-b border-r border-white/[0.04] p-1 cursor-pointer transition-colors hover:bg-white/[0.02] ${!inMonth ? 'opacity-25' : ''} ${isDropTarget ? 'bg-gm-sage/10 ring-1 ring-inset ring-gm-sage/30' : ''}`}
+                  className={`min-h-[110px] border-b border-r border-gray-100 p-1 cursor-pointer transition-colors hover:bg-gray-50 ${!inMonth ? 'opacity-30' : ''} ${isDropTarget ? 'bg-emerald-50 ring-1 ring-inset ring-gm-sage/30' : ''}`}
                   onClick={() => openAddModal(day)}
                   onDragOver={(e) => { e.preventDefault(); setDragOverDate(dayStr) }}
                   onDragLeave={() => setDragOverDate(null)}
                   onDrop={(e) => { e.preventDefault(); handleDrop(dayStr) }}
                 >
                   <div className="flex items-center justify-between mb-1 px-0.5">
-                    <span className={`text-[11px] font-medium w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-gm-sage text-gm-dark' : 'text-gm-cream/50'}`}>
+                    <span className={`text-[11px] font-medium w-6 h-6 flex items-center justify-center rounded-full ${today ? 'bg-gm-sage text-white' : 'text-gray-500'}`}>
                       {format(day, 'd')}
                     </span>
                     {daySlots.length > 0 && (
-                      <span className="text-[11px] text-gm-cream/20">{daySlots.length}</span>
+                      <span className="text-[11px] text-gray-300">{daySlots.length}</span>
                     )}
                   </div>
                   <div className="space-y-[3px]">
@@ -538,7 +538,7 @@ export default function CalendarPage() {
                     {groupSlots(daySlots).length > 4 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); setCurrentDate(day); setView('week' as ViewMode) }}
-                        className="text-xs text-gm-sage/50 hover:text-gm-sage pl-1 transition-colors"
+                        className="text-xs text-gm-sage/60 hover:text-gm-sage pl-1 transition-colors"
                       >
                         +{groupSlots(daySlots).length - 4} more
                       </button>
@@ -553,7 +553,7 @@ export default function CalendarPage() {
 
       {/* Week View */}
       {view === 'week' && (
-        <div className="rounded-xl border border-white/[0.08] overflow-hidden">
+        <div className="rounded-xl border border-gray-200 overflow-hidden bg-white shadow-sm">
           <div className="grid grid-cols-7">
             {weekDays.map((day, i) => {
               const daySlots = getSlotsForDate(day)
@@ -562,13 +562,13 @@ export default function CalendarPage() {
               const isDropTarget = dragOverDate === dayStr
 
               return (
-                <div key={i} className="border-r border-white/[0.04] last:border-r-0">
-                  <div className={`px-3 py-2 border-b border-white/[0.06] text-center ${today ? 'bg-gm-sage/10' : 'bg-white/[0.02]'}`}>
-                    <p className="text-xs text-gm-cream/40 uppercase">{format(day, 'EEE')}</p>
-                    <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gm-cream/60'}`}>{format(day, 'd')}</p>
+                <div key={i} className="border-r border-gray-100 last:border-r-0">
+                  <div className={`px-3 py-2 border-b border-gray-200 text-center ${today ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                    <p className="text-xs text-gray-400 uppercase">{format(day, 'EEE')}</p>
+                    <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gray-500'}`}>{format(day, 'd')}</p>
                   </div>
                   <div
-                    className={`min-h-[400px] p-1.5 space-y-1 ${isDropTarget ? 'bg-gm-sage/10' : ''}`}
+                    className={`min-h-[400px] p-1.5 space-y-1 ${isDropTarget ? 'bg-emerald-50' : ''}`}
                     onDragOver={(e) => { e.preventDefault(); setDragOverDate(dayStr) }}
                     onDragLeave={() => setDragOverDate(null)}
                     onDrop={(e) => { e.preventDefault(); handleDrop(dayStr) }}
@@ -576,7 +576,7 @@ export default function CalendarPage() {
                     {daySlots.map(slot => <SlotChip key={slot.id} slot={slot} />)}
                     <button
                       onClick={() => openAddModal(day)}
-                      className="w-full py-2 text-xs text-gm-cream/10 hover:text-gm-cream/25 hover:bg-white/[0.02] rounded transition-colors"
+                      className="w-full py-2 text-xs text-gray-200 hover:text-gray-400 hover:bg-gray-50 rounded transition-colors"
                     >+</button>
                   </div>
                 </div>
@@ -590,9 +590,9 @@ export default function CalendarPage() {
       {view === 'agenda' && (
         <div className="space-y-2 max-w-3xl">
           {loading ? (
-            <Card><p className="text-xs text-gm-cream/40 text-center py-8">Loading...</p></Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm"><p className="text-xs text-gray-400 text-center py-8">Loading...</p></div>
           ) : filteredSlots.length === 0 ? (
-            <Card><p className="text-xs text-gm-cream/40 text-center py-8">No slots for {format(currentDate, 'MMMM yyyy')}</p></Card>
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm"><p className="text-xs text-gray-400 text-center py-8">No slots for {format(currentDate, 'MMMM yyyy')}</p></div>
           ) : (
             filteredSlots.sort((a, b) => a.date.localeCompare(b.date) || (a.time || '').localeCompare(b.time || '')).map(slot => {
               const style = getAccountStyle(slot.market, slot.platform)
@@ -603,21 +603,21 @@ export default function CalendarPage() {
                 <button
                   key={slot.id}
                   onClick={() => { setGroupedSlots([]); setSelectedSlot(slot) }}
-                  className={`w-full text-left rounded-xl p-4 border-l-[4px] ${style.border} bg-white/[0.035] border border-white/[0.08] hover:bg-white/[0.05] transition-all`}
+                  className={`w-full text-left rounded-xl p-4 border-l-[4px] ${style.border} bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-all`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="text-center min-w-[45px]">
-                      <p className="text-lg font-semibold text-gm-cream">{format(new Date(slot.date), 'd')}</p>
-                      <p className="text-xs text-gm-cream/30">{format(new Date(slot.date), 'EEE')}</p>
+                      <p className="text-lg font-semibold text-gray-800">{format(new Date(slot.date), 'd')}</p>
+                      <p className="text-xs text-gray-400">{format(new Date(slot.date), 'EEE')}</p>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${style.bg} ${style.text}`}>{style.label}</span>
-                        {slot.time && <span className="text-xs text-gm-cream/30">{slot.time}</span>}
+                        {slot.time && <span className="text-xs text-gray-400">{slot.time}</span>}
                         {slot.notes && <Badge variant="default" size="sm">{slot.notes}</Badge>}
                       </div>
-                      {previewText && <p className="text-sm text-gm-cream/50 truncate">{previewText}</p>}
-                      {slot.campaign && <p className="text-xs text-gm-sage/40 mt-0.5">{slot.campaign.title}</p>}
+                      {previewText && <p className="text-sm text-gray-500 truncate">{previewText}</p>}
+                      {slot.campaign && <p className="text-xs text-gm-sage/60 mt-0.5">{slot.campaign.title}</p>}
                     </div>
                   </div>
                 </button>
