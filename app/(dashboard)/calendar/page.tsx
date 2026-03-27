@@ -500,8 +500,8 @@ export default function CalendarPage() {
 
       {/* Month View */}
       {view === 'month' && (
-        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-100 shadow-sm">
-          <div className="grid grid-cols-7 bg-gray-200/60">
+        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-200 shadow-sm">
+          <div className="grid grid-cols-7 bg-gray-300/50">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
               <div key={d} className="px-2 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider text-center border-b border-gray-300">{d}</div>
             ))}
@@ -553,7 +553,7 @@ export default function CalendarPage() {
 
       {/* Week View */}
       {view === 'week' && (
-        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-100 shadow-sm">
+        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-200 shadow-sm">
           <div className="grid grid-cols-7">
             {weekDays.map((day, i) => {
               const daySlots = getSlotsForDate(day)
@@ -563,7 +563,7 @@ export default function CalendarPage() {
 
               return (
                 <div key={i} className="border-r border-gray-200 last:border-r-0">
-                  <div className={`px-3 py-2 border-b border-gray-300 text-center ${today ? 'bg-emerald-100' : 'bg-gray-200/60'}`}>
+                  <div className={`px-3 py-2 border-b border-gray-300 text-center ${today ? 'bg-emerald-100' : 'bg-gray-300/50'}`}>
                     <p className="text-xs text-gray-500 uppercase">{format(day, 'EEE')}</p>
                     <p className={`text-lg font-semibold ${today ? 'text-gm-sage' : 'text-gray-600'}`}>{format(day, 'd')}</p>
                   </div>
