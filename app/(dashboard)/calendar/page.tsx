@@ -40,34 +40,34 @@ type ViewMode = 'month' | 'week' | 'agenda'
 
 const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; border: string; dot: string }> = {
   // Instagram — all markets
-  'hq--instagram': { label: 'IG BE', bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-l-pink-500', dot: 'bg-pink-500' },
-  'us--instagram': { label: 'IG US', bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-l-blue-500', dot: 'bg-blue-500' },
-  'uk--instagram': { label: 'IG UK', bg: 'bg-red-100', text: 'text-red-800', border: 'border-l-red-500', dot: 'bg-red-500' },
-  'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-l-amber-500', dot: 'bg-amber-500' },
-  'fr--instagram': { label: 'IG FR', bg: 'bg-violet-100', text: 'text-violet-800', border: 'border-l-violet-500', dot: 'bg-violet-500' },
-  'pl--instagram': { label: 'IG PL', bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-l-rose-500', dot: 'bg-rose-500' },
-  'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-100', text: 'text-cyan-800', border: 'border-l-cyan-500', dot: 'bg-cyan-500' },
+  'hq--instagram': { label: 'IG BE', bg: 'bg-pink-200', text: 'text-pink-900', border: 'border-l-pink-500', dot: 'bg-pink-500' },
+  'us--instagram': { label: 'IG US', bg: 'bg-blue-200', text: 'text-blue-900', border: 'border-l-blue-500', dot: 'bg-blue-500' },
+  'uk--instagram': { label: 'IG UK', bg: 'bg-red-200', text: 'text-red-900', border: 'border-l-red-500', dot: 'bg-red-500' },
+  'ae--instagram': { label: 'IG UAE', bg: 'bg-amber-200', text: 'text-amber-900', border: 'border-l-amber-500', dot: 'bg-amber-500' },
+  'fr--instagram': { label: 'IG FR', bg: 'bg-violet-200', text: 'text-violet-900', border: 'border-l-violet-500', dot: 'bg-violet-500' },
+  'pl--instagram': { label: 'IG PL', bg: 'bg-rose-200', text: 'text-rose-900', border: 'border-l-rose-500', dot: 'bg-rose-500' },
+  'kr--instagram': { label: 'IG KR', bg: 'bg-cyan-200', text: 'text-cyan-900', border: 'border-l-cyan-500', dot: 'bg-cyan-500' },
   // LinkedIn — all markets (sky blue = LinkedIn brand)
-  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
-  'us--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
-  'uk--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
-  'fr--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
-  'ae--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
-  'pl--linkedin': { label: 'LinkedIn', bg: 'bg-sky-100', text: 'text-sky-800', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'hq--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'us--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'uk--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'fr--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'ae--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
+  'pl--linkedin': { label: 'LinkedIn', bg: 'bg-sky-200', text: 'text-sky-900', border: 'border-l-sky-600', dot: 'bg-sky-600' },
   // Stories
-  'hq--stories': { label: 'Stories BE', bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-l-purple-500', dot: 'bg-purple-500' },
-  'us--stories': { label: 'Stories US', bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-l-purple-500', dot: 'bg-purple-500' },
-  'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-l-orange-500', dot: 'bg-orange-500' },
+  'hq--stories': { label: 'Stories BE', bg: 'bg-purple-200', text: 'text-purple-900', border: 'border-l-purple-500', dot: 'bg-purple-500' },
+  'us--stories': { label: 'Stories US', bg: 'bg-purple-200', text: 'text-purple-900', border: 'border-l-purple-500', dot: 'bg-purple-500' },
+  'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-200', text: 'text-orange-900', border: 'border-l-orange-500', dot: 'bg-orange-500' },
   // Facebook
-  'hq--facebook': { label: 'FB BE', bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-l-blue-600', dot: 'bg-blue-600' },
+  'hq--facebook': { label: 'FB BE', bg: 'bg-blue-200', text: 'text-blue-900', border: 'border-l-blue-600', dot: 'bg-blue-600' },
   // TikTok
-  'ae--tiktok': { label: 'TT UAE', bg: 'bg-gray-200', text: 'text-gray-800', border: 'border-l-gray-600', dot: 'bg-gray-600' },
+  'ae--tiktok': { label: 'TT UAE', bg: 'bg-gray-300', text: 'text-gray-900', border: 'border-l-gray-600', dot: 'bg-gray-600' },
 }
 
 function getAccountStyle(market: string, platform: string) {
   return ACCOUNT_STYLES[`${market}--${platform}`] || {
     label: `${MARKETS[market]?.emoji || ''} ${platform}`,
-    bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-l-gray-500', dot: 'bg-gray-500',
+    bg: 'bg-gray-200', text: 'text-gray-800', border: 'border-l-gray-500', dot: 'bg-gray-500',
   }
 }
 
@@ -363,9 +363,9 @@ export default function CalendarPage() {
         onClick={(e) => { e.stopPropagation(); setGroupedSlots(slots); setSelectedSlot(first) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-pointer ${
           isPublished
-            ? 'border-l-emerald-500 bg-emerald-100 opacity-60 hover:opacity-80'
+            ? 'border-l-emerald-500 bg-emerald-200 opacity-60 hover:opacity-80'
             : isScheduled
-            ? 'border-l-green-600 bg-green-100 ring-2 ring-green-400/50 shadow-sm'
+            ? 'border-l-green-600 bg-green-200 ring-2 ring-green-400/60 shadow-sm'
             : `${style.border} ${style.bg} hover:brightness-110`
         }`}
       >
@@ -404,9 +404,9 @@ export default function CalendarPage() {
         onClick={(e) => { e.stopPropagation(); setGroupedSlots([]); setSelectedSlot(slot) }}
         className={`w-full text-left rounded-xl border-l-4 px-2.5 py-2 transition-all group cursor-grab active:cursor-grabbing ${dragSlotId === slot.id ? 'opacity-40' : ''} ${
           isPublished
-            ? 'border-l-emerald-500 bg-emerald-100 opacity-60 hover:opacity-80'
+            ? 'border-l-emerald-500 bg-emerald-200 opacity-60 hover:opacity-80'
             : isScheduled
-            ? 'border-l-green-600 bg-green-100 ring-2 ring-green-400/50 shadow-sm'
+            ? 'border-l-green-600 bg-green-200 ring-2 ring-green-400/60 shadow-sm'
             : `${style.border} ${style.bg} hover:brightness-110`
         }`}
       >
@@ -500,10 +500,10 @@ export default function CalendarPage() {
 
       {/* Month View */}
       {view === 'month' && (
-        <div className="rounded-xl border border-gray-300 overflow-hidden bg-gray-50 shadow-sm">
-          <div className="grid grid-cols-7 bg-gray-100">
+        <div className="rounded-xl border border-gray-300 overflow-hidden bg-white shadow-sm">
+          <div className="grid grid-cols-7 bg-gray-100/80">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <div key={d} className="px-2 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center border-b border-gray-300">{d}</div>
+              <div key={d} className="px-2 py-2 text-xs font-bold text-gray-600 uppercase tracking-wider text-center border-b border-gray-300">{d}</div>
             ))}
           </div>
           <div className="grid grid-cols-7">
