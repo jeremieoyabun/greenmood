@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
               orderBy: { version: 'desc' as const },
               take: 1,
               // Don't load full imageUrl in list — can be MB of base64
-              select: { id: true, text: true, notes: true, timing: true },
+              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true },
             },
           },
         },
