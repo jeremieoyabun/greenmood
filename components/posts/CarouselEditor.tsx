@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
+import { CloudinaryPicker } from '@/components/ui/CloudinaryPicker'
 
 interface MediaItem {
   id: string
@@ -18,6 +19,7 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
   const [uploading, setUploading] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [showPicker, setShowPicker] = useState(false)
 
   const fetchMedia = async () => {
     const res = await fetch(`/api/posts/${postId}/media`)
@@ -134,21 +136,45 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
           </div>
         ))}
 
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          className="w-24 h-24 rounded-lg border-2 border-dashed border-white/10 hover:border-gm-sage/40 flex flex-col items-center justify-center gap-1 transition-colors"
-        >
-          {uploading ? (
-            <span className="text-xs text-gm-cream/40 animate-pulse">Uploading...</span>
-          ) : (
-            <>
-              <span className="text-2xl text-gm-cream/20">+</span>
-              <span className="text-[10px] text-gm-cream/20">Add slides</span>
-            </>
-          )}
-        </button>
+        <div className="flex flex-col gap-1">
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="w-24 h-12 rounded-lg border-2 border-dashed border-white/10 hover:border-gm-sage/40 flex items-center justify-center gap-1 transition-colors"
+          >
+            {uploading ? (
+              <span className="text-[10px] text-gm-cream/40 animate-pulse">Uploading...</span>
+            ) : (
+              <>
+                <span className="text-lg text-gm-cream/20">+</span>
+                <span className="text-[10px] text-gm-cream/20">Upload</span>
+              </>
+            )}
+          </button>
+          <button
+            onClick={() => setShowPicker(true)}
+            className="w-24 h-12 rounded-lg border border-white/10 hover:border-gm-sage/40 flex items-center justify-center transition-colors"
+          >
+            <span className="text-[10px] text-gm-cream/30">Library</span>
+          </button>
+        </div>
       </div>
+
+      <CloudinaryPicker
+        open={showPicker}
+        onClose={() => setShowPicker(false)}
+        defaultFolder="recent"
+        onSelect={async (url) => {
+          // Register the Cloudinary URL as a carousel media item
+          await fetch(`/api/posts/${postId}/media/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, mediaType: 'image' }),
+          })
+          await fetchMedia()
+          onUpdate?.()
+        }}
+      />
 
       {media.length >= 2 && (
         <p className="text-xs text-gm-sage/60 mt-2">Drag to reorder slides.</p>
