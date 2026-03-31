@@ -344,34 +344,41 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
     const variant = slot.post.variants?.[0]
     if (!variant) { setUploading(false); return }
 
-    let url: string | null = null
-
-    // Try Vercel Blob first
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('postId', slot.post.id)
-      const res = await fetch('/api/assets/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (data.success) url = data.data.url
-    } catch { /* Blob failed */ }
+      // Upload directly to Cloudinary from browser (no server size limits)
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
+      const platform = slot.platform || 'instagram'
+      const market = slot.market || 'hq'
+      const cleanName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
+      const folder = `greenmood/social/${platform}/${market}`
 
-    // Fallback to data URL
-    if (!url) {
-      url = await new Promise<string>((resolve) => {
-        const reader = new FileReader()
-        reader.onload = (e) => resolve(e.target?.result as string)
-        reader.readAsDataURL(file)
-      })
+      const form = new FormData()
+      form.append('file', file)
+      form.append('upload_preset', 'greenmood_upload')
+      form.append('folder', folder)
+      form.append('tags', `greenmood,${platform},${market},post:${slot.post.id}`)
+      form.append('context', `original_name=${file.name}|post_id=${slot.post.id}|market=${market}|platform=${platform}`)
+      form.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
+
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: form })
+      const cloudData = await cloudRes.json()
+
+      if (cloudData.secure_url) {
+        const url = cloudData.secure_url
+        setImageUrl(url)
+        await fetch(`/api/posts/${slot.post.id}/variant`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
+        })
+        onUpdate?.()
+      } else {
+        console.error('Cloudinary upload failed:', cloudData.error?.message)
+      }
+    } catch (e) {
+      console.error('Image upload failed:', e)
     }
 
-    setImageUrl(url)
-    await fetch(`/api/posts/${slot.post.id}/variant`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
-    })
-    onUpdate?.()
     setUploading(false)
   }
 
