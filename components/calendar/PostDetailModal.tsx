@@ -359,7 +359,6 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
       form.append('folder', folder)
       form.append('tags', `greenmood,${platform},${market},post:${slot.post.id}`)
       form.append('context', `original_name=${file.name}|post_id=${slot.post.id}|market=${market}|platform=${platform}`)
-      form.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
 
       const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: form })
       const cloudData = await cloudRes.json()

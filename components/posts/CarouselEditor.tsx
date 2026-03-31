@@ -43,7 +43,6 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
         form.append('folder', `greenmood/social/instagram`)
         form.append('tags', `carousel,post:${postId}`)
         form.append('context', `original_name=${file.name}|post_id=${postId}`)
-        form.append('public_id', `greenmood/social/instagram/${cleanName}-${Date.now()}`)
 
         const cloudRes = await fetch(
           `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
