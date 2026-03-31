@@ -76,6 +76,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: `No LinkedIn token for market "${post.market}". Connect this account in Settings first.` }, { status: 400 })
       }
       result = await publishToLinkedIn(variant, token)
+    } else if (post.platform === 'facebook') {
+      const token = marketToken
+      if (!token) {
+        return NextResponse.json({ success: false, error: `No Facebook token for market "${post.market}". Connect this account in Settings first.` }, { status: 400 })
+      }
+      result = await publishToFacebook(variant, token, postMedia)
     } else {
       return NextResponse.json({ success: false, error: `Platform "${post.platform}" not yet supported` }, { status: 400 })
     }
@@ -449,6 +455,99 @@ async function publishInstagramCarousel(
     }
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Carousel publish failed' }
+  }
+}
+
+// ─── FACEBOOK ADAPTER ───
+
+async function publishToFacebook(variant: any, token: string, postMedia: Array<{ url: string; media_type: string }> = []) {
+  try {
+    // Get Page ID from the token
+    const meRes = await fetch(`https://graph.facebook.com/v25.0/me?fields=id,name&access_token=${token}`)
+    const me = await meRes.json()
+    if (!me.id) return { success: false, error: 'Failed to get Facebook Page ID: ' + JSON.stringify(me) }
+
+    const pageId = me.id
+    let caption = variant.text || ''
+    if (variant.hashtags) {
+      caption += '\n\n' + variant.hashtags
+    }
+
+    const mediaUrl = postMedia.length > 0 ? postMedia[0].url : variant.imageUrl
+
+    if (postMedia.length >= 2) {
+      // Multi-photo post
+      const photoIds: string[] = []
+      for (const item of postMedia) {
+        if (item.media_type === 'video') continue
+        const params = new URLSearchParams({
+          url: item.url,
+          published: 'false',
+          access_token: token,
+        })
+        const res = await fetch(`https://graph.facebook.com/v25.0/${pageId}/photos`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: params,
+        })
+        const data = await res.json()
+        if (data.id) photoIds.push(data.id)
+      }
+
+      // Publish multi-photo post
+      const postParams: any = {
+        message: caption,
+        access_token: token,
+      }
+      photoIds.forEach((id, i) => {
+        postParams[`attached_media[${i}]`] = JSON.stringify({ media_fbid: id })
+      })
+
+      const publishRes = await fetch(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(postParams),
+      })
+      const published = await publishRes.json()
+      if (published.error) return { success: false, error: published.error.message }
+
+      return { success: true, platformId: published.id, message: `Facebook multi-photo post published (${photoIds.length} photos)` }
+
+    } else if (mediaUrl) {
+      // Single photo post
+      const params = new URLSearchParams({
+        url: mediaUrl,
+        caption,
+        access_token: token,
+      })
+      const res = await fetch(`https://graph.facebook.com/v25.0/${pageId}/photos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params,
+      })
+      const data = await res.json()
+      if (data.error) return { success: false, error: data.error.message }
+
+      return { success: true, platformId: data.id || data.post_id, message: 'Facebook photo published' }
+
+    } else {
+      // Text-only post
+      const params = new URLSearchParams({
+        message: caption,
+        access_token: token,
+      })
+      const res = await fetch(`https://graph.facebook.com/v25.0/${pageId}/feed`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params,
+      })
+      const data = await res.json()
+      if (data.error) return { success: false, error: data.error.message }
+
+      return { success: true, platformId: data.id, message: 'Facebook text post published' }
+    }
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Facebook API error' }
   }
 }
 
