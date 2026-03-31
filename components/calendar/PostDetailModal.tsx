@@ -1391,6 +1391,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
       <CloudinaryPicker
         open={showCloudinaryPicker}
         onClose={() => setShowCloudinaryPicker(false)}
+        defaultFolder="recent"
         onSelect={async (url) => {
           setImageUrl(url)
           if (variant?.id && slot?.post?.id) {
