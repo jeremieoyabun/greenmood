@@ -70,6 +70,7 @@ export async function POST(
         market: targetMarket,
         platform: sourcePost.platform,
         status: 'DRAFT',
+        isCarousel: sourcePost.isCarousel,
         variants: {
           create: {
             version: 1,
