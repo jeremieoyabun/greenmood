@@ -58,8 +58,14 @@ const ACCOUNT_STYLES: Record<string, { label: string; bg: string; text: string; 
   'hq--stories': { label: 'Stories BE', bg: 'bg-purple-200/80 border border-purple-300', text: 'text-gray-900', border: 'border-l-purple-600', dot: 'bg-purple-600' },
   'us--stories': { label: 'Stories US', bg: 'bg-purple-200/80 border border-purple-300', text: 'text-gray-900', border: 'border-l-purple-600', dot: 'bg-purple-600' },
   'ae--stories': { label: 'Stories UAE', bg: 'bg-orange-200/80 border border-orange-300', text: 'text-gray-900', border: 'border-l-orange-600', dot: 'bg-orange-600' },
+  'pl--stories': { label: 'Stories PL', bg: 'bg-rose-200/80 border border-rose-300', text: 'text-gray-900', border: 'border-l-rose-600', dot: 'bg-rose-600' },
+  'uk--stories': { label: 'Stories UK', bg: 'bg-red-200/80 border border-red-300', text: 'text-gray-900', border: 'border-l-red-600', dot: 'bg-red-600' },
+  'fr--stories': { label: 'Stories FR', bg: 'bg-violet-200/80 border border-violet-300', text: 'text-gray-900', border: 'border-l-violet-600', dot: 'bg-violet-600' },
+  'kr--stories': { label: 'Stories KR', bg: 'bg-cyan-200/80 border border-cyan-300', text: 'text-gray-900', border: 'border-l-cyan-600', dot: 'bg-cyan-600' },
+  'de--stories': { label: 'Stories DE', bg: 'bg-amber-200/80 border border-amber-300', text: 'text-gray-900', border: 'border-l-amber-600', dot: 'bg-amber-600' },
   // Facebook
   'hq--facebook': { label: 'FB BE', bg: 'bg-blue-200/80 border border-blue-300', text: 'text-gray-900', border: 'border-l-blue-700', dot: 'bg-blue-700' },
+  'pl--facebook': { label: 'FB PL', bg: 'bg-blue-200/80 border border-blue-300', text: 'text-gray-900', border: 'border-l-blue-700', dot: 'bg-blue-700' },
   // TikTok
   'ae--tiktok': { label: 'TT UAE', bg: 'bg-gray-300 border border-gray-400', text: 'text-gray-900', border: 'border-l-gray-700', dot: 'bg-gray-700' },
 }
