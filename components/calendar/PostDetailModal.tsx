@@ -249,8 +249,6 @@ const DUPLICATE_TARGETS = [
   { market: 'uk', label: 'IG UK' },
   { market: 'fr', label: 'IG FR' },
   { market: 'pl', label: 'IG PL' },
-  { market: 'kr', label: 'IG KR' },
-  { market: 'de', label: 'IG DE' },
 ]
 
 export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, siblingSlots = [], onSwitchSlot }: PostDetailModalProps) {
