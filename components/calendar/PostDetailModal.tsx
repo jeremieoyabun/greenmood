@@ -158,7 +158,7 @@ function FirstCommentEditor({ postId, variantId, initialValue, isLinkedIn, onCop
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">First Comment</span>
-          {isLinkedIn && <Badge variant="warning" size="sm">Required for LinkedIn</Badge>}
+          {isLinkedIn && <Badge variant="warning" size="sm">Recommended for LinkedIn</Badge>}
         </div>
         <div className="flex gap-1">
           <Button variant="ghost" size="sm" loading={generating} onClick={generateSuggestions} disabled={!postText}>
@@ -1018,7 +1018,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
             <div>
               <label className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold block mb-2">
                 First Comment
-                {slot.platform === 'linkedin' && <Badge variant="warning" size="sm" className="ml-2">Required for LinkedIn</Badge>}
+                {slot.platform === 'linkedin' && <Badge variant="warning" size="sm" className="ml-2">Recommended for LinkedIn</Badge>}
               </label>
               <textarea
                 value={editFirstComment}
