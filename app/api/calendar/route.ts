@@ -34,8 +34,7 @@ export async function GET(req: NextRequest) {
               where: { isActive: true },
               orderBy: { version: 'desc' as const },
               take: 1,
-              // Don't load full imageUrl in list — can be MB of base64
-              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true },
+              select: { id: true, text: true, hashtags: true, firstComment: true, notes: true, timing: true, imageUrl: true },
             },
           },
         },
@@ -43,28 +42,22 @@ export async function GET(req: NextRequest) {
       orderBy: [{ date: 'asc' }, { time: 'asc' }],
     })
 
-    // Check which variants have images (without loading the actual data)
-    const variantIds = slots.flatMap(s => s.post?.variants?.map(v => v.id) || []).filter(Boolean)
-    const variantsWithImage = variantIds.length > 0
-      ? await prisma.postVariant.findMany({
-          where: { id: { in: variantIds }, imageUrl: { not: null } },
-          select: { id: true },
-        })
-      : []
-    const imageSet = new Set(variantsWithImage.map(v => v.id))
-
-    const slotsWithImageFlag = slots.map(slot => ({
+    // For base64 images (legacy), replace with flag to avoid sending MB of data
+    // Cloudinary URLs are short and can be sent directly
+    const slotsClean = slots.map(slot => ({
       ...slot,
       post: slot.post ? {
         ...slot.post,
         variants: slot.post.variants.map(v => ({
           ...v,
-          imageUrl: imageSet.has(v.id) ? 'HAS_IMAGE' : null,
+          imageUrl: v.imageUrl
+            ? (v.imageUrl.startsWith('data:') ? 'HAS_IMAGE' : v.imageUrl)
+            : null,
         })),
       } : slot.post,
     }))
 
-    return NextResponse.json({ success: true, data: slotsWithImageFlag })
+    return NextResponse.json({ success: true, data: slotsClean })
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : 'Database error' },
