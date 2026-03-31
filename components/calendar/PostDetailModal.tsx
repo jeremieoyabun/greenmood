@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CarouselEditor } from '@/components/posts/CarouselEditor'
+import { CloudinaryPicker } from '@/components/ui/CloudinaryPicker'
 import { SocialIcon } from '@/components/ui/SocialIcon'
 import { StatusDot } from '@/components/ui/StatusDot'
 import { MARKETS } from '@/lib/constants'
@@ -257,6 +258,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [mediaItems, setMediaItems] = useState<Array<{ id: string; url: string; media_type: string; sort_order: number }>>([])
   const [showDuplicate, setShowDuplicate] = useState(false)
+  const [showCloudinaryPicker, setShowCloudinaryPicker] = useState(false)
   const [duplicating, setDuplicating] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -845,20 +847,28 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                       )}
                     </div>
                     )})() : (
-                    <button
-                      onClick={() => imageInputRef.current?.click()}
-                      className="w-full h-40 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
-                    >
-                      {uploading ? (
-                        <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
-                      ) : (
-                        <>
-                          <span className="text-2xl opacity-15">+</span>
-                          <span className="text-xs text-gm-cream/25">Add image or video</span>
-                          <span className="text-[10px] text-gm-sage/30 mt-1">{RECOMMENDED_SIZES[slot?.platform || 'instagram'] || '1080 × 1080 px'}</span>
-                        </>
-                      )}
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => imageInputRef.current?.click()}
+                        className="w-full h-32 rounded-xl border-2 border-dashed border-white/[0.08] hover:border-gm-sage/30 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
+                      >
+                        {uploading ? (
+                          <span className="text-sm text-gm-cream/40 animate-pulse">Uploading...</span>
+                        ) : (
+                          <>
+                            <span className="text-2xl opacity-15">+</span>
+                            <span className="text-xs text-gm-cream/25">Upload image or video</span>
+                            <span className="text-[10px] text-gm-sage/30 mt-1">{RECOMMENDED_SIZES[slot?.platform || 'instagram'] || '1080 × 1080 px'}</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={() => setShowCloudinaryPicker(true)}
+                        className="w-full py-2.5 rounded-xl border border-white/[0.08] hover:border-gm-sage/30 transition-all flex items-center justify-center gap-2 cursor-pointer hover:bg-white/[0.02]"
+                      >
+                        <span className="text-xs text-gm-cream/40">Browse Library</span>
+                      </button>
+                    </div>
                   )}
                 </>
               )}
@@ -1366,6 +1376,23 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
 
         </div>{/* end right column */}
       </div>{/* end grid */}
+
+      {/* Cloudinary Library Picker */}
+      <CloudinaryPicker
+        open={showCloudinaryPicker}
+        onClose={() => setShowCloudinaryPicker(false)}
+        onSelect={async (url) => {
+          setImageUrl(url)
+          if (variant?.id && slot?.post?.id) {
+            await fetch(`/api/posts/${slot.post.id}/variant`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ variantId: variant.id, imageUrl: url }),
+            })
+            onUpdate?.()
+          }
+        }}
+      />
     </Modal>
   )
 }
