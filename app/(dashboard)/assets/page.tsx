@@ -145,75 +145,15 @@ interface FolderNode {
   children?: FolderNode[]
 }
 
-const FOLDER_TREE: FolderNode[] = [
+// Fallback static tree (used while dynamic folders load)
+const DEFAULT_TREE: FolderNode[] = [
   { id: 'greenmood', label: 'All Assets' },
-  { id: 'greenmood/products', label: 'Design Collection', children: [
-    { id: 'greenmood/products/angled-pillars', label: 'Angled Pillars' },
-    { id: 'greenmood/products/belt', label: 'Belt' },
-    { id: 'greenmood/products/cascade', label: 'Cascade' },
-    { id: 'greenmood/products/cork-tiles', label: 'Cork Tiles' },
-    { id: 'greenmood/products/cruz-planters', label: 'Cruz Planters' },
-    { id: 'greenmood/products/framed', label: 'Framed' },
-    { id: 'greenmood/products/g-circle', label: 'G-Circle' },
-    { id: 'greenmood/products/g-divider', label: 'G-Divider' },
-    { id: 'greenmood/products/g-screens', label: 'G-Screens' },
-    { id: 'greenmood/products/hoverlight', label: 'Hoverlight' },
-    { id: 'greenmood/products/hyphen', label: 'Hyphen' },
-    { id: 'greenmood/products/mario', label: 'Mario (All)' },
-    { id: 'greenmood/products/pouf/mario-pouf/expanded-cork', label: 'Mario - Expanded Cork' },
-    { id: 'greenmood/products/pouf/mario-pouf/compressed-cork', label: 'Mario - Compressed Cork' },
-    { id: 'greenmood/products/pouf/mario-pouf/sneaker-white', label: 'Mario - Sneaker White' },
-    { id: 'greenmood/products/pouf/mario-pouf/sneaker-black', label: 'Mario - Sneaker Black' },
-    { id: 'greenmood/products/modulor', label: 'Modulor' },
-    { id: 'greenmood/products/modulor-cork', label: 'Modulor Cork' },
-    { id: 'greenmood/products/moony', label: 'Moony' },
-    { id: 'greenmood/products/moss-frames', label: 'Moss Frames' },
-    { id: 'greenmood/products/origami', label: 'Origami' },
-    { id: 'greenmood/products/perspective-lines', label: 'Perspective Lines' },
-    { id: 'greenmood/products/pillars', label: 'Pillars' },
-    { id: 'greenmood/products/planters', label: 'Planters' },
-    { id: 'greenmood/products/pouf', label: 'Pouf (All)' },
-    { id: 'greenmood/products/rings', label: 'Rings' },
-    { id: 'greenmood/products/tail', label: 'Tails' },
-    { id: 'greenmood/products/terra', label: 'Terra' },
-    { id: 'greenmood/products/green-walls', label: 'Green Walls' },
-    { id: 'greenmood/products/ball-moss', label: 'Ball Moss' },
-    { id: 'greenmood/products/semi-natural-trees', label: 'Semi-natural Trees' },
-    { id: 'greenmood/products/custom-logos', label: 'Custom Logos' },
-    { id: 'greenmood/products/sample-box', label: 'Sample Box' },
-  ]},
-  { id: 'greenmood/projects', label: 'Projects', children: [
-    { id: 'greenmood/projects/cloud-ix-budapest', label: 'Cloud IX Budapest' },
-    { id: 'greenmood/projects/uc-davis', label: 'UC Davis' },
-    { id: 'greenmood/projects/loreal-paris', label: "L'Oreal Paris" },
-    { id: 'greenmood/projects/ap-rooftop-nj', label: 'AP Rooftop NJ' },
-    { id: 'greenmood/projects/ci3-yorkshire', label: 'Ci3 Yorkshire' },
-    { id: 'greenmood/projects/jll-brussels', label: 'JLL Brussels' },
-    { id: 'greenmood/projects/athora-brussels', label: 'Athora Brussels' },
-    { id: 'greenmood/projects/saltire-edinburgh', label: 'Saltire Court Edinburgh' },
-  ]},
-  { id: 'greenmood/factory', label: 'Factory / Craft' },
-  { id: 'greenmood/events', label: 'Events', children: [
-    { id: 'greenmood/events/neocon', label: 'NeoCon' },
-    { id: 'greenmood/events/workspace-expo', label: 'Workspace Expo' },
-    { id: 'greenmood/events/icff-2024', label: 'ICFF 2024' },
-  ]},
-  { id: 'greenmood/team', label: 'Team' },
-  { id: 'greenmood/showrooms', label: 'Showrooms' },
-  { id: 'greenmood/social', label: 'Social Media', children: [
-    { id: 'greenmood/social/instagram', label: 'Instagram' },
-    { id: 'greenmood/social/stories', label: 'Stories' },
-    { id: 'greenmood/social/linkedin', label: 'LinkedIn' },
-  ]},
-  { id: 'greenmood/textures', label: 'Textures' },
-  { id: 'greenmood/press-kit', label: 'Press Kit' },
 ]
 
 // Flatten for upload dropdown (recursive)
 function flattenFolders(nodes: FolderNode[]): FolderNode[] {
   return nodes.flatMap(f => f.children ? [f, ...flattenFolders(f.children)] : [f])
 }
-const ALL_FOLDERS = flattenFolders(FOLDER_TREE).filter(f => f.id !== 'greenmood')
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([])
@@ -225,7 +165,18 @@ export default function AssetsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null)
   const [showUpload, setShowUpload] = useState(false)
-  const [uploadFolder, setUploadFolder] = useState('greenmood/products/ball-moss')
+  const [uploadFolder, setUploadFolder] = useState('greenmood/products')
+  const [folderTree, setFolderTree] = useState<FolderNode[]>(DEFAULT_TREE)
+  const [foldersLoading, setFoldersLoading] = useState(true)
+
+  // Fetch folder tree from Cloudinary on mount
+  useEffect(() => {
+    fetch('/api/assets/folders')
+      .then(r => r.json())
+      .then(d => { if (d.success) setFolderTree(d.data) })
+      .catch(() => {})
+      .finally(() => setFoldersLoading(false))
+  }, [])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchAssets = async () => {
@@ -289,7 +240,7 @@ export default function AssetsPage() {
           <div className="bg-white/[0.02] rounded-xl border border-white/[0.06] p-3 sticky top-24">
             <p className="text-xs uppercase tracking-wider text-gm-cream/30 font-semibold mb-3 px-2">Folders</p>
             <nav className="space-y-0.5">
-              {FOLDER_TREE.map(folder => (
+              {folderTree.map(folder => (
                 <div key={folder.id}>
                   <button
                     onClick={() => setSelectedFolder(folder.id)}
@@ -422,7 +373,7 @@ export default function AssetsPage() {
               onChange={e => setUploadFolder(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-white/[0.04] border border-white/[0.08] rounded-xl text-gm-cream focus:outline-none [&>option]:bg-[#0f1a0f] [&>option]:text-gm-cream"
             >
-              {ALL_FOLDERS.map(f => (
+              {flattenFolders(folderTree).filter(f => f.id !== 'greenmood').map(f => (
                 <option key={f.id} value={f.id}>{f.label}</option>
               ))}
             </select>
