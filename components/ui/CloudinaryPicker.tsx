@@ -23,28 +23,11 @@ interface CloudinaryPickerProps {
   defaultFolder?: string
 }
 
-const QUICK_FOLDERS = [
-  { id: 'recent', label: 'Recent', icon: true },
-  { id: 'greenmood/social/instagram/hq', label: 'IG BE' },
-  { id: 'greenmood/social/instagram/us', label: 'IG US' },
-  { id: 'greenmood/social/instagram/uk', label: 'IG UK' },
-  { id: 'greenmood/social/instagram/ae', label: 'IG UAE' },
-  { id: 'greenmood/social/instagram/fr', label: 'IG FR' },
-  { id: 'greenmood/social/instagram/pl', label: 'IG PL' },
-  { id: 'greenmood/products', label: 'Products' },
-  { id: 'greenmood/products/pouf', label: 'Pouf' },
-  { id: 'greenmood/products/pouf/mario-pouf', label: 'Mario Pouf' },
-  { id: 'greenmood/products/green-walls', label: 'Green Walls' },
-  { id: 'greenmood/products/cork-tiles', label: 'Cork Tiles' },
-  { id: 'greenmood/products/g-circle', label: 'G-Circle' },
-  { id: 'greenmood/products/cascade', label: 'Cascade' },
-  { id: 'greenmood/products/hoverlight', label: 'Hoverlight' },
-  { id: 'greenmood/products/modulor', label: 'Modulor' },
-  { id: 'greenmood/projects', label: 'Projects' },
-  { id: 'greenmood/textures', label: 'Textures' },
-  { id: 'greenmood/showrooms', label: 'Showrooms' },
-  { id: 'greenmood/factory', label: 'Factory' },
-]
+interface FolderTab {
+  id: string
+  label: string
+  icon?: boolean
+}
 
 export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: CloudinaryPickerProps) {
   const [assets, setAssets] = useState<CloudinaryAsset[]>([])
@@ -52,6 +35,28 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: Clo
   const [folder, setFolder] = useState(defaultFolder || 'recent')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
+  const [quickFolders, setQuickFolders] = useState<FolderTab[]>([{ id: 'recent', label: 'Recent', icon: true }])
+
+  // Fetch folder list dynamically
+  useEffect(() => {
+    fetch('/api/assets/folders')
+      .then(r => r.json())
+      .then(d => {
+        if (!d.success) return
+        const tabs: FolderTab[] = [{ id: 'recent', label: 'Recent', icon: true }]
+        for (const folder of d.data) {
+          if (folder.id === 'greenmood') continue
+          tabs.push({ id: folder.id, label: folder.label })
+          if (folder.children) {
+            for (const child of folder.children) {
+              tabs.push({ id: child.id, label: child.label })
+            }
+          }
+        }
+        setQuickFolders(tabs)
+      })
+      .catch(() => {})
+  }, [])
 
   const fetchAssets = async (folderPath: string, query?: string) => {
     setLoading(true)
@@ -121,8 +126,8 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: Clo
       </div>
 
       {/* Quick folder tabs */}
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {QUICK_FOLDERS.map((f) => (
+      <div className="flex flex-wrap gap-1.5 mb-4 max-h-[80px] overflow-y-auto">
+        {quickFolders.map((f) => (
           <button
             key={f.id}
             onClick={() => { setFolder(f.id); setSearch('') }}
