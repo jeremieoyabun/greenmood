@@ -112,7 +112,10 @@ export async function POST(
       stories: '08:00',
     }
     const time = sourceSlot?.time || timeByPlatform[newPost.platform] || '10:00'
-    const slotDate = sourceSlot?.date || await findNextAvailableSlotDate(workspaceId)
+    // Always use today's date (not the source post date)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const slotDate = today
 
     const calendarSlot = await prisma.calendarSlot.create({
       data: {
