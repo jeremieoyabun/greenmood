@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
-import { Search, Clock } from 'lucide-react'
+import { Search, Clock, Crop } from 'lucide-react'
+import { cloudinaryTransformUrl, getPlatformRatios } from '@/lib/image-validation'
 
 interface CloudinaryAsset {
   url: string
@@ -21,6 +22,7 @@ interface CloudinaryPickerProps {
   onClose: () => void
   onSelect: (url: string) => void
   defaultFolder?: string
+  platform?: string
 }
 
 interface FolderTab {
@@ -29,13 +31,22 @@ interface FolderTab {
   icon?: boolean
 }
 
-export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: CloudinaryPickerProps) {
+export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder, platform }: CloudinaryPickerProps) {
   const [assets, setAssets] = useState<CloudinaryAsset[]>([])
   const [loading, setLoading] = useState(false)
   const [folder, setFolder] = useState(defaultFolder || 'recent')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
   const [quickFolders, setQuickFolders] = useState<FolderTab[]>([{ id: 'recent', label: 'Recent', icon: true }])
+
+  // Platform-specific ratio options
+  const ratioOptions = platform ? getPlatformRatios(platform) : []
+  const [selectedRatio, setSelectedRatio] = useState<number>(0)
+
+  // Reset ratio when platform changes
+  useEffect(() => {
+    setSelectedRatio(0)
+  }, [platform])
 
   // Fetch folder list dynamically
   useEffect(() => {
@@ -101,12 +112,23 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: Clo
     else fetchAssets(folder)
   }
 
+  const getTransformedUrl = (originalUrl: string): string => {
+    if (!platform || ratioOptions.length === 0) return originalUrl
+    const ratio = ratioOptions[selectedRatio]
+    if (!ratio) return originalUrl
+    return cloudinaryTransformUrl(originalUrl, ratio.width, ratio.height)
+  }
+
   const handleSelect = () => {
     if (selected) {
-      onSelect(selected)
+      onSelect(getTransformedUrl(selected))
       onClose()
     }
   }
+
+  // Get selected asset info
+  const selectedAsset = selected ? assets.find(a => a.url === selected) : null
+  const activeRatio = ratioOptions[selectedRatio]
 
   return (
     <Modal open={open} onClose={onClose} title="Select from Library" size="xl">
@@ -143,6 +165,39 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: Clo
         ))}
       </div>
 
+      {/* Platform resize bar */}
+      {platform && ratioOptions.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 p-2.5 rounded-xl bg-gm-sage/[0.08] border border-gm-sage/20">
+          <Crop className="w-3.5 h-3.5 text-gm-sage/70 shrink-0" />
+          <span className="text-xs text-gm-sage/70 font-medium shrink-0">Auto-resize:</span>
+          <div className="flex gap-1.5">
+            {ratioOptions.map((r, i) => (
+              <button
+                key={r.label}
+                onClick={() => setSelectedRatio(i)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                  selectedRatio === i
+                    ? 'bg-gm-sage/30 text-gm-sage border border-gm-sage/40'
+                    : 'bg-white/[0.04] text-gm-cream/40 border border-white/[0.06] hover:text-gm-cream/60'
+                }`}
+              >
+                {r.label} ({r.width}x{r.height})
+              </button>
+            ))}
+            <button
+              onClick={() => setSelectedRatio(-1)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                selectedRatio === -1
+                  ? 'bg-white/[0.1] text-gm-cream/70 border border-white/20'
+                  : 'bg-white/[0.04] text-gm-cream/30 border border-white/[0.06] hover:text-gm-cream/50'
+              }`}
+            >
+              Original
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Grid */}
       {loading ? (
         <div className="text-center py-16 text-gm-cream/30 text-sm">Loading...</div>
@@ -171,23 +226,51 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder }: Clo
         </div>
       )}
 
-      {/* Selected info + confirm */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/[0.06]">
-        <div>
-          {selected && (() => {
-            const a = assets.find(a => a.url === selected)
-            return a ? (
+      {/* Selected info + crop preview + confirm */}
+      <div className="mt-4 pt-4 border-t border-white/[0.06]">
+        {/* Crop preview when image is selected and platform resize is active */}
+        {selectedAsset && platform && activeRatio && selectedRatio !== -1 && (
+          <div className="flex gap-4 mb-4">
+            <div className="shrink-0">
+              <p className="text-[10px] text-gm-cream/30 mb-1.5 uppercase tracking-wider">Original ({selectedAsset.width}x{selectedAsset.height})</p>
+              <div className="w-28 rounded-lg overflow-hidden border border-white/[0.08]">
+                <img src={selectedAsset.url} alt="Original" className="w-full aspect-square object-cover" />
+              </div>
+            </div>
+            <div className="flex items-center text-gm-cream/20 text-lg shrink-0 self-center mt-4">→</div>
+            <div className="shrink-0">
+              <p className="text-[10px] text-gm-sage/60 mb-1.5 uppercase tracking-wider">{activeRatio.label} ({activeRatio.width}x{activeRatio.height})</p>
+              <div
+                className="w-28 rounded-lg overflow-hidden border border-gm-sage/30"
+                style={{ aspectRatio: `${activeRatio.width} / ${activeRatio.height}` }}
+              >
+                <img
+                  src={getTransformedUrl(selectedAsset.url)}
+                  alt="Resized preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div>
+            {selectedAsset && (
               <p className="text-xs text-gm-cream/40">
-                {a.displayName} - {a.width}x{a.height} - {a.format.toUpperCase()}
+                {selectedAsset.displayName} — {selectedAsset.width}x{selectedAsset.height} — {selectedAsset.format.toUpperCase()}
+                {platform && activeRatio && selectedRatio !== -1 && (
+                  <span className="text-gm-sage/60 ml-1">→ {activeRatio.width}x{activeRatio.height}</span>
+                )}
               </p>
-            ) : null
-          })()}
-        </div>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
-          <Button size="sm" disabled={!selected} onClick={handleSelect}>
-            Use This Image
-          </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={onClose}>Cancel</Button>
+            <Button size="sm" disabled={!selected} onClick={handleSelect}>
+              {platform && activeRatio && selectedRatio !== -1 ? 'Resize & Use' : 'Use This Image'}
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

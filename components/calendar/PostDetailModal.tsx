@@ -261,6 +261,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
   const [showDuplicate, setShowDuplicate] = useState(false)
   const [showCloudinaryPicker, setShowCloudinaryPicker] = useState(false)
   const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [crossPosting, setCrossPosting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
@@ -805,16 +806,18 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                             : 'bg-white/[0.03] border-white/[0.08] text-gm-cream/40 hover:text-gm-cream/60'
                         }`}
                       >
-                        {isCarousel ? 'Carousel ON' : 'Carousel OFF'}
+                        {isCarousel
+                          ? (slot?.platform === 'facebook' ? 'Multiple photos ON' : 'Carousel ON')
+                          : (slot?.platform === 'facebook' ? 'Multiple photos OFF' : 'Carousel OFF')}
                       </button>
                       {isCarousel && (
-                        <span className="text-xs text-gm-cream/30">Upload multiple images, drag to reorder</span>
+                        <span className="text-xs text-gm-cream/30">Upload or pick from library, drag to reorder</span>
                       )}
                     </div>
 
                     {/* Carousel editor or single image */}
                     {isCarousel ? (
-                <CarouselEditor postId={slot.post!.id} onUpdate={onUpdate} />
+                <CarouselEditor postId={slot.post!.id} onUpdate={onUpdate} platform={slot?.platform || undefined} />
               ) : (
                 <>
                   {(imageUrl || variant?.imageUrl) ? (() => {
@@ -831,7 +834,14 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                         <img src={mediaUrl} alt="Post media" className="w-full max-h-56 object-contain bg-black/40" />
                       )}
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                        <span className="text-sm text-white font-medium bg-black/50 px-4 py-2 rounded-xl cursor-pointer hover:bg-black/70 transition-colors">Change</span>
+                        <span className="text-sm text-white font-medium bg-black/50 px-4 py-2 rounded-xl cursor-pointer hover:bg-black/70 transition-colors">Upload</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setShowCloudinaryPicker(true)
+                          }}
+                          className="text-sm text-white font-medium bg-gm-sage/70 px-4 py-2 rounded-xl cursor-pointer hover:bg-gm-sage transition-colors"
+                        >Library</button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -982,6 +992,63 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
                 </div>
               )}
             </div>
+            {/* Cross-platform copy */}
+            {slot?.post?.id && (slot?.platform === 'instagram' || slot?.platform === 'stories') && (
+              <Button
+                variant="outline"
+                size="sm"
+                loading={crossPosting}
+                onClick={async () => {
+                  if (!slot.post?.id) return
+                  setCrossPosting(true)
+                  try {
+                    const res = await fetch(`/api/posts/${slot.post.id}/duplicate`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ targetMarket: slot.market, targetPlatform: 'facebook' }),
+                    })
+                    const data = await res.json()
+                    if (data.success) {
+                      onUpdate?.()
+                      alert('Post copied to Facebook')
+                    } else {
+                      alert('Failed: ' + data.error)
+                    }
+                  } catch { alert('Copy failed') }
+                  setCrossPosting(false)
+                }}
+              >
+                Copy to Facebook
+              </Button>
+            )}
+            {slot?.post?.id && slot?.platform === 'facebook' && (
+              <Button
+                variant="outline"
+                size="sm"
+                loading={crossPosting}
+                onClick={async () => {
+                  if (!slot.post?.id) return
+                  setCrossPosting(true)
+                  try {
+                    const res = await fetch(`/api/posts/${slot.post.id}/duplicate`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ targetMarket: slot.market, targetPlatform: 'instagram' }),
+                    })
+                    const data = await res.json()
+                    if (data.success) {
+                      onUpdate?.()
+                      alert('Post copied to Instagram')
+                    } else {
+                      alert('Failed: ' + data.error)
+                    }
+                  } catch { alert('Copy failed') }
+                  setCrossPosting(false)
+                }}
+              >
+                Copy to Instagram
+              </Button>
+            )}
             {onDelete && (
               <Button variant="danger" size="sm" onClick={onDelete}>Delete</Button>
             )}
@@ -1389,6 +1456,7 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
         open={showCloudinaryPicker}
         onClose={() => setShowCloudinaryPicker(false)}
         defaultFolder="recent"
+        platform={slot?.platform || undefined}
         onSelect={async (url) => {
           setImageUrl(url)
           if (variant?.id && slot?.post?.id) {

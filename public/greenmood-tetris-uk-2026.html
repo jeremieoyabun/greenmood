@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greenmood for Tetris Design UK</title>
+<link rel="icon" href="./Greenmood_app_favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#060d06;--sage:#4a7a3a;--sl:#b5d4a0;--w:#fff;--d:#1a1a1a}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--w);font-family:'Poppins',system-ui,sans-serif;-webkit-font-smoothing:antialiased;cursor:none}
+body.cv{cursor:default}
+
+/* DECK */
+.deck{width:100%;height:100%;position:relative}
+.slide{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transform:scale(1.05);transition:opacity 500ms ease-in-out,transform 500ms ease-in-out,visibility 0s 500ms;overflow:hidden}
+.slide.active{opacity:1;visibility:visible;transform:scale(1);transition:opacity 500ms ease-in-out,transform 500ms ease-in-out,visibility 0s}
+.slide.past{transform:scale(0.95)}
+
+/* BG */
+.bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform 15s ease-out}
+.slide.active .bg{transform:scale(1.08)}
+.bg::after{content:'';position:absolute;inset:0}
+.ov-c .bg::after{background:radial-gradient(ellipse at 50% 50%,rgba(6,13,6,0.55),rgba(6,13,6,0.88))}
+.ov-l .bg::after{background:linear-gradient(90deg,rgba(6,13,6,0.93) 0%,rgba(6,13,6,0.45) 55%,rgba(6,13,6,0.05) 100%)}
+.ov-b .bg::after{background:linear-gradient(0deg,rgba(6,13,6,0.95) 0%,rgba(6,13,6,0.35) 55%,rgba(6,13,6,0.08) 100%)}
+.ov-h .bg::after{background:rgba(6,13,6,0.7)}
+
+/* VIDEO BG */
+.vbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.vbg-wrap::after{content:'';position:absolute;inset:0;background:rgba(6,13,6,0.55)}
+.vbg-wrap{position:absolute;inset:0;overflow:hidden}
+
+/* CONTENT */
+.c{position:relative;z-index:2;width:100%;height:100%;padding:clamp(40px,5vh,80px) clamp(50px,6vw,100px);display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center;text-align:center}
+.lb{justify-content:flex-end}
+.lc{justify-content:center;max-width:55%}
+
+/* TYPO */
+.pre{font-size:clamp(12px,1.1vw,20px);letter-spacing:0.35em;text-transform:uppercase;color:var(--sl);font-weight:600;margin-bottom:clamp(10px,1.5vh,24px)}
+h1{font-weight:700;font-size:clamp(40px,5.5vw,100px);line-height:1.05;letter-spacing:-0.03em}
+h1 span{color:var(--sl)}
+h2{font-weight:600;font-size:clamp(32px,4vw,76px);line-height:1.1;letter-spacing:-0.02em}
+h2 span{color:var(--sl)}
+.lead{font-size:clamp(16px,1.5vw,28px);line-height:1.55;color:rgba(255,255,255,0.55);font-weight:300;max-width:700px;margin-top:clamp(10px,1.5vh,24px)}
+.lead strong{color:var(--w);font-weight:500}
+.big{font-size:clamp(36px,4.5vw,86px);font-weight:800;color:var(--sl);line-height:1}
+.big-l{font-size:clamp(11px,1vw,18px);text-transform:uppercase;letter-spacing:0.18em;color:rgba(255,255,255,0.4);font-weight:500;margin-top:8px}
+.pill{display:inline-block;padding:clamp(6px,0.6vh,12px) clamp(14px,1.5vw,28px);border-radius:100px;font-size:clamp(10px,0.85vw,16px);letter-spacing:0.12em;text-transform:uppercase;font-weight:700;border:1.5px solid rgba(124,154,108,0.45);color:var(--sl);margin:3px}
+.sep{width:48px;height:3px;background:var(--sage);border-radius:2px;margin:clamp(14px,1.8vh,28px) 0;opacity:0.7}
+.sep-c{margin-left:auto;margin-right:auto}
+
+/* STATS */
+.stats{display:flex;gap:clamp(40px,5vw,100px);margin-top:clamp(32px,4vh,60px)}
+.stat{text-align:center}
+
+/* FEATURES */
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.5vh,40px) clamp(40px,4vw,80px);margin-top:clamp(28px,3vh,48px)}
+.feat{border-left:3px solid var(--sage);padding-left:clamp(14px,1.5vw,28px)}
+.feat h4{font-size:clamp(14px,1.2vw,22px);font-weight:700;margin-bottom:4px}
+.feat p{font-size:clamp(12px,1vw,18px);line-height:1.5;color:rgba(255,255,255,0.45);font-weight:300}
+
+/* GRIDS */
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.2vw,24px);margin-top:clamp(28px,3.5vh,52px);width:100%;max-width:1100px}
+.pcard{border-radius:clamp(12px,1.2vw,24px);overflow:hidden;position:relative;aspect-ratio:3/4;border:1px solid rgba(255,255,255,0.05)}
+.pcard img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
+.pcard:hover img{transform:scale(1.06)}
+.pcard .lbl{position:absolute;bottom:0;left:0;right:0;padding:clamp(14px,1.5vw,28px);background:linear-gradient(transparent,rgba(6,13,6,0.92));font-size:clamp(13px,1.1vw,22px);font-weight:600}
+.pcard .lbl small{display:block;font-size:clamp(9px,0.75vw,14px);font-weight:400;opacity:0.5;margin-top:2px}
+
+.prow{display:flex;gap:clamp(12px,1.5vw,28px);margin-top:clamp(28px,3.5vh,52px);width:100%;max-width:1100px}
+.prodcard{flex:1;border-radius:clamp(12px,1.2vw,24px);overflow:hidden;position:relative;aspect-ratio:4/3;border:1px solid rgba(255,255,255,0.05)}
+.prodcard img{width:100%;height:100%;object-fit:cover}
+.prodcard .clbl{position:absolute;bottom:0;left:0;right:0;padding:clamp(16px,2vw,32px);background:linear-gradient(transparent,rgba(6,13,6,0.9))}
+.prodcard .clbl h4{font-size:clamp(13px,1.1vw,22px);font-weight:700;margin-bottom:3px}
+.prodcard .clbl p{font-size:clamp(10px,0.85vw,16px);color:rgba(255,255,255,0.5);font-weight:300}
+
+/* SPLIT */
+.split{display:grid;grid-template-columns:1fr 1fr;height:100%;width:100%}
+.simg{background-size:cover;background-position:center;position:relative}
+.simg::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 65%,var(--bg) 100%)}
+.scont{display:flex;flex-direction:column;justify-content:center;padding:clamp(40px,5vh,80px) clamp(40px,5vw,90px);background:var(--bg)}
+
+/* LIGHT */
+.lt{background:var(--w)!important;color:var(--d)!important}
+.lt .pre{color:var(--sage)}.lt h1,.lt h2{color:var(--d)}.lt h1 span,.lt h2 span{color:var(--sage)}
+.lt .lead{color:rgba(26,26,26,0.5)}.lt .lead strong{color:var(--d)}
+.lt .big{color:var(--sage)}.lt .big-l{color:rgba(26,26,26,0.35)}
+.lt .pill{border-color:rgba(74,122,58,0.3);color:var(--sage)}
+.lt .feat{border-left-color:var(--sage)}.lt .feat h4{color:var(--d)}.lt .feat p{color:rgba(26,26,26,0.45)}
+.lt .sep{background:var(--sage)}
+.lt .pcard{border-color:rgba(0,0,0,0.08);box-shadow:0 4px 24px rgba(0,0,0,0.08)}.lt .pcard .lbl{color:var(--w)}
+.lt .prodcard{border-color:rgba(0,0,0,0.08);box-shadow:0 4px 24px rgba(0,0,0,0.08)}.lt .prodcard .clbl h4{color:var(--w)}
+.lt .scont{background:var(--w)}.lt .scont .pre{color:var(--sage)}.lt .scont h2{color:var(--d)}.lt .scont h2 span{color:var(--sage)}
+.lt .scont .lead{color:rgba(26,26,26,0.5)}.lt .scont .lead strong{color:var(--d)}.lt .scont .sep{background:var(--sage)}
+.lt .scont .feat{border-left-color:var(--sage)}.lt .scont .feat h4{color:var(--d)}.lt .scont .feat p{color:rgba(26,26,26,0.45)}
+.lt .simg::after{background:linear-gradient(90deg,transparent 65%,var(--w) 100%)}
+body.ol .ctrl{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.06)}
+body.ol .counter{color:rgba(26,26,26,0.35)}
+body.ol .dot{background:rgba(0,0,0,0.12)}.body.ol .dot.on{background:var(--sage)}
+body.ol .dv{background:rgba(0,0,0,0.08)}
+body.ol .btn{color:rgba(26,26,26,0.35)}body.ol .btn:hover{background:rgba(0,0,0,0.06);color:rgba(26,26,26,0.8)}
+body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
+
+/* HDR */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:90;display:flex;align-items:center;justify-content:space-between;padding:clamp(20px,2.5vh,36px) clamp(30px,4vw,70px);opacity:0;transition:opacity 300ms;pointer-events:none}
+.hdr.show{opacity:1;pointer-events:auto}
+.hdr img{height:clamp(16px,1.8vw,28px);opacity:0.7}
+.hdr .hint{font-size:11px;color:rgba(255,255,255,0.3);font-weight:400;letter-spacing:0.04em}
+
+/* CTRL */
+.ctrl{position:fixed;bottom:clamp(16px,2.5vh,32px);left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:clamp(10px,1vw,20px);padding:clamp(8px,1vh,14px) clamp(16px,2vw,32px);background:rgba(6,13,6,0.5);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:100px;border:1px solid rgba(255,255,255,0.06);opacity:0;transition:opacity 300ms;pointer-events:none}
+.ctrl.show{opacity:1;pointer-events:auto}
+.counter{font-size:13px;color:rgba(255,255,255,0.4);font-variant-numeric:tabular-nums;min-width:40px;font-weight:400}
+.dots{display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:100px;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 350ms cubic-bezier(0.4,0,0.2,1)}
+.dot.on{width:24px;background:rgba(255,255,255,0.85)}
+.dv{width:1px;height:16px;background:rgba(255,255,255,0.08);margin:0 4px}
+.btn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 200ms;color:rgba(255,255,255,0.4)}
+.btn:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85)}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ANIMS */
+.slide.active .c>*{animation:up 600ms 200ms both}
+.slide.active .c>*:nth-child(2){animation-delay:300ms}
+.slide.active .c>*:nth-child(3){animation-delay:400ms}
+.slide.active .c>*:nth-child(4){animation-delay:500ms}
+.slide.active .c>*:nth-child(5){animation-delay:600ms}
+@keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.slide.active .pcard,.slide.active .prodcard,.slide.active .feat,.slide.active .stat{animation:up 500ms both}
+.slide.active *:nth-child(1 of .pcard,.prodcard,.feat,.stat){animation-delay:350ms}
+.slide.active *:nth-child(2 of .pcard,.prodcard,.feat,.stat){animation-delay:450ms}
+.slide.active *:nth-child(3 of .pcard,.prodcard,.feat,.stat){animation-delay:550ms}
+.slide.active *:nth-child(4 of .pcard,.prodcard,.feat,.stat){animation-delay:650ms}
+</style>
+</head>
+<body>
+<div class="hdr show" id="hdr">
+  <img src="./GREENMOOD_Logo_white.png" alt="Greenmood">
+  <div class="hint">&larr; &rarr; Navigate &middot; F Fullscreen</div>
+</div>
+<div class="deck" id="deck">
+
+<!-- 0 COVER -->
+<div class="slide active ov-c">
+  <div class="bg" style="background-image:url('./Presentation/freepik_ultra-realistic-interior-_2712312408.png')"></div>
+  <div class="c center">
+    <img src="./GREENMOOD_Logo-baseline_white.png" alt="Greenmood" style="height:clamp(28px,3.5vw,52px);opacity:0.8;margin-bottom:clamp(24px,4vh,56px)">
+    <h1>New <span>Products</span></h1>
+    <div class="sep sep-c"></div>
+    <p class="lead" style="text-align:center;max-width:700px">Green Walls &middot; Cork Tiles &middot; Poufs &middot; Planters &middot; Cascade. Designed by <strong>Alain Gilles</strong>. Handcrafted in Europe.</p>
+    <div style="margin-top:clamp(24px,3vh,48px)">
+      <span class="pill">WELL v2</span>
+      <span class="pill">LEED v5</span>
+      <span class="pill">B-S2-d0 Fire Rated</span>
+      <span class="pill">100% Natural</span>
+    </div>
+  </div>
+</div>
+
+<!-- 1 GREEN WALLS -->
+<div class="slide ov-b">
+  <div class="bg" style="background-image:url('./Presentation/02.jpg')"></div>
+  <div class="c lb">
+    <div class="pre">Preserved Green Walls</div>
+    <h1>Living texture.<br><span>Zero maintenance.</span></h1>
+    <p class="lead">Ball Moss &middot; Reindeer Moss &middot; Velvet Leaf &middot; Forest. No irrigation. No light. No cost over time.</p>
+  </div>
+</div>
+
+<!-- 2 GREEN WALLS NUMBERS -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Why architects choose preserved moss</div>
+    <h2>The numbers that <span>matter</span></h2>
+    <div class="stats">
+      <div class="stat"><div class="big">0.73</div><div class="big-l">NRC Rating</div></div>
+      <div class="stat"><div class="big">B-S2-d0</div><div class="big-l">Fire Rated</div></div>
+      <div class="stat"><div class="big">10+</div><div class="big-l">Year Lifespan</div></div>
+      <div class="stat"><div class="big">0</div><div class="big-l">Maintenance</div></div>
+    </div>
+    <p class="lead" style="text-align:center;margin-top:clamp(24px,3vh,48px);max-width:700px"><strong>WELL v2</strong> compatible. <strong>LEED v5</strong> compatible. 5 to 11x lower Total Cost of Ownership than living walls.</p>
+  </div>
+</div>
+
+<!-- 3 CORK PRODUCTS INTRO (VIDEO) -->
+<div class="slide">
+  <div class="vbg-wrap">
+    <video class="vbg" src="./Presentation/Cork-products.mp4" autoplay loop muted playsinline></video>
+  </div>
+  <div class="c center">
+    <div class="pre">Designed by Alain Gilles</div>
+    <h1>Cork <span>Products</span></h1>
+    <div class="sep sep-c"></div>
+    <p class="lead" style="text-align:center;max-width:600px">Acoustic tiles, sculptural poufs, modular planters. 100% natural cork. Handcrafted in Europe.</p>
+  </div>
+</div>
+
+<!-- 4 CORK TILES HERO -->
+<div class="slide ov-b">
+  <div class="bg" style="background-image:url('./Presentation/04.png')"></div>
+  <div class="c lb">
+    <div class="pre">Cork Wall Tiles</div>
+    <h1>Acoustic<br><span>architecture.</span></h1>
+    <p class="lead">Four sculptural patterns in 100% natural cork. 40.5 x 40.5 x 5 cm. Acoustic. Fire-safe. Hypoallergenic.</p>
+  </div>
+</div>
+
+<!-- 5 CORK TILES GRID -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Four patterns by Alain Gilles</div>
+    <h2>Sculpted from <span>nature</span></h2>
+    <div class="pgrid">
+      <div class="pcard"><img src="./Presentation/Sillon-large-02.webp" alt="Sillon"><div class="lbl">Sillon</div></div>
+      <div class="pcard"><img src="./Presentation/Parenthese 1.jpg" alt="Parenthese"><div class="lbl">Parenth&egrave;se</div></div>
+      <div class="pcard"><img src="./Presentation/Brickx-large-02.webp" alt="Brickx"><div class="lbl">Brickx</div></div>
+      <div class="pcard"><img src="./Presentation/Morse-large-02.webp" alt="Morse"><div class="lbl">Morse</div></div>
+    </div>
+    <div style="margin-top:clamp(20px,2.5vh,36px)"><span class="pill">NRC 0.2</span><span class="pill">Fire Class E</span><span class="pill">Hypoallergenic</span><span class="pill">40.5 x 40.5 x 5 cm</span></div>
+  </div>
+</div>
+
+<!-- 6 MARIO POUF HERO -->
+<div class="slide ov-b">
+  <div class="bg" style="background-image:url('./Presentation/06.png')"></div>
+  <div class="c lb">
+    <div class="pre">Mario Pouf</div>
+    <h1>Four versions.<br><span>One icon.</span></h1>
+    <p class="lead">Seat, footrest, or side table. Lightweight. Acoustic. Maintenance-free.</p>
+  </div>
+</div>
+
+<!-- 7 MARIO POUF VARIANTS -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Mario Pouf by Alain Gilles</div>
+    <h2>Choose your <span>material</span></h2>
+    <div class="pgrid">
+      <div class="pcard"><img src="./Presentation/Mario_Pouf_expanded-cork.webp" alt="Expanded Cork"><div class="lbl">Expanded Cork<small>5 kg &middot; NRC 0.35</small></div></div>
+      <div class="pcard"><img src="./Presentation/Mario_Pouf_compressed-cork.webp" alt="Compressed Cork"><div class="lbl">Compressed Cork<small>100% recycled &middot; 9 kg</small></div></div>
+      <div class="pcard"><img src="./Presentation/Mario_Pouf_snearkers-white.webp" alt="Sneaker White"><div class="lbl">Sneaker White<small>Cork + microfiber</small></div></div>
+      <div class="pcard"><img src="./Presentation/Mario_Pouf_snearkers-black.webp" alt="Sneaker Black"><div class="lbl">Sneaker Black<small>Cork + microfiber</small></div></div>
+    </div>
+    <div style="margin-top:clamp(20px,2.5vh,36px)"><span class="pill">NRC 0.35</span><span class="pill">Renewable</span><span class="pill">Recyclable</span><span class="pill">Made in Europe</span></div>
+  </div>
+</div>
+
+<!-- 8 TERRA POUF -->
+<div class="slide lt">
+  <div class="split">
+    <div class="simg" style="background-image:url('./Presentation/08.jpg')"></div>
+    <div class="scont">
+      <div class="pre">Terra Pouf by Alain Gilles</div>
+      <h2>Sculptural<br><span>cork seating.</span></h2>
+      <div class="sep"></div>
+      <p class="lead">100% expanded cork. Versatile, acoustic, practically unlimited lifespan.</p>
+      <div class="feats" style="grid-template-columns:1fr;gap:clamp(16px,2vh,32px);margin-top:clamp(20px,2.5vh,40px)">
+        <div class="feat"><h4>Short: 70 cm diameter x 40 cm height</h4><p>21 kg. Seat, footrest, or side table.</p></div>
+        <div class="feat"><h4>Tall: 99 cm diameter x 40 cm height</h4><p>47 kg. Statement piece for lobbies and lounges.</p></div>
+        <div class="feat"><h4>NRC 0.35, waterproof, recyclable</h4><p>High density (100-120 kg/m3). No additives. Made in Europe.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 TERRA PLANTERS -->
+<div class="slide lt">
+  <div class="split">
+    <div class="simg" style="background-image:url('./Presentation/freepik_biophilic-interior-corner_2736087239.png')"></div>
+    <div class="scont">
+      <div class="pre">Terra Planters by Alain Gilles</div>
+      <h2>Modular cork<br><span>planter.</span></h2>
+      <div class="sep"></div>
+      <p class="lead">Transforms into a bench or high-top table with an optional solid oak cover.</p>
+      <div class="feats" style="grid-template-columns:1fr;gap:clamp(16px,2vh,32px);margin-top:clamp(20px,2.5vh,40px)">
+        <div class="feat"><h4>Short: 90 x 48 x 40 cm</h4><p>18 kg. Perfect for small interiors and corridors.</p></div>
+        <div class="feat"><h4>Tall: 115 x 85 x 40 cm</h4><p>30 kg. Generous planting surface for lobbies.</p></div>
+        <div class="feat"><h4>Optional Oak Cover (Natural or Black)</h4><p>Transforms planter into bench or high-top table with integrated storage. Sold separately.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 CRUZ PLANTERS -->
+<div class="slide lt">
+  <div class="split">
+    <div class="simg" style="background-image:url('./Presentation/freepik_ultra-realistic-photograp_2712143172.png')"></div>
+    <div class="scont">
+      <div class="pre">Cruz Planters by Alain Gilles</div>
+      <h2>Fiber resin<br><span>planters.</span></h2>
+      <div class="sep"></div>
+      <p class="lead">Indoor planters for real plants. Lightweight yet durable. The look of natural stone.</p>
+      <div class="feats" style="grid-template-columns:1fr;gap:clamp(16px,2vh,32px);margin-top:clamp(20px,2.5vh,40px)">
+        <div class="feat"><h4>Small: 40 cm diameter x 36 cm height</h4><p>5.5 kg. Compact format for desks and shelves.</p></div>
+        <div class="feat"><h4>Large: 46 cm diameter x 50 cm height</h4><p>8.7 kg. Generous size for floor placement.</p></div>
+        <div class="feat"><h4>6 Fiber Resin Finishes + 2 Wood Options</h4><p>Grey, Black, Beige, Green, Red. Wood: Black solid wood, Brown solid wood.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 PLANTERS OVERVIEW -->
+<div class="slide ov-b">
+  <div class="bg" style="background-image:url('./Presentation/All-panters.png')"></div>
+  <div class="c lb">
+    <div class="pre">Complete Planter Range</div>
+    <h1>Nature, <span>contained.</span></h1>
+    <p class="lead">Terra Planters &middot; Mario Planters &middot; Cruz Planters. One design language, multiple materials.</p>
+  </div>
+</div>
+
+<!-- 12 CASCADE HERO -->
+<div class="slide ov-b">
+  <div class="bg" style="background-image:url('./Presentation/Cascade-02.jpg')"></div>
+  <div class="c lb">
+    <div class="pre">Cascade by Alain Gilles</div>
+    <h1>Greenery,<br><span>suspended.</span></h1>
+    <p class="lead">Preserved foliage hanging system. 9 metal finishes. 8 foliage types. Fire rated B-S2-d0.</p>
+  </div>
+</div>
+
+<!-- 13 CASCADE SPECS -->
+<div class="slide lt">
+  <div class="split">
+    <div class="simg" style="background-image:url('./Presentation/Cascade.jpg')"></div>
+    <div class="scont">
+      <div class="pre">Cascade Specification</div>
+      <h2>Design<br><span>details.</span></h2>
+      <div class="sep"></div>
+      <div class="feats" style="grid-template-columns:1fr;gap:clamp(16px,2vh,32px);margin-top:clamp(16px,2vh,32px)">
+        <div class="feat"><h4>3 Forms: Straight, Curved, U-Shaped</h4><p>Medium (45 cm) and Large (80 cm). Rod diameter 4 cm. Modular, adjustable height.</p></div>
+        <div class="feat"><h4>9 Powder-Coated Metal Finishes</h4><p>Matte Black, Gold, Grey, Blue, White, Corten, Sparkling Green, Red, Burgundy.</p></div>
+        <div class="feat"><h4>8 Preserved Foliages</h4><p>Amaranthus (Green, Burgundy), Populus (Green, Red), Lepto Green, Nicoly (Green, Red), Parvifolia Green. Faux options on request.</p></div>
+        <div class="feat"><h4>Approx. 3 kg. Class D NRC 0.35. B-S2-d0</h4><p>5 to 7 year lifespan. 100% maintenance-free. Non-toxic. Indoor use.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 14 CERTIFICATIONS -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Specification confidence</div>
+    <h2>Certified for<br><span>commercial interiors.</span></h2>
+    <div class="feats" style="max-width:1000px;margin-top:clamp(28px,3.5vh,52px)">
+      <div class="feat"><h4>WELL v2 Compatible</h4><p>Feature 88 Biophilia. Feature 78 Acoustic Comfort. Full documentation provided.</p></div>
+      <div class="feat"><h4>LEED v5 Compatible</h4><p>EQ Credit: Occupant Experience. Zero VOC emissions.</p></div>
+      <div class="feat"><h4>Fire Safety Certified</h4><p>B-S2-d0 (EN 13501-1). FSI 0 / SDI 15 (ASTM E84). Self-extinguishing.</p></div>
+      <div class="feat"><h4>Lab-Tested Acoustics</h4><p>NRC ratings to ISO 11654:1997. Full test reports available.</p></div>
+    </div>
+    <p class="lead" style="text-align:center;margin-top:clamp(24px,3vh,44px);max-width:600px">Tech sheets, fire certificates and CAD files <strong>available on request</strong>.</p>
+  </div>
+</div>
+
+<!-- 15 CLOSING -->
+<div class="slide ov-c">
+  <div class="bg" style="background-image:url('./Presentation/01.png')"></div>
+  <div class="c center">
+    <img src="./GREENMOOD_Logo-baseline_white.png" alt="Greenmood" style="height:clamp(24px,3vw,44px);opacity:0.7;margin-bottom:clamp(24px,4vh,56px)">
+    <h1 style="font-size:clamp(34px,4.2vw,80px)">Ready for your<br><span>next project?</span></h1>
+    <div class="sep sep-c"></div>
+    <p class="lead" style="text-align:center;max-width:550px">Samples and specification support for the Tetris Design UK team.</p>
+    <div style="margin-top:clamp(36px,5vh,72px);text-align:center">
+      <div style="font-size:clamp(20px,2.2vw,40px);font-weight:300">Sadig Alakbarov</div>
+      <div style="font-size:clamp(13px,1.1vw,20px);color:rgba(255,255,255,0.4);font-weight:300;margin-top:6px">Founder and CEO</div>
+      <div style="font-size:clamp(14px,1.2vw,22px);color:var(--sl);margin-top:clamp(12px,2vh,24px);font-weight:500">sadig@greenmood.be</div>
+      <div style="font-size:clamp(14px,1.2vw,22px);color:var(--sl);font-weight:400;margin-top:4px">greenmood.be</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="ctrl show" id="ctrl">
+  <div class="counter" id="counter">1 / 16</div>
+  <div class="dots" id="dots"></div>
+  <div class="dv"></div>
+  <button class="btn" id="prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+  <button class="btn" id="next"><svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"/></svg></button>
+  <div class="dv"></div>
+  <button class="btn" id="fs"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+</div>
+
+<script>
+const slides=document.querySelectorAll('.slide'),dots=document.getElementById('dots'),counter=document.getElementById('counter'),ctrl=document.getElementById('ctrl'),hdr=document.getElementById('hdr');
+let cur=0,ht;
+slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>go(i);dots.appendChild(d)});
+function go(n){if(n<0||n>=slides.length||n===cur)return;slides[cur].classList.remove('active');slides[cur].classList.add(n>cur?'past':'');dots.children[cur].classList.remove('on');setTimeout(()=>{slides[cur].classList.remove('past');cur=n;activate()},10)}
+function activate(){slides[cur].classList.add('active');dots.children[cur].classList.add('on');counter.textContent=`${cur+1} / ${slides.length}`;if(slides[cur].classList.contains('lt'))document.body.classList.add('ol');else document.body.classList.remove('ol')}
+document.getElementById('prev').onclick=()=>go(cur-1);
+document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('fs').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen()};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();go(cur+1)}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();go(cur-1)}if(e.key==='f'||e.key==='F'){e.preventDefault();document.getElementById('fs').click()}if(e.key==='Escape'&&document.fullscreenElement)document.exitFullscreen();if(e.key==='Home')go(0);if(e.key==='End')go(slides.length-1);showC()});
+let tx=0;document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)go(cur+(dx<0?1:-1))});
+document.addEventListener('click',e=>{if(e.target.closest('.ctrl')||e.target.closest('.hdr'))return;const x=e.clientX/window.innerWidth;if(x>0.7)go(cur+1);else if(x<0.3)go(cur-1)});
+function showC(){ctrl.classList.add('show');hdr.classList.add('show');document.body.classList.add('cv');clearTimeout(ht);ht=setTimeout(()=>{ctrl.classList.remove('show');hdr.classList.remove('show');document.body.classList.remove('cv')},3000)}
+document.addEventListener('mousemove',showC);showC();
+</script>
+</body>
+</html>

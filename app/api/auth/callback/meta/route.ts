@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
+import { getWorkspaceId } from '@/lib/workspace'
 
 /**
  * Meta OAuth Callback
@@ -74,19 +76,35 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Step 5: Store tokens (for now log them, production would save to DB)
-    console.log('Meta OAuth success:', {
-      state,
-      longToken: longToken.substring(0, 20) + '...',
-      pages: pagesData.data?.length || 0,
-      igAccounts: igAccounts.length,
-    })
+    // Step 5: Save tokens to DB
+    const workspaceId = await getWorkspaceId()
+    const market = state || 'hq' // state param carries the market code
 
-    // TODO: Save to social_accounts table
-    // For now, redirect with success
+    // Save Facebook Page tokens (non-expiring when derived from long-lived user token)
+    for (const page of pagesData.data || []) {
+      await prisma.$executeRaw`
+        INSERT INTO social_tokens (id, workspace_id, market, platform, account_handle, access_token, updated_at)
+        VALUES (gen_random_uuid()::text, ${workspaceId}, ${market}, 'facebook', ${page.name || 'Facebook Page'}, ${page.access_token}, NOW())
+        ON CONFLICT (workspace_id, market, platform)
+        DO UPDATE SET access_token = ${page.access_token}, account_handle = ${page.name || 'Facebook Page'}, updated_at = NOW()
+      `
+    }
+
+    // Save Instagram tokens (linked to pages)
+    for (const ig of igAccounts) {
+      await prisma.$executeRaw`
+        INSERT INTO social_tokens (id, workspace_id, market, platform, account_handle, access_token, updated_at)
+        VALUES (gen_random_uuid()::text, ${workspaceId}, ${market}, 'instagram', ${ig.pageName || 'Instagram'}, ${ig.pageToken}, NOW())
+        ON CONFLICT (workspace_id, market, platform)
+        DO UPDATE SET access_token = ${ig.pageToken}, account_handle = ${ig.pageName || 'Instagram'}, updated_at = NOW()
+      `
+    }
+
+    console.log('Meta OAuth success: saved tokens for', market, '— pages:', pagesData.data?.length || 0, 'ig:', igAccounts.length)
+
     const successUrl = new URL('/settings', req.url)
     successUrl.searchParams.set('connected', 'meta')
-    successUrl.searchParams.set('accounts', String(igAccounts.length))
+    successUrl.searchParams.set('accounts', String((pagesData.data?.length || 0) + igAccounts.length))
     return NextResponse.redirect(successUrl)
 
   } catch (error) {

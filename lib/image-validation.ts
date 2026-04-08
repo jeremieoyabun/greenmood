@@ -13,13 +13,13 @@ export interface DimensionValidation {
   height?: number
 }
 
-interface PlatformSpec {
+export interface PlatformSpec {
   name: string
   ratios: Array<{ label: string; ratio: number; ideal: { w: number; h: number } }>
   criticalFail: (ratio: number) => boolean
 }
 
-const PLATFORM_SPECS: Record<string, PlatformSpec> = {
+export const PLATFORM_SPECS: Record<string, PlatformSpec> = {
   instagram: {
     name: 'Instagram Feed',
     ratios: [
@@ -198,4 +198,33 @@ export async function getImageDimensionsFromUrl(
   } catch {
     return null
   }
+}
+
+/**
+ * Apply Cloudinary transformation to resize/crop an image URL for a target platform and ratio.
+ * Uses c_fill + g_auto (smart subject detection) for optimal cropping.
+ * Returns the original URL if it's not a Cloudinary URL.
+ */
+export function cloudinaryTransformUrl(
+  url: string,
+  width: number,
+  height: number
+): string {
+  if (!url.includes('cloudinary.com') || !url.includes('/upload/')) return url
+  const transform = `c_fill,w_${width},h_${height},g_auto,q_auto,f_auto`
+  return url.replace(/\/upload\//, `/upload/${transform}/`)
+}
+
+/**
+ * Get the best matching ratio spec for a given platform.
+ * If the platform supports multiple ratios, returns the first (preferred) one.
+ */
+export function getPlatformRatios(platform: string) {
+  const spec = PLATFORM_SPECS[platform]
+  if (!spec) return []
+  return spec.ratios.map(r => ({
+    label: r.label,
+    width: r.ideal.w,
+    height: r.ideal.h,
+  }))
 }

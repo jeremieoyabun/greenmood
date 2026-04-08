@@ -12,9 +12,10 @@ interface MediaItem {
 interface CarouselEditorProps {
   postId: string
   onUpdate?: () => void
+  platform?: string
 }
 
-export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
+export function CarouselEditor({ postId, onUpdate, platform }: CarouselEditorProps) {
   const [media, setMedia] = useState<MediaItem[]>([])
   const [uploading, setUploading] = useState(false)
   const [dragIdx, setDragIdx] = useState<number | null>(null)
@@ -163,6 +164,7 @@ export function CarouselEditor({ postId, onUpdate }: CarouselEditorProps) {
         open={showPicker}
         onClose={() => setShowPicker(false)}
         defaultFolder="recent"
+        platform={platform}
         onSelect={async (url) => {
           // Register the Cloudinary URL as a carousel media item
           await fetch(`/api/posts/${postId}/media/register`, {

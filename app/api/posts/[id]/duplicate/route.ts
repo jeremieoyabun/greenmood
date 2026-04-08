@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 const duplicatePostSchema = z.object({
   targetMarket: z.string().min(1, 'Target market is required'),
+  targetPlatform: z.string().optional(),
 })
 
 export async function POST(
@@ -24,7 +25,7 @@ export async function POST(
       )
     }
 
-    const { targetMarket } = parsed.data
+    const { targetMarket, targetPlatform } = parsed.data
     const workspaceId = await getWorkspaceId()
 
     // Fetch source post with active variant
@@ -68,7 +69,7 @@ export async function POST(
         workspaceId,
         campaignId: sourcePost.campaignId,
         market: targetMarket,
-        platform: sourcePost.platform,
+        platform: targetPlatform || sourcePost.platform,
         status: 'DRAFT',
         isCarousel: sourcePost.isCarousel,
         variants: {
@@ -79,7 +80,7 @@ export async function POST(
             firstComment: activeVariant.firstComment,
             imageUrl: activeVariant.imageUrl,
             timing: activeVariant.timing,
-            notes: `Duplicated from ${sourcePost.market}/${sourcePost.platform}. Adapt for ${targetMarket}.`,
+            notes: `Duplicated from ${sourcePost.market}/${sourcePost.platform}. Adapt for ${targetMarket}/${targetPlatform || sourcePost.platform}.`,
             source: 'MANUAL',
           },
         },
@@ -111,7 +112,8 @@ export async function POST(
       linkedin: '09:00',
       stories: '08:00',
     }
-    const time = sourceSlot?.time || timeByPlatform[newPost.platform] || '10:00'
+    const finalPlatform = targetPlatform || sourcePost.platform
+    const time = sourceSlot?.time || timeByPlatform[finalPlatform] || '10:00'
     // Always use today's date (not the source post date)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
@@ -125,7 +127,7 @@ export async function POST(
         date: slotDate,
         time,
         market: targetMarket,
-        platform: newPost.platform,
+        platform: finalPlatform,
         status: 'PLANNED',
       },
     })
