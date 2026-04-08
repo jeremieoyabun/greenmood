@@ -131,6 +131,15 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 .slide.active .c>*:nth-child(5){animation-delay:600ms}
 @keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .slide.active .pcard,.slide.active .prodcard,.slide.active .feat,.slide.active .stat{animation:up 500ms both}
+/* GALLERY */
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1vw,16px);width:100%;max-width:1100px;margin-top:clamp(20px,2.5vh,40px)}
+.gal-item{border-radius:clamp(10px,1vw,20px);overflow:hidden;aspect-ratio:4/3;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 16px rgba(0,0,0,0.06)}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
+.gal-item:hover img{transform:scale(1.05)}
+.slide.active .gal-item{animation:up 500ms both}
+.slide.active .gal-item:nth-child(1){animation-delay:200ms}.slide.active .gal-item:nth-child(2){animation-delay:280ms}.slide.active .gal-item:nth-child(3){animation-delay:360ms}
+.slide.active .gal-item:nth-child(4){animation-delay:440ms}.slide.active .gal-item:nth-child(5){animation-delay:520ms}.slide.active .gal-item:nth-child(6){animation-delay:600ms}
+
 .slide.active *:nth-child(1 of .pcard,.prodcard,.feat,.stat){animation-delay:350ms}
 .slide.active *:nth-child(2 of .pcard,.prodcard,.feat,.stat){animation-delay:450ms}
 .slide.active *:nth-child(3 of .pcard,.prodcard,.feat,.stat){animation-delay:550ms}
@@ -217,7 +226,22 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
   </div>
 </div>
 
-<!-- 3 CORK PRODUCTS INTRO (VIDEO) -->
+<!-- GREEN WALLS GALLERY -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Green Walls in projects</div>
+    <div class="gal">
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_01.webp" alt="Ball Moss project"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_05.webp" alt="Ball Moss project"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_10.webp" alt="Ball Moss project"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-01.webp" alt="Forest project"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-05.webp" alt="Forest project"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-10.webp" alt="Forest project"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CORK PRODUCTS INTRO (VIDEO) -->
 <div class="slide">
   <div class="vbg-wrap">
     <video class="vbg" src="./Presentation/Cork-products.mp4" autoplay loop muted playsinline></video>
@@ -255,7 +279,22 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
   </div>
 </div>
 
-<!-- 6 MARIO POUF HERO -->
+<!-- CORK TILES GALLERY -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Cork Tiles in projects</div>
+    <div class="gal">
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-03.png" alt="Sillon"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Parenthese-05.png" alt="Parenthese"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Brickx-04.png" alt="Brickx"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Morse-03.png" alt="Morse"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-10.png" alt="Sillon"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/freepik_ultra-realistic-interior-_2712351416.png" alt="Cork Tiles interior"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MARIO POUF HERO -->
 <div class="slide ov-b">
   <div class="bg" style="background-image:url('./Presentation/06.webp')"></div>
   <div class="c lb">
@@ -296,6 +335,21 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
   </div>
 </div>
 
+<!-- MARIO POUF GALLERY -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Mario Pouf gallery</div>
+    <div class="gal">
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-05.webp" alt="Compressed Cork"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Expanded-Cork-08.webp" alt="Expanded Cork"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-07.webp" alt="Sneaker White"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-black-08.webp" alt="Sneaker Black"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-12.webp" alt="Compressed Cork"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-20.webp" alt="Sneaker White"></div>
+    </div>
+  </div>
+</div>
+
 <!-- TERRA POUF (no gradient on image) -->
 <div class="slide lt">
   <div class="split" style="grid-template-columns:38fr 62fr">
@@ -310,6 +364,21 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
         <div class="feat"><h4>Tall: 99 cm diameter x 40 cm height</h4><p>47 kg. Statement piece for lobbies and lounges.</p></div>
         <div class="feat"><h4>NRC 0.35, waterproof, recyclable</h4><p>High density (100-120 kg/m3). No additives. Made in Europe.</p></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- TERRA POUF GALLERY -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Terra Pouf gallery</div>
+    <div class="gal">
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-01.webp" alt="Terra Pouf"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-04.webp" alt="Terra Pouf"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-09.webp" alt="Terra Pouf"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-10.webp" alt="Terra Pouf"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-20.webp" alt="Terra Pouf"></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-26.webp" alt="Terra Pouf"></div>
     </div>
   </div>
 </div>
@@ -458,7 +527,19 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
   </div>
 </div>
 
-<!-- 14 CERTIFICATIONS -->
+<!-- CASCADE GALLERY -->
+<div class="slide lt">
+  <div class="c center">
+    <div class="pre">Cascade gallery</div>
+    <div class="gal" style="grid-template-columns:repeat(3,1fr);max-width:900px">
+      <div class="gal-item" style="aspect-ratio:3/4"><img src="./Presentation/Gallerie/CASCADE/Cascade-01.webp" alt="Cascade"></div>
+      <div class="gal-item" style="aspect-ratio:3/4"><img src="./Presentation/Gallerie/CASCADE/Cascade-02.webp" alt="Cascade"></div>
+      <div class="gal-item" style="aspect-ratio:3/4"><img src="./Presentation/Gallerie/CASCADE/Cascade-03.webp" alt="Cascade"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CERTIFICATIONS -->
 <div class="slide lt">
   <div class="c center">
     <div class="pre">Specification confidence</div>
@@ -493,7 +574,7 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 </div>
 
 <div class="ctrl show" id="ctrl">
-  <div class="counter" id="counter">1 / 21</div>
+  <div class="counter" id="counter">1 / 26</div>
   <div class="dots" id="dots"></div>
   <div class="dv"></div>
   <button class="btn" id="prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
