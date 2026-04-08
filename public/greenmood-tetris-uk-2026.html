@@ -131,14 +131,19 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 .slide.active .c>*:nth-child(5){animation-delay:600ms}
 @keyframes up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 .slide.active .pcard,.slide.active .prodcard,.slide.active .feat,.slide.active .stat{animation:up 500ms both}
-/* GALLERY */
-.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(4px,0.4vw,8px);width:100%;height:100%}
-.gal-item{border-radius:clamp(4px,0.4vw,10px);overflow:hidden}
+/* GALLERY - dynamic masonry-style */
+.gal{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;gap:clamp(3px,0.35vw,6px);width:100%;height:100%}
+.gal-item{border-radius:clamp(3px,0.3vw,8px);overflow:hidden;min-height:0}
 .gal-item img{width:100%;height:100%;object-fit:cover;transition:transform 0.5s}
-.gal-item:hover img{transform:scale(1.05)}
-.slide.active .gal-item{animation:up 500ms both}
-.slide.active .gal-item:nth-child(1){animation-delay:200ms}.slide.active .gal-item:nth-child(2){animation-delay:280ms}.slide.active .gal-item:nth-child(3){animation-delay:360ms}
-.slide.active .gal-item:nth-child(4){animation-delay:440ms}.slide.active .gal-item:nth-child(5){animation-delay:520ms}.slide.active .gal-item:nth-child(6){animation-delay:600ms}
+.gal-item:hover img{transform:scale(1.04)}
+.gal-item.tall{grid-row:span 2}
+.gal-item.wide{grid-column:span 2}
+.gal-item.big{grid-column:span 2;grid-row:span 2}
+.slide.active .gal-item{animation:up 400ms both}
+.slide.active .gal-item:nth-child(1){animation-delay:100ms}.slide.active .gal-item:nth-child(2){animation-delay:150ms}.slide.active .gal-item:nth-child(3){animation-delay:200ms}
+.slide.active .gal-item:nth-child(4){animation-delay:250ms}.slide.active .gal-item:nth-child(5){animation-delay:300ms}.slide.active .gal-item:nth-child(6){animation-delay:350ms}
+.slide.active .gal-item:nth-child(7){animation-delay:400ms}.slide.active .gal-item:nth-child(8){animation-delay:450ms}.slide.active .gal-item:nth-child(9){animation-delay:500ms}
+.slide.active .gal-item:nth-child(10){animation-delay:550ms}.slide.active .gal-item:nth-child(11){animation-delay:600ms}.slide.active .gal-item:nth-child(12){animation-delay:650ms}
 
 .slide.active *:nth-child(1 of .pcard,.prodcard,.feat,.stat){animation-delay:350ms}
 .slide.active *:nth-child(2 of .pcard,.prodcard,.feat,.stat){animation-delay:450ms}
@@ -228,14 +233,18 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- GREEN WALLS GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_01.webp" alt="Ball Moss project"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_05.webp" alt="Ball Moss project"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_10.webp" alt="Ball Moss project"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-01.webp" alt="Forest project"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-05.webp" alt="Forest project"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-10.webp" alt="Forest project"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_01.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_05.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-01.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-05.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_10.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_14.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-10.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_18.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/Forest/Greenmood_forest-gallery-08.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/BALL MOSS/Greenmood_ball-moss-gallery_03.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -280,14 +289,18 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- CORK TILES GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-03.png" alt="Sillon"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Parenthese-05.png" alt="Parenthese"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Brickx-04.png" alt="Brickx"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Morse-03.png" alt="Morse"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-10.png" alt="Sillon"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/freepik_ultra-realistic-interior-_2712351416.png" alt="Cork Tiles interior"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-05.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Parenthese-07.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Brickx-02.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Morse-04.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Sillon-14.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Parenthese-02.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/freepik_ultra-realistic-interior-_2712355535.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Brickx-06.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/Morse-08.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/GREEN WALLS/CORK TILES/freepik_ultra-realistic-interior-_2712369271.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -335,14 +348,18 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- MARIO POUF GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-05.webp" alt="Compressed Cork"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Expanded-Cork-08.webp" alt="Expanded Cork"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-07.webp" alt="Sneaker White"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-black-08.webp" alt="Sneaker Black"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-12.webp" alt="Compressed Cork"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-20.webp" alt="Sneaker White"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-05.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Expanded-Cork-08.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-07.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-black-08.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-12.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-20.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-black-02.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Expanded-Cork-20.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Compressed-Cork-16.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/MARIO POUF/Greenmood_Sneakers-white-10.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -367,14 +384,17 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- TERRA POUF GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-01.webp" alt="Terra Pouf"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-04.webp" alt="Terra Pouf"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-09.webp" alt="Terra Pouf"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-10.webp" alt="Terra Pouf"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-20.webp" alt="Terra Pouf"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-26.webp" alt="Terra Pouf"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-01.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-04.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-05.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-09.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-10.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-15.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-20.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-22.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/TERRA POUF/Greenmood_Terra_pouf-2026-26.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -445,14 +465,17 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- PLANTERS GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/All-panters.webp" alt="Terra Planters"></div>
-      <div class="gal-item"><img src="./Presentation/Terra-bench.webp" alt="Terra Bench"></div>
-      <div class="gal-item"><img src="./Presentation/Greenmood_Cruz-03.webp" alt="Cruz Planters"></div>
-      <div class="gal-item"><img src="./Presentation/freepik_ultra-realistic-interior-_2712311918.webp" alt="Mario Planters"></div>
-      <div class="gal-item"><img src="./Presentation/freepik_biophilic-interior-corner_2736087239.webp" alt="Terra Planters"></div>
-      <div class="gal-item"><img src="./Presentation/freepik_ultra-realistic-photograp_2712143172.webp" alt="Planters dark"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item tall"><img src="./Presentation/All-panters.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Terra-bench.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Greenmood_Cruz-03.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/freepik_ultra-realistic-interior-_2712311918.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/freepik_biophilic-interior-corner_2736087239.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/freepik_ultra-realistic-photograp_2712143172.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/freepik_ultra-realistic-interior-_2712141320.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/freepik_ultra-realistic-interior-_2736084524.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/freepik_modern-creative-workspace_2736086695.webp" alt=""></div>
     </div>
   </div>
 </div>
@@ -529,14 +552,18 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 
 <!-- CASCADE GALLERY -->
 <div class="slide lt">
-  <div class="c center" style="padding:clamp(8px,1vh,16px) clamp(8px,1vw,16px)">
-    <div class="gal" style="flex:1;align-content:center">
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/main.webp" alt="Cascade lobby"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/Cascade_U-Shaped_Red_Eucalyptus.webp" alt="U-Shaped Red"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/Ramboll_Straight_Cascade_2_rbqxjb.webp" alt="Ramboll install"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/wooden_table_detail.webp" alt="U-Shaped Blue"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/Cascade_U-Shaped_Long_SparklingGreen.webp" alt="Sparkling Green"></div>
-      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/amaranthus_burgundy_detail.webp" alt="Amaranthus Burgundy"></div>
+  <div class="c center" style="padding:clamp(6px,0.8vh,12px) clamp(6px,0.8vw,12px)">
+    <div class="gal" style="grid-template-rows:repeat(3,1fr)">
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/CASCADE/main.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/Cascade_U-Shaped_Red_Eucalyptus.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/straight_tillandsia.webp" alt=""></div>
+      <div class="gal-item tall"><img src="./Presentation/Gallerie/CASCADE/Cascade_U-Shaped_Long_SparklingGreen.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/Ramboll_Straight_Cascade_2_rbqxjb.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/amaranthus_burgundy_detail.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/wooden_table_detail.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/red.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/closeup.webp" alt=""></div>
+      <div class="gal-item"><img src="./Presentation/Gallerie/CASCADE/sus.webp" alt=""></div>
     </div>
   </div>
 </div>
