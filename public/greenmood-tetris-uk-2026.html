@@ -389,7 +389,7 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 const slides=document.querySelectorAll('.slide'),dots=document.getElementById('dots'),counter=document.getElementById('counter'),ctrl=document.getElementById('ctrl'),hdr=document.getElementById('hdr');
 let cur=0,ht;
 slides.forEach((_,i)=>{const d=document.createElement('div');d.className='dot'+(i===0?' on':'');d.onclick=()=>go(i);dots.appendChild(d)});
-function go(n){if(n<0||n>=slides.length||n===cur)return;slides[cur].classList.remove('active');slides[cur].classList.add(n>cur?'past':'');dots.children[cur].classList.remove('on');setTimeout(()=>{slides[cur].classList.remove('past');cur=n;activate()},10)}
+function go(n){if(n<0||n>=slides.length||n===cur)return;slides[cur].classList.remove('active');if(n>cur)slides[cur].classList.add('past');dots.children[cur].classList.remove('on');setTimeout(()=>{slides[cur].classList.remove('past');cur=n;activate()},10)}
 function activate(){slides[cur].classList.add('active');dots.children[cur].classList.add('on');counter.textContent=`${cur+1} / ${slides.length}`;if(slides[cur].classList.contains('lt'))document.body.classList.add('ol');else document.body.classList.remove('ol')}
 document.getElementById('prev').onclick=()=>go(cur-1);
 document.getElementById('next').onclick=()=>go(cur+1);
