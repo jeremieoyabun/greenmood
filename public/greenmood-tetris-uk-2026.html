@@ -133,12 +133,12 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
 .slide.active .pcard,.slide.active .prodcard,.slide.active .feat,.slide.active .stat{animation:up 500ms both}
 /* GALLERY - auto-scrolling wall */
 .gal-wrap{position:absolute;inset:0;overflow:hidden}
-.gal{column-count:4;column-gap:clamp(3px,0.35vw,6px);padding:clamp(3px,0.35vw,6px);animation:galScroll 18s linear infinite;animation-play-state:paused}
+.gal{column-count:4;column-gap:clamp(3px,0.35vw,6px);padding:clamp(3px,0.35vw,6px);animation:galScroll 22s ease-in-out infinite alternate;animation-play-state:paused}
 .slide.active .gal{animation-play-state:running}
 .gal-item{border-radius:clamp(3px,0.3vw,8px);overflow:hidden;margin-bottom:clamp(3px,0.35vw,6px);break-inside:avoid}
 .gal-item img{width:100%;height:auto;display:block;transition:transform 0.4s}
 .gal-item:hover img{transform:scale(1.04)}
-@keyframes galScroll{0%{transform:translateY(0)}100%{transform:translateY(-30%)}}
+@keyframes galScroll{0%{transform:translateY(0)}100%{transform:translateY(calc(-100% + 100vh))}}
 
 .slide.active *:nth-child(1 of .pcard,.prodcard,.feat,.stat){animation-delay:350ms}
 .slide.active *:nth-child(2 of .pcard,.prodcard,.feat,.stat){animation-delay:450ms}
@@ -323,7 +323,7 @@ body.ol .hdr img{filter:invert(1)}.body.ol .hdr .hint{color:rgba(26,26,26,0.25)}
   <div class="c center">
     <div class="pre">Mario Pouf by Alain Gilles</div>
     <h2>Choose your <span>material</span></h2>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,1.5vw,28px);margin-top:clamp(16px,2vh,32px);width:100%;max-width:900px">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,1.5vw,28px);margin-top:clamp(16px,2vh,32px);width:100%;max-width:1050px">
       <div style="text-align:center">
         <div style="border-radius:clamp(12px,1.2vw,24px);overflow:hidden;aspect-ratio:1/1;border:1px solid rgba(0,0,0,0.06);box-shadow:0 4px 24px rgba(0,0,0,0.08)"><img src="./Presentation/Mario_Pouf_expanded-cork.webp" alt="Expanded Cork" style="width:100%;height:100%;object-fit:cover"></div>
         <div style="margin-top:clamp(8px,1vh,14px);font-size:clamp(14px,1.3vw,26px);font-weight:600;color:var(--d)">Expanded Cork</div>
