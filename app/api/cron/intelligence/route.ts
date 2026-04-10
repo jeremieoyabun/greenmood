@@ -30,7 +30,7 @@ const FOCUS_TOPICS = [
 ]
 
 /**
- * Daily Intelligence Scraper — runs at 06:00 UTC
+ * Weekly Intelligence Scraper — runs every Monday at 06:00 UTC
  *
  * Uses the MarketIntelligenceAgent to generate structured intelligence signals
  * about the biophilic design market, competitors, and trends.
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         focusTopics: FOCUS_TOPICS,
         focusCompetitors: COMPETITORS,
         focusCountries: ['Belgium', 'USA', 'UK', 'France', 'UAE', 'Poland', 'South Korea', 'Germany'],
-        digestType: 'daily',
+        digestType: 'weekly',
       },
     })
 
@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
     if (digest && storedSignals.length > 0) {
       await prisma.intelligenceDigest.create({
         data: {
-          type: 'daily',
+          type: 'weekly',
           period: new Date().toISOString().split('T')[0],
           content: digest as any,
           signalIds: storedSignals,
