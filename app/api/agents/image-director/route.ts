@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { anthropic, MODELS } from '@/lib/ai/client'
+import { searchAssets } from '@/lib/cloudinary'
+import { getCurrentUser } from '@/lib/auth'
+import { composeOverlayImage, type OverlayData } from '@/lib/image-compose'
 import { AgentType, AgentRunStatus } from '@prisma/client'
 
 const WORKSPACE_ID = 'cmmvt7qrr0000tcg4mgcwdxxg'
+const AUTO_SELECT_ALLOWED_EMAIL = 'jeremie.kuntzinger@gmail.com'
 
 /**
  * Image Director Agent
  *
  * POST /api/agents/image-director
- * Body: { postId } or { caption, platform }
+ * Body: { postId?, caption?, platform?, autoSelect? }
  *
- * Suggests visual direction for a post:
- * - Which Nextcloud folder/image type to look for
- * - A Pomelli AI image generation prompt
- * - Recommended dimensions per platform
- * - Visual direction notes (lighting, angle, mood)
+ * Default: suggests Cloudinary folder + Pomelli prompt + dimensions.
+ * If autoSelect=true AND user is Jeremie: actually picks the best image
+ * from Cloudinary and returns the top match + alternatives.
  */
 export async function POST(req: NextRequest) {
   const startTime = Date.now()
 
   try {
     const body = await req.json()
-    const { postId, caption, platform } = body as {
+    const { postId, caption, platform, autoSelect } = body as {
       postId?: string
       caption?: string
       platform?: string
+      autoSelect?: boolean
     }
 
     if (!postId && (!caption || !platform)) {
@@ -33,6 +36,13 @@ export async function POST(req: NextRequest) {
         { error: 'Provide either postId or both caption and platform' },
         { status: 400 }
       )
+    }
+
+    // ─── Auto-select scope check (Jeremie only) ───
+    let canAutoSelect = false
+    if (autoSelect) {
+      const user = await getCurrentUser()
+      canAutoSelect = user?.email === AUTO_SELECT_ALLOWED_EMAIL
     }
 
     // ─── Resolve source content ───
@@ -74,6 +84,7 @@ export async function POST(req: NextRequest) {
           postId: postId || null,
           caption: resolvedCaption,
           platform: resolvedPlatform,
+          autoSelect: canAutoSelect,
         } as any,
       },
     })
@@ -91,7 +102,7 @@ export async function POST(req: NextRequest) {
       .map((e) => `- ${e.category}/${e.key}: ${e.value}`)
       .join('\n')
 
-    // ─── Call Claude ───
+    // ─── Call Claude for visual direction ───
     const systemPrompt = `You are the visual director for Greenmood, a premium Belgian biophilic design brand.
 
 BRAND CONTEXT:
@@ -208,6 +219,63 @@ Respond with this JSON format:
       }
     }
 
+    // ─── Auto-select from Cloudinary (Jeremie only) ───
+    let autoSelection: {
+      status: 'selected' | 'needs_image'
+      selectedImage?: { url: string; publicId: string; width: number; height: number; score: number; reason: string }
+      alternatives?: Array<{ url: string; publicId: string; score: number; reason: string }>
+      message?: string
+    } | null = null
+
+    let overlayResult: {
+      applied: boolean
+      template?: string
+      url?: string
+      publicId?: string
+      reason?: string
+    } | null = null
+
+    if (canAutoSelect) {
+      autoSelection = await autoSelectImage({
+        direction,
+        caption: resolvedCaption,
+        platform: resolvedPlatform,
+      })
+
+      // If we selected an image, let the agent decide if it needs a text overlay
+      if (autoSelection?.status === 'selected' && autoSelection.selectedImage) {
+        const overlayDecision = await decideOverlay(resolvedCaption, resolvedPlatform)
+        if (overlayDecision && overlayDecision.overlayData) {
+          try {
+            const composed = await composeOverlayImage({
+              baseImageUrl: autoSelection.selectedImage.url,
+              overlayData: overlayDecision.overlayData,
+              width: direction.dimensions?.width || 1080,
+              height: direction.dimensions?.height || 1350,
+            })
+            overlayResult = {
+              applied: true,
+              template: overlayDecision.overlayData.template,
+              url: composed.url,
+              publicId: composed.publicId,
+              reason: overlayDecision.reason,
+            }
+            // Replace selected image with composed version
+            autoSelection.selectedImage = {
+              ...autoSelection.selectedImage,
+              url: composed.url,
+              publicId: composed.publicId,
+            }
+          } catch (err) {
+            console.error('Overlay composition failed:', err)
+            overlayResult = { applied: false, reason: 'composition_failed' }
+          }
+        } else {
+          overlayResult = { applied: false, reason: overlayDecision?.reason || 'not_needed' }
+        }
+      }
+    }
+
     const durationMs = Date.now() - startTime
 
     // ─── Log success ───
@@ -215,7 +283,7 @@ Respond with this JSON format:
       where: { id: agentRun.id },
       data: {
         status: AgentRunStatus.COMPLETED,
-        output: direction as any,
+        output: { ...direction, autoSelection, overlayResult } as any,
         durationMs,
         completedAt: new Date(),
       },
@@ -227,6 +295,8 @@ Respond with this JSON format:
       pomelliPrompt: direction.pomelliPrompt,
       dimensions: direction.dimensions,
       visualDirection: direction.visualDirection,
+      autoSelection,
+      overlayResult,
       durationMs,
     })
   } catch (error) {
@@ -240,5 +310,241 @@ Respond with this JSON format:
       },
       { status: 500 }
     )
+  }
+}
+
+/**
+ * Fetch candidates from Cloudinary and ask Haiku to pick the best match.
+ * Returns { status: 'selected', selectedImage, alternatives } or { status: 'needs_image' }.
+ */
+async function autoSelectImage({
+  direction,
+  caption,
+  platform,
+}: {
+  direction: any
+  caption: string
+  platform: string
+}) {
+  const folders = [
+    direction.cloudinarySuggestion?.primaryFolder,
+    ...(direction.cloudinarySuggestion?.alternativeFolders || []),
+  ].filter(Boolean) as string[]
+
+  // ─── Gather candidates from all suggested folders ───
+  const seen = new Set<string>()
+  const candidates: Array<{
+    url: string
+    publicId: string
+    width: number
+    height: number
+    format: string
+    tags: string[]
+    context: any
+    folder: string
+  }> = []
+
+  for (const folder of folders.slice(0, 3)) {
+    try {
+      const assets = await searchAssets({ folder, maxResults: 20 })
+      for (const a of assets) {
+        if (seen.has(a.publicId)) continue
+        if (a.format === 'mp4' || a.format === 'mov') continue // images only for now
+        seen.add(a.publicId)
+        candidates.push({
+          url: a.url,
+          publicId: a.publicId,
+          width: a.width,
+          height: a.height,
+          format: a.format,
+          tags: a.tags || [],
+          context: (a as any).context || {},
+          folder,
+        })
+      }
+    } catch (err) {
+      console.warn('searchAssets failed for folder:', folder, err)
+    }
+  }
+
+  if (candidates.length === 0) {
+    return {
+      status: 'needs_image' as const,
+      message: 'No images found in suggested folders. Generate via Pomelli or upload manually.',
+    }
+  }
+
+  // ─── Pre-filter by aspect ratio tolerance ───
+  const targetRatio = direction.dimensions?.width / direction.dimensions?.height || 1
+  const scored = candidates
+    .map((c) => {
+      const ratio = c.width / c.height
+      const ratioDistance = Math.abs(ratio - targetRatio) / targetRatio
+      return { ...c, ratioDistance }
+    })
+    .sort((a, b) => a.ratioDistance - b.ratioDistance)
+    .slice(0, 12) // top 12 by ratio match
+
+  // ─── Ask Haiku to pick best match against caption ───
+  const candidatesPrompt = scored
+    .map((c, i) => {
+      const tags = c.tags.slice(0, 8).join(', ') || 'no tags'
+      const ctx = c.context.originalName || c.publicId.split('/').pop() || ''
+      return `${i}. ${ctx} [${c.width}x${c.height}, ${c.folder}] tags: ${tags}`
+    })
+    .join('\n')
+
+  const pickResponse = await anthropic.messages.create({
+    model: MODELS.HAIKU,
+    max_tokens: 1024,
+    system: `You are selecting the best stock photo match for a social media post. Reply with valid JSON only.`,
+    messages: [
+      {
+        role: 'user',
+        content: `POST CAPTION: ${caption}
+PLATFORM: ${platform}
+VISUAL BRIEF: ${direction.visualDirection?.mood || ''}. ${direction.cloudinarySuggestion?.notes || ''}
+
+CANDIDATES (choose the best and 2 alternatives):
+${candidatesPrompt}
+
+Return JSON:
+{
+  "topPick": { "index": 0, "score": 0.92, "reason": "close-up ball moss texture matches acoustic angle" },
+  "alternatives": [
+    { "index": 3, "score": 0.78, "reason": "office context, but less dramatic" },
+    { "index": 5, "score": 0.71, "reason": "right ratio but more decorative" }
+  ]
+}`,
+      },
+    ],
+  })
+
+  const pickText = pickResponse.content.find((b) => b.type === 'text')
+  if (!pickText || pickText.type !== 'text') {
+    return {
+      status: 'needs_image' as const,
+      message: 'Scoring model returned no response.',
+    }
+  }
+
+  let pick: any
+  try {
+    pick = JSON.parse(pickText.text)
+  } catch {
+    const m = pickText.text.match(/\{[\s\S]*\}/)
+    if (!m) {
+      return {
+        status: 'needs_image' as const,
+        message: 'Could not parse scoring response.',
+      }
+    }
+    pick = JSON.parse(m[0])
+  }
+
+  const topIdx = pick.topPick?.index
+  const top = typeof topIdx === 'number' ? scored[topIdx] : null
+  if (!top) {
+    return {
+      status: 'needs_image' as const,
+      message: 'Scoring picked an invalid candidate.',
+    }
+  }
+
+  const alternatives = (pick.alternatives || [])
+    .map((alt: any) => {
+      const c = scored[alt.index]
+      if (!c) return null
+      return {
+        url: c.url,
+        publicId: c.publicId,
+        score: alt.score,
+        reason: alt.reason,
+      }
+    })
+    .filter(Boolean)
+    .slice(0, 3)
+
+  return {
+    status: 'selected' as const,
+    selectedImage: {
+      url: top.url,
+      publicId: top.publicId,
+      width: top.width,
+      height: top.height,
+      score: pick.topPick?.score || 0,
+      reason: pick.topPick?.reason || '',
+    },
+    alternatives,
+  }
+}
+
+/**
+ * Ask Claude Haiku whether this post's caption warrants a text overlay,
+ * and if so which template and what data to render.
+ * Returns null when nothing is parseable.
+ */
+async function decideOverlay(
+  caption: string,
+  platform: string
+): Promise<{ overlayData: OverlayData | null; reason: string } | null> {
+  const response = await anthropic.messages.create({
+    model: MODELS.HAIKU,
+    max_tokens: 800,
+    system: `You decide whether a social media post needs a text overlay on its image.
+Most posts do NOT need an overlay (product shots, lifestyle, project photos, generic captions).
+ONLY recommend an overlay when the caption strongly fits one of these 4 templates:
+
+- "quote": a memorable quote or declaration attributed to a person. Extract quote + attribution.
+- "stat": a strong numerical claim (e.g. "NRC 0.73", "10 years lifespan", "5-11x lower cost").
+- "event": an announcement of a trade show, launch, or date-specific event.
+- "product": introducing a specific named product with 1-3 short specs worth highlighting as pills.
+
+Reply ONLY with valid JSON. Use this shape:
+{ "needsOverlay": true, "template": "quote", "reason": "...", "data": { ...template fields } }
+OR
+{ "needsOverlay": false, "reason": "standard product shot, caption doesn't need overlay" }
+
+Template data fields:
+- quote: { "quote": "...", "attribution": "Name, Title" }
+- stat: { "stat": "0.73", "label": "NRC Rating", "context": "Ball Moss" }
+- event: { "eventName": "...", "date": "Jun 10-12", "location": "Chicago", "cta": "Visit us at booth 42" }
+- product: { "productName": "Mario Pouf", "specs": ["NRC 0.35", "Expanded Cork", "5 kg"] }`,
+    messages: [
+      {
+        role: 'user',
+        content: `CAPTION: ${caption}\nPLATFORM: ${platform}`,
+      },
+    ],
+  })
+
+  const textBlock = response.content.find((b) => b.type === 'text')
+  if (!textBlock || textBlock.type !== 'text') return null
+
+  let parsed: any
+  try {
+    parsed = JSON.parse(textBlock.text)
+  } catch {
+    const m = textBlock.text.match(/\{[\s\S]*\}/)
+    if (!m) return null
+    try {
+      parsed = JSON.parse(m[0])
+    } catch {
+      return null
+    }
+  }
+
+  if (!parsed.needsOverlay) {
+    return { overlayData: null, reason: parsed.reason || 'not_needed' }
+  }
+
+  const template = parsed.template as OverlayData['template']
+  if (!['quote', 'stat', 'event', 'product'].includes(template)) {
+    return { overlayData: null, reason: 'invalid_template' }
+  }
+
+  return {
+    overlayData: { template, ...parsed.data } as OverlayData,
+    reason: parsed.reason || '',
   }
 }

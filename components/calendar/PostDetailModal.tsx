@@ -1346,28 +1346,76 @@ export function PostDetailModal({ slot, open, onClose, onUpdate, onDelete, sibli
           <div className="pt-3 border-t border-white/[0.06]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs uppercase tracking-wider text-gm-cream/40 font-semibold">AI Visual Brief</span>
-              <Button variant="outline" size="sm" loading={loadingVisual} onClick={async () => {
-                if (!slot?.post?.id) return
-                setLoadingVisual(true)
-                setVisualBrief(null)
-                try {
-                  const res = await fetch('/api/agents/image-director', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ postId: slot.post.id }),
-                  })
-                  const data = await res.json()
-                  if (data.success) setVisualBrief(data)
-                } catch { /* ignore */ }
-                setLoadingVisual(false)
-              }}>
-                {loadingVisual ? 'Generating...' : '✨ Suggest Visual'}
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" loading={loadingVisual} onClick={async () => {
+                  if (!slot?.post?.id) return
+                  setLoadingVisual(true)
+                  setVisualBrief(null)
+                  try {
+                    const res = await fetch('/api/agents/image-director', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ postId: slot.post.id }),
+                    })
+                    const data = await res.json()
+                    if (data.success) setVisualBrief(data)
+                  } catch { /* ignore */ }
+                  setLoadingVisual(false)
+                }}>
+                  {loadingVisual ? 'Generating...' : '✨ Suggest Visual'}
+                </Button>
+                <Button variant="primary" size="sm" loading={loadingVisual} onClick={async () => {
+                  if (!slot?.post?.id) return
+                  setLoadingVisual(true)
+                  setVisualBrief(null)
+                  try {
+                    const res = await fetch('/api/agents/image-director', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ postId: slot.post.id, autoSelect: true }),
+                    })
+                    const data = await res.json()
+                    if (data.success) {
+                      setVisualBrief(data)
+                      const imgUrl = data.overlayResult?.url || data.autoSelection?.selectedImage?.url
+                      if (imgUrl && variant?.id && slot?.post?.id) {
+                        setImageUrl(imgUrl)
+                        await fetch(`/api/posts/${slot.post.id}/variant`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ variantId: variant.id, imageUrl: imgUrl }),
+                        })
+                        onUpdate?.()
+                      } else if (data.autoSelection?.status === 'needs_image') {
+                        alert('No match found on Cloudinary. Please upload manually.')
+                      }
+                    }
+                  } catch { alert('Auto-select failed') }
+                  setLoadingVisual(false)
+                }}>
+                  {loadingVisual ? 'Working...' : '🎯 Auto-apply Image'}
+                </Button>
+              </div>
             </div>
-            <p className="text-xs text-gm-cream/25 mb-2">AI suggests visual direction, image source, and an AI generation prompt.</p>
+            <p className="text-xs text-gm-cream/25 mb-2">Suggest = brief only. Auto-apply = pick image from Cloudinary + compose text overlay if needed, then attach to the post.</p>
 
             {visualBrief && (
               <div className="space-y-3 bg-white/[0.03] rounded-xl p-4 border border-white/[0.06]">
+                {/* Auto-select result banner */}
+                {visualBrief.autoSelection?.status === 'selected' && (
+                  <div className="bg-gm-sage/10 border border-gm-sage/30 rounded-lg p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-gm-sage font-semibold mb-1">🎯 Image Applied</p>
+                    <p className="text-xs text-gm-cream/70">{visualBrief.autoSelection.selectedImage?.reason}</p>
+                    {visualBrief.overlayResult?.applied && (
+                      <p className="text-xs text-gm-sage/80 mt-1">✨ Text overlay composed ({visualBrief.overlayResult.template})</p>
+                    )}
+                  </div>
+                )}
+                {visualBrief.autoSelection?.status === 'needs_image' && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                    <p className="text-xs text-amber-400">⚠️ No match found. Upload manually or browse library.</p>
+                  </div>
+                )}
                 {/* Visual Direction */}
                 <div>
                   <p className="text-[10px] uppercase tracking-wider text-gm-cream/40 font-semibold mb-1">Direction</p>
