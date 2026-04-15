@@ -184,16 +184,6 @@ export function CloudinaryPicker({ open, onClose, onSelect, defaultFolder, platf
                 {r.label} ({r.width}x{r.height})
               </button>
             ))}
-            <button
-              onClick={() => setSelectedRatio(-1)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                selectedRatio === -1
-                  ? 'bg-white/[0.1] text-gm-cream/70 border border-white/20'
-                  : 'bg-white/[0.04] text-gm-cream/30 border border-white/[0.06] hover:text-gm-cream/50'
-              }`}
-            >
-              Original
-            </button>
           </div>
         </div>
       )}

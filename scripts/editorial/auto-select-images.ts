@@ -10,6 +10,7 @@ import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import Anthropic from '@anthropic-ai/sdk'
 import { v2 as cloudinary } from 'cloudinary'
+import { cloudinaryTransformUrl } from '../../lib/image-validation'
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dzbbql3do',
@@ -218,7 +219,18 @@ async function autoSelectForPost(p: UpcomingPost, verbose = false): Promise<{ st
   const chosen = scored[pick.index]
   if (!chosen) return { status: 'needs_image', reason: 'invalid_pick' }
 
-  return { status: 'selected', url: chosen.url, reason: pick.reason }
+  // Transform URL to the correct aspect ratio for the platform
+  // Instagram feed: 1080x1350 (4:5) best for engagement
+  // Instagram stories: 1080x1920 (9:16)
+  // LinkedIn: 1080x1080 (1:1)
+  const dims = p.platform === 'stories'
+    ? { w: 1080, h: 1920 }
+    : p.platform === 'linkedin'
+    ? { w: 1080, h: 1080 }
+    : { w: 1080, h: 1350 } // Instagram default to 4:5 portrait
+  const transformedUrl = cloudinaryTransformUrl(chosen.url, dims.w, dims.h)
+
+  return { status: 'selected', url: transformedUrl, reason: pick.reason }
 }
 
 async function main() {

@@ -148,9 +148,18 @@ export async function getImageDimensionsFromUrl(
   url: string
 ): Promise<{ width: number; height: number } | null> {
   try {
-    // Cloudinary: use fl_getinfo trick
-    if (url.includes('cloudinary.com')) {
-      // Insert fl_getinfo before the file extension
+    // Cloudinary: if URL already has width/height transformations (c_fill,w_1080,h_1350),
+    // those are the output dimensions — use them directly instead of fetching source dims.
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+      const transformMatch = url.match(/\/upload\/([^/]+)\//)
+      if (transformMatch) {
+        const wMatch = transformMatch[1].match(/(?:^|,)w_(\d+)(?:$|,)/)
+        const hMatch = transformMatch[1].match(/(?:^|,)h_(\d+)(?:$|,)/)
+        if (wMatch && hMatch) {
+          return { width: parseInt(wMatch[1], 10), height: parseInt(hMatch[1], 10) }
+        }
+      }
+      // No explicit dimensions in URL — use fl_getinfo to read source
       const infoUrl = url.replace(/\/upload\//, '/upload/fl_getinfo/')
       const res = await fetch(infoUrl)
       if (res.ok) {
