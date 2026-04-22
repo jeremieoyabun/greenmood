@@ -207,7 +207,13 @@ export default function CalendarPage() {
 
   // Create post with text, image, hashtags — supports multi-market/platform
   const createPost = async () => {
-    if (!selectedDate || !newText.trim()) return
+    if (!selectedDate) return
+    // Stories: text is optional, just need at least one slide with text or media
+    if (isStoryMode) {
+      if (storySlides.every((s) => !s.media && !s.text)) return
+    } else {
+      if (!newText.trim()) return
+    }
     setCreating(true)
 
     // Build list of market+platform combos
@@ -218,6 +224,14 @@ export default function CalendarPage() {
     try {
       let successCount = 0
       for (const combo of combos) {
+        // In story mode, the "main text" is the concatenated slide texts (stored in notes as JSON too)
+        const storyText = isStoryMode
+          ? storySlides.filter((s) => s.text).map((s, i) => `${i + 1}. ${s.text}`).join('\n')
+          : newText
+        const storyNotes = isStoryMode
+          ? JSON.stringify({ storySlides: storySlides.map((s) => ({ text: s.text, visual: null })) })
+          : (newSlot.notes || null)
+
         const res = await fetch('/api/posts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -226,19 +240,35 @@ export default function CalendarPage() {
             time: newSlot.time,
             market: combo.market,
             platform: combo.platform,
-            text: newText,
-            hashtags: newHashtags || null,
-            firstComment: newFirstComment || null,
-            imageUrl: newImage || null,
-            notes: newSlot.notes || null,
-            isCarousel: newCarousel,
+            text: storyText,
+            hashtags: isStoryMode ? null : (newHashtags || null),
+            firstComment: isStoryMode ? null : (newFirstComment || null),
+            imageUrl: isStoryMode ? (storySlides[0]?.media || null) : (newImage || null),
+            notes: storyNotes,
+            isCarousel: isStoryMode ? storySlides.length > 1 : newCarousel,
           }),
         })
         const data = await res.json()
         if (data.success) {
           successCount++
+
+          // Story mode: upload each slide media as post_media
+          if (isStoryMode && data.data?.id) {
+            for (let i = 0; i < storySlides.length; i++) {
+              const slide = storySlides[i]
+              if (!slide.media) continue
+              try {
+                await fetch(`/api/posts/${data.data.id}/media/register`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url: slide.media, mediaType: 'image', sortOrder: i }),
+                })
+              } catch (e) { console.error('Story slide media register failed:', e) }
+            }
+          }
+
           // Upload carousel images if any
-          if (newCarousel && newCarouselImages.length > 0 && data.data?.id) {
+          if (!isStoryMode && newCarousel && newCarouselImages.length > 0 && data.data?.id) {
             const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
             const folder = `greenmood/social/${combo.platform}/${combo.market}`
             for (let i = 0; i < newCarouselImages.length; i++) {

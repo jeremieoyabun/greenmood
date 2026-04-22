@@ -8,8 +8,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { date, time, market, platform, text, hashtags, firstComment, imageUrl, notes, isCarousel } = body
 
-    if (!date || !text) {
-      return NextResponse.json({ success: false, error: 'date and text are required' }, { status: 400 })
+    // Stories can have no text (slides carry their own text overlays)
+    if (!date) {
+      return NextResponse.json({ success: false, error: 'date is required' }, { status: 400 })
+    }
+    if (!text && platform !== 'stories') {
+      return NextResponse.json({ success: false, error: 'text is required (except for stories)' }, { status: 400 })
     }
 
     const post = await prisma.post.create({
@@ -22,7 +26,7 @@ export async function POST(req: NextRequest) {
         variants: {
           create: {
             version: 1,
-            text,
+            text: text || '',
             hashtags: hashtags || null,
             firstComment: firstComment || null,
             imageUrl: imageUrl || null,
