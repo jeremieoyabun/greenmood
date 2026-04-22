@@ -787,12 +787,28 @@ export default function CalendarPage() {
 
                   {/* Media upload */}
                   <div className="p-3">
-                    <input type="file" accept="image/*,video/*" id={`story-slide-${i}`} className="hidden" onChange={(e) => {
+                    <input type="file" accept="image/*,video/*" id={`story-slide-${i}`} className="hidden" onChange={async (e) => {
                       const f = e.target.files?.[0]
-                      if (f) {
-                        const r = new FileReader()
-                        r.onload = (ev) => setStorySlides(prev => prev.map((s, idx) => idx === i ? { ...s, media: ev.target?.result as string } : s))
-                        r.readAsDataURL(f)
+                      if (!f) return
+                      // Upload directly to Cloudinary to avoid giant base64 payloads
+                      try {
+                        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
+                        const market = newSlot.market || 'hq'
+                        const folder = `greenmood/social/stories/${market}`
+                        const form = new FormData()
+                        form.append('file', f)
+                        form.append('upload_preset', 'greenmood_upload')
+                        form.append('folder', folder)
+                        form.append('tags', `stories,${market},slide:${i + 1}`)
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: form })
+                        const data = await res.json()
+                        if (data.secure_url) {
+                          setStorySlides(prev => prev.map((s, idx) => idx === i ? { ...s, media: data.secure_url } : s))
+                        } else {
+                          alert('Upload failed: ' + (data.error?.message || 'unknown error'))
+                        }
+                      } catch (err) {
+                        alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)))
                       }
                     }} />
                     {slide.media ? (
