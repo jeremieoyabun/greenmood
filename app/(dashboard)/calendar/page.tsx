@@ -223,6 +223,7 @@ export default function CalendarPage() {
 
     try {
       let successCount = 0
+      let lastError: string | null = null
       for (const combo of combos) {
         // In story mode, the "main text" is the concatenated slide texts (stored in notes as JSON too)
         const storyText = isStoryMode
@@ -249,6 +250,10 @@ export default function CalendarPage() {
           }),
         })
         const data = await res.json()
+        if (!data.success) {
+          lastError = data.error || `HTTP ${res.status}`
+          console.error('Post create failed:', lastError, data)
+        }
         if (data.success) {
           successCount++
 
@@ -301,9 +306,12 @@ export default function CalendarPage() {
         resetForm()
         fetchSlots()
       } else {
-        alert('Failed to create posts')
+        alert('Failed to create posts' + (lastError ? ': ' + lastError : ''))
       }
-    } catch { alert('Failed to create post') }
+    } catch (err) {
+      console.error('createPost error:', err)
+      alert('Failed to create post: ' + (err instanceof Error ? err.message : String(err)))
+    }
     setCreating(false)
   }
 
