@@ -956,17 +956,33 @@ export default function CalendarPage() {
                 ) : (
                   /* ─── SINGLE: One image/video ─── */
                   <>
-                    <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={(e) => {
+                    <input type="file" accept="image/*,video/*" id="new-post-img" className="hidden" onChange={async (e) => {
                       const f = e.target.files?.[0]
-                      if (f) {
-                        const r = new FileReader()
-                        r.onload = (ev) => setNewImage(ev.target?.result as string)
-                        r.readAsDataURL(f)
+                      if (!f) return
+                      try {
+                        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dzbbql3do'
+                        const market = newSlot.market || 'hq'
+                        const platform = newSlot.platform || 'instagram'
+                        const folder = `greenmood/social/${platform}/${market}`
+                        const form = new FormData()
+                        form.append('file', f)
+                        form.append('upload_preset', 'greenmood_upload')
+                        form.append('folder', folder)
+                        form.append('tags', `${platform},${market}`)
+                        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: form })
+                        const data = await res.json()
+                        if (data.secure_url) {
+                          setNewImage(data.secure_url)
+                        } else {
+                          alert('Upload failed: ' + (data.error?.message || 'unknown error'))
+                        }
+                      } catch (err) {
+                        alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)))
                       }
                     }} />
                     {newImage ? (
                       <div className="relative rounded-xl overflow-hidden cursor-pointer group border border-white/[0.08]" onClick={() => document.getElementById('new-post-img')?.click()}>
-                        {newImage.startsWith('data:video') ? (
+                        {(newImage.startsWith('data:video') || /\.(mp4|mov|webm)(\?|$)/i.test(newImage) || newImage.includes('/video/upload/')) ? (
                           <video src={newImage} className="w-full max-h-80 object-cover" controls muted />
                         ) : (
                           <img src={newImage} alt="" className="w-full max-h-80 object-cover" />
