@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Greenmood — Brochure 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+@page { size: 755mm 225mm; margin: 0; }
+
+@font-face { font-family: 'Juana Alt'; font-weight: 300; src: url('./Juana-Font/Juana Alt Light.ttf') format('truetype'); }
+@font-face { font-family: 'Juana Alt'; font-weight: 400; src: url('./Juana-Font/Juana Alt Regular.ttf') format('truetype'); }
+@font-face { font-family: 'Juana Alt'; font-weight: 600; src: url('./Juana-Font/Juana Alt SemiBold.ttf') format('truetype'); }
+
+:root {
+  --paper: #F4EFE6;
+  --ink: #1A1A1A;
+  --moss: #1F3D1A;
+  --hair: rgba(31, 61, 26, 0.55);
+  --muted: rgba(26, 26, 26, 0.55);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: #cfcac0;
+  font-family: 'Juana Alt', Georgia, serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "kern" 1, "liga" 1, "lnum" 1;
+}
+
+/* ─── SHEET ─── */
+.sheet {
+  width: 755mm;
+  height: 225mm;
+  background: var(--paper);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  margin: 8mm auto;
+  position: relative;
+  page-break-after: always;
+  box-shadow: 0 0.6mm 4mm rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+
+.panel {
+  height: 225mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-inner {
+  padding: 22mm 18mm;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 2;
+}
+
+/* ─── TYPE SCALE ─── */
+.eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 7pt;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--moss);
+}
+.smallcaps {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 6.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.smallcaps-muted {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 6.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+h1.cover-display {
+  font-family: 'Juana Alt', serif;
+  font-weight: 300;
+  font-size: 38pt;
+  line-height: 1.0;
+  letter-spacing: -0.025em;
+}
+h1.spread-display {
+  font-family: 'Juana Alt', serif;
+  font-weight: 300;
+  font-size: 32pt;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+}
+h2.section {
+  font-family: 'Juana Alt', serif;
+  font-weight: 400;
+  font-size: 22pt;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+}
+h2.section-large {
+  font-family: 'Juana Alt', serif;
+  font-weight: 300;
+  font-size: 26pt;
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+}
+
+p.body {
+  font-family: 'Juana Alt', serif;
+  font-weight: 400;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ink);
+  max-width: 80%;
+}
+
+/* ─── ELEMENTS ─── */
+.hairline {
+  width: 14mm;
+  height: 0;
+  border-top: 0.3pt solid var(--moss);
+}
+.hairline-light { border-top-color: rgba(244,239,230,0.45); }
+
+.bg-img {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+.bg-img.dim::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.55) 100%);
+}
+
+.on-image {
+  color: var(--paper);
+}
+.on-image .eyebrow {
+  color: rgba(244,239,230,0.85);
+}
+.on-image .smallcaps,
+.on-image .smallcaps-muted {
+  color: rgba(244,239,230,0.85);
+}
+
+/* Logo */
+.gm-logo {
+  font-family: 'Juana Alt', serif;
+  font-weight: 600;
+  font-size: 9pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.gm-logo.on-image { color: var(--paper); }
+
+/* QR */
+.qr {
+  width: 24mm;
+  height: 24mm;
+  background:
+    radial-gradient(var(--ink) 30%, transparent 31%) 0 0/3mm 3mm,
+    var(--paper);
+  background-color: var(--paper);
+  /* Visual QR placeholder: real QR replaces this on print */
+}
+
+/* Pillar */
+.pillar {
+  display: grid;
+  grid-template-columns: 11mm 1fr;
+  gap: 0;
+  align-items: baseline;
+  padding: 5mm 0;
+  border-top: 0.3pt solid var(--hair);
+}
+.pillar:last-child { border-bottom: 0.3pt solid var(--hair); }
+.pillar-num {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 7pt;
+  letter-spacing: 0.2em;
+  color: var(--moss);
+}
+.pillar-text {
+  font-family: 'Juana Alt', serif;
+  font-weight: 400;
+  font-size: 11pt;
+  line-height: 1.35;
+  color: var(--ink);
+}
+.pillar-text strong {
+  font-weight: 400;
+  display: block;
+  font-size: 12pt;
+  margin-bottom: 0.5mm;
+}
+
+/* Inline statement list */
+.statements {
+  display: flex;
+  flex-direction: column;
+  gap: 3mm;
+}
+.statements .line {
+  font-family: 'Juana Alt', serif;
+  font-weight: 400;
+  font-size: 10pt;
+  color: var(--ink);
+}
+.dash-list {
+  font-family: 'Juana Alt', serif;
+  font-weight: 400;
+  font-size: 9.5pt;
+  color: var(--ink);
+}
+
+/* Print rules */
+@media print {
+  body { background: white; }
+  .sheet { margin: 0; box-shadow: none; }
+  .preview-controls { display: none; }
+}
+
+.preview-controls {
+  position: fixed;
+  bottom: 12mm;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 3mm 6mm;
+  border-radius: 100px;
+  box-shadow: 0 2mm 8mm rgba(0,0,0,0.15);
+  font: 500 9pt 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4mm;
+  z-index: 100;
+}
+.preview-controls button {
+  background: var(--ink);
+  color: white;
+  border: none;
+  padding: 2mm 6mm;
+  border-radius: 100px;
+  font: 500 9pt 'Inter', sans-serif;
+  cursor: pointer;
+}
+
+@media screen {
+  .fold {
+    position: absolute;
+    top: 0; bottom: 0;
+    border-left: 0.2mm dashed rgba(0,0,0,0.08);
+    z-index: 5;
+    pointer-events: none;
+  }
+  .fold:nth-of-type(1) { left: 20%; }
+  .fold:nth-of-type(2) { left: 40%; }
+  .fold:nth-of-type(3) { left: 60%; }
+  .fold:nth-of-type(4) { left: 80%; }
+  .face-label {
+    position: absolute;
+    top: 6mm; left: 6mm;
+    font: 500 6pt 'Inter', sans-serif;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(0,0,0,0.25);
+    z-index: 8;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ OUTSIDE — A5 | A4 | A3 | A2 | A1 ═══════════ -->
+<div class="sheet">
+  <span class="face-label">Outside</span>
+  <div class="fold"></div><div class="fold"></div><div class="fold"></div><div class="fold"></div>
+
+  <!-- A5 — COVER -->
+  <div class="panel">
+    <div class="bg-img dim" style="background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_900,h_1400,g_auto,q_auto,f_auto/Greenmood-22-11-24-RS-169_p1hmxd.jpg');"></div>
+    <div class="panel-inner on-image">
+      <span class="gm-logo on-image">Greenmood</span>
+
+      <div style="margin-top: auto;">
+        <span class="smallcaps" style="color: rgba(244,239,230,0.7);">Brochure 2026</span>
+        <h1 class="cover-display" style="margin-top: 8mm; color: var(--paper);">Acoustic surfaces,<br>naturally.</h1>
+        <p class="smallcaps-muted" style="margin-top: 14mm; color: rgba(244,239,230,0.65);">Preserved moss · Cork · Natural plants<br>Made in Europe since 2014</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- A4 — BRAND INTRO -->
+  <div class="panel">
+    <div class="panel-inner">
+      <span class="eyebrow">Greenmood</span>
+      <h2 class="section-large" style="margin-top: 8mm;">What we make.</h2>
+
+      <div class="hairline" style="margin: 8mm 0;"></div>
+
+      <p class="body">
+        Greenmood designs acoustic and decorative interior surfaces from preserved plants, moss, and cork — for architects and specifiers who value design, longevity, and zero maintenance.
+      </p>
+
+      <div style="margin-top: 12mm;">
+        <p class="dash-list">Custom-made&nbsp; — &nbsp;European craftsmanship&nbsp; — &nbsp;Design-led collections</p>
+      </div>
+
+      <div style="margin-top: auto;">
+        <div style="width: 100%; aspect-ratio: 4/5; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_700,h_900,g_auto,q_auto,f_auto/Lichen_Moss_Ceiling_1_gv9u8q.jpg'); background-size: cover; background-position: center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A3 — WHY GREENMOOD (purely typographic) -->
+  <div class="panel">
+    <div class="panel-inner">
+      <span class="eyebrow">Specification</span>
+      <h2 class="section-large" style="margin-top: 8mm;">Four reasons<br>architects specify us.</h2>
+
+      <div style="margin-top: 14mm;">
+        <div class="pillar">
+          <span class="pillar-num">01</span>
+          <p class="pillar-text"><strong>Natural materials.</strong>Preserved plants, moss, and cork chosen for permanence.</p>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">02</span>
+          <p class="pillar-text"><strong>Zero maintenance.</strong>No watering, no sunlight, no irrigation system.</p>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">03</span>
+          <p class="pillar-text"><strong>Acoustic comfort.</strong>Aesthetic surfaces with measurable absorption.</p>
+        </div>
+        <div class="pillar">
+          <span class="pillar-num">04</span>
+          <p class="pillar-text"><strong>Specification support.</strong>Custom sizing and project guidance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A2 — MATERIAL FOCUS -->
+  <div class="panel">
+    <div class="panel-inner" style="padding: 0;">
+      <div style="height: 65%; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_700,h_900,g_auto,q_auto,f_auto/greenmood/acoustic-solutions/ball-moss/Mousse_boule_5.jpg'); background-size: cover; background-position: center;"></div>
+      <div style="padding: 14mm 18mm 22mm; height: 35%; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="eyebrow">Materials</span>
+          <h2 class="section" style="margin-top: 6mm;">What we work with.</h2>
+        </div>
+        <p class="dash-list">Preserved moss&nbsp; — &nbsp;Cork&nbsp; — &nbsp;Natural plants</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- A1 — BACK / CONTACT (minimal) -->
+  <div class="panel">
+    <div class="panel-inner">
+      <span class="gm-logo">Greenmood</span>
+
+      <div style="margin: auto 0;">
+        <span class="eyebrow">Continue</span>
+        <h2 class="section" style="margin-top: 8mm;">greenmood.be</h2>
+        <p class="smallcaps-muted" style="margin-top: 12mm;">Request samples<br>Talk to our specification team</p>
+      </div>
+
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm;">
+        <div style="font-family: 'Inter', sans-serif; font-size: 7pt; line-height: 1.5; color: var(--muted); letter-spacing: 0.05em;">
+          hello@greenmood.be<br>Brussels, Belgium
+        </div>
+        <div class="qr" aria-label="QR code"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ INSIDE — B1 | B2 | B3 | B4 | B5 ═══════════ -->
+<div class="sheet">
+  <span class="face-label">Inside</span>
+  <div class="fold"></div><div class="fold"></div><div class="fold"></div><div class="fold"></div>
+
+  <!-- B1 + B2 — DOUBLE HERO SPREAD -->
+  <div class="panel" style="grid-column: span 2;">
+    <div class="bg-img dim" style="background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_1700,h_1100,g_auto,q_auto,f_auto/greenmood/projects/hungary/cloud-ix-budapest/cloud-ix-trendo-dental-forest-reception.jpg');"></div>
+    <div class="panel-inner on-image" style="padding: 22mm 18mm;">
+      <div style="margin-top: auto; max-width: 65%;">
+        <span class="eyebrow" style="color: rgba(244,239,230,0.7);">The Collection</span>
+        <h1 class="spread-display" style="margin-top: 10mm; color: var(--paper);">Surfaces shaped<br>by nature, made<br>for architecture.</h1>
+        <div class="hairline hairline-light" style="margin: 10mm 0; border-color: rgba(244,239,230,0.4);"></div>
+        <p class="body" style="color: rgba(244,239,230,0.85); max-width: 100%;">
+          Greenmood works with architects to specify natural acoustic and decorative surfaces — moss, cork, preserved foliage — engineered for permanence.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- B3 — ACOUSTIC WALLS -->
+  <div class="panel">
+    <div class="panel-inner" style="padding: 0;">
+      <div style="height: 60%; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_700,h_900,g_auto,q_auto,f_auto/greenmood/acoustic-solutions/ball-moss/Mousse_boule_3.jpg'); background-size: cover; background-position: center;"></div>
+      <div style="padding: 14mm 18mm 22mm; height: 40%; display: flex; flex-direction: column;">
+        <span class="eyebrow">Walls</span>
+        <h2 class="section" style="margin-top: 6mm;">Acoustic walls.</h2>
+        <p class="body" style="margin-top: 8mm;">
+          Custom-made walls in preserved Ball Moss, Reindeer Moss, Velvet Leaf, and Forest. Engineered for permanent installation. Hand-built in Bogdaniec, Poland.
+        </p>
+        <div style="margin-top: auto; padding-top: 8mm; border-top: 0.3pt solid var(--hair);">
+          <span class="smallcaps">NRC up to 0.73 — ISO 11654</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B4 — DESIGN COLLECTION + CORK -->
+  <div class="panel">
+    <div class="panel-inner">
+      <span class="eyebrow">Collection</span>
+      <h2 class="section" style="margin-top: 6mm;">Design + cork.</h2>
+      <span class="smallcaps-muted" style="margin-top: 4mm;">In collaboration with Alain Gilles</span>
+
+      <p class="body" style="margin-top: 10mm;">
+        Cork tiles, poufs, planters, and suspended pieces — designed to specify alongside our acoustic walls.
+      </p>
+
+      <div style="margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 6mm;">
+        <div style="aspect-ratio: 4/5; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_500,h_625,g_auto,q_auto,f_auto/Sillon-04_ndol3b.png'); background-size: cover; background-position: center;"></div>
+        <div style="aspect-ratio: 4/5; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_500,h_625,g_auto,q_auto,f_auto/greenmood/products/pouf/terra/Greenmood_Terra_pouf-2026-04_eguiqf.jpg'); background-size: cover; background-position: center;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B5 — CUSTOM + FINAL CTA -->
+  <div class="panel">
+    <div class="panel-inner" style="padding: 0;">
+      <div style="height: 50%; background-image: url('https://res.cloudinary.com/dzbbql3do/image/upload/c_fill,w_700,h_700,g_auto,q_auto,f_auto/Greenmood-22-11-24-RS-167_qyjyrn.jpg'); background-size: cover; background-position: center;"></div>
+      <div style="padding: 14mm 18mm 22mm; height: 50%; display: flex; flex-direction: column;">
+        <span class="eyebrow">Custom</span>
+        <h2 class="section" style="margin-top: 6mm;">Custom-made<br>for your project.</h2>
+
+        <div class="statements" style="margin-top: 10mm;">
+          <p class="line">Custom dimensions and shapes.</p>
+          <p class="line">Tailored fillings and finishes.</p>
+          <p class="line">Integrated brand logos.</p>
+          <p class="line">Sampling on request.</p>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 10mm; display: flex; justify-content: space-between; align-items: flex-end; gap: 8mm; border-top: 0.3pt solid var(--hair);">
+          <p class="smallcaps">Talk to us<br>greenmood.be</p>
+          <div class="qr" style="width: 18mm; height: 18mm;" aria-label="QR code"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="preview-controls">
+  <span style="color: rgba(0,0,0,0.55);">Greenmood 2026 · accordion · 755 × 225 mm · 5 + 5</span>
+  <button onclick="window.print()">Print / Export PDF</button>
+</div>
+
+</body>
+</html>
