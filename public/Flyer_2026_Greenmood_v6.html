@@ -285,17 +285,26 @@ img { display: block; max-width: 100%; max-height: 100%; }
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: 3mm;
+  min-height: 0;
 }
 .uni-card {
   display: flex;
   flex-direction: column;
   background: #fff;
   overflow: hidden;
+  min-height: 0;
+  height: 100%;
 }
-.uni-card .uni-img { flex: 1; overflow: hidden; }
+.uni-card .uni-img {
+  flex: 1 1 auto;
+  overflow: hidden;
+  min-height: 0;
+}
 .uni-card .uni-foot {
+  flex: 0 0 auto;
   padding: 2.5mm 3mm 3mm;
   border-top: 0.2mm solid var(--hair);
+  background: #fff;
 }
 .uni-num {
   font-family: 'Inter', sans-serif;
