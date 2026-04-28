@@ -15,6 +15,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { PostDetailModal } from '@/components/calendar/PostDetailModal'
+import { CloudinaryPicker } from '@/components/ui/CloudinaryPicker'
 import { SocialIcon } from '@/components/ui/SocialIcon'
 import { FlagIcon } from '@/components/ui/FlagIcon'
 import { MARKETS, PLATFORMS } from '@/lib/constants'
@@ -99,7 +100,8 @@ export default function CalendarPage() {
   const [newFirstComment, setNewFirstComment] = useState('')
   const [newImage, setNewImage] = useState<string | null>(null)
   const [newCarousel, setNewCarousel] = useState(false)
-  const [newCarouselImages, setNewCarouselImages] = useState<Array<{ data: string; file: File }>>([])
+  const [newCarouselImages, setNewCarouselImages] = useState<Array<{ data: string; file?: File; cloudinaryUrl?: string }>>([])
+  const [showLibrary, setShowLibrary] = useState<'single' | 'carousel' | null>(null)
   const [dragNewIdx, setDragNewIdx] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
   const [genHash, setGenHash] = useState(false)
@@ -278,22 +280,32 @@ export default function CalendarPage() {
             const folder = `greenmood/social/${combo.platform}/${combo.market}`
             for (let i = 0; i < newCarouselImages.length; i++) {
               try {
-                const carouselFile = newCarouselImages[i].file
-                const cleanName = carouselFile.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
-                const formData = new FormData()
-                formData.append('file', carouselFile)
-                formData.append('upload_preset', 'greenmood_upload')
-                formData.append('folder', folder)
-                formData.append('tags', `${combo.platform},${combo.market},post:${data.data.id},carousel`)
-                formData.append('context', `original_name=${carouselFile.name}|post_id=${data.data.id}|slide=${i+1}`)
-                formData.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
-                const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: formData })
-                const cloudData = await cloudRes.json()
-                if (cloudData.secure_url) {
+                const item = newCarouselImages[i]
+                let mediaUrl: string | null = null
+
+                if (item.cloudinaryUrl) {
+                  // Picked from library — already a Cloudinary URL, no re-upload needed
+                  mediaUrl = item.cloudinaryUrl
+                } else if (item.file) {
+                  const carouselFile = item.file
+                  const cleanName = carouselFile.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9-_ ]/g, '-')
+                  const formData = new FormData()
+                  formData.append('file', carouselFile)
+                  formData.append('upload_preset', 'greenmood_upload')
+                  formData.append('folder', folder)
+                  formData.append('tags', `${combo.platform},${combo.market},post:${data.data.id},carousel`)
+                  formData.append('context', `original_name=${carouselFile.name}|post_id=${data.data.id}|slide=${i+1}`)
+                  formData.append('public_id', `${folder}/${cleanName}-${Date.now()}`)
+                  const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: formData })
+                  const cloudData = await cloudRes.json()
+                  if (cloudData.secure_url) mediaUrl = cloudData.secure_url
+                }
+
+                if (mediaUrl) {
                   await fetch(`/api/posts/${data.data.id}/media/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: cloudData.secure_url, mediaType: 'image', sortOrder: i }),
+                    body: JSON.stringify({ url: mediaUrl, mediaType: 'image', sortOrder: i }),
                   })
                 }
               } catch (e) { console.error('Carousel upload failed:', e) }
@@ -946,11 +958,18 @@ export default function CalendarPage() {
                     )}
 
                     {newCarouselImages.length < 10 && (
-                      <button onClick={() => document.getElementById('new-carousel-imgs')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/[0.02]">
-                        <span className="text-2xl opacity-20">+</span>
-                        <span className="text-sm text-gm-cream/30">{newCarouselImages.length === 0 ? 'Add carousel images' : 'Add more images'}</span>
-                        <span className="text-xs text-gm-cream/15">Select multiple files at once</span>
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => document.getElementById('new-carousel-imgs')?.click()} className="rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-6 flex flex-col items-center gap-1.5 cursor-pointer hover:bg-white/[0.02]">
+                          <span className="text-2xl opacity-20">+</span>
+                          <span className="text-sm text-gm-cream/30">{newCarouselImages.length === 0 ? 'Upload images' : 'Upload more'}</span>
+                          <span className="text-[10px] text-gm-cream/15">From your computer</span>
+                        </button>
+                        <button onClick={() => setShowLibrary('carousel')} className="rounded-xl border-2 border-dashed border-gm-sage/20 hover:border-gm-sage/50 transition-all p-6 flex flex-col items-center gap-1.5 cursor-pointer hover:bg-gm-sage/[0.04] bg-gm-sage/[0.02]">
+                          <span className="text-2xl opacity-30">📚</span>
+                          <span className="text-sm text-gm-sage/70">Pick from Library</span>
+                          <span className="text-[10px] text-gm-sage/40">Cloudinary assets</span>
+                        </button>
+                      </div>
                     )}
                   </>
                 ) : (
@@ -992,20 +1011,28 @@ export default function CalendarPage() {
                         </div>
                       </div>
                     ) : (
-                      <button onClick={() => document.getElementById('new-post-img')?.click()} className="w-full rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-12 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/[0.02]">
-                        <span className="text-4xl opacity-20">+</span>
-                        <span className="text-sm text-gm-cream/30">Click to add image or video</span>
-                        <span className="text-xs text-gm-cream/15">JPG, PNG, MP4, MOV</span>
-                        <span className="text-[10px] text-gm-sage/30 mt-1">{
-                          {
-                            instagram: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
-                            linkedin: '1080 × 1080 px (1:1) recommended',
-                            stories: '1080 × 1920 px (9:16)',
-                            facebook: '1080 × 1350 px (4:5) or 1080 × 1080 px (1:1)',
-                            tiktok: '1080 × 1920 px (9:16)',
-                          }[multiPlatforms[0] || newSlot.platform] || '1080 × 1080 px'
-                        }</span>
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button onClick={() => document.getElementById('new-post-img')?.click()} className="rounded-xl border-2 border-dashed border-white/[0.1] hover:border-gm-sage/30 transition-all p-10 flex flex-col items-center gap-2 cursor-pointer hover:bg-white/[0.02]">
+                          <span className="text-3xl opacity-20">+</span>
+                          <span className="text-sm text-gm-cream/30">Upload image / video</span>
+                          <span className="text-[10px] text-gm-cream/15">JPG, PNG, MP4, MOV</span>
+                          <span className="text-[10px] text-gm-sage/30 mt-1 text-center px-2">{
+                            {
+                              instagram: '1080 × 1350 (4:5) or 1080 × 1080',
+                              linkedin: '1080 × 1080 (1:1) recommended',
+                              stories: '1080 × 1920 (9:16)',
+                              facebook: '1080 × 1350 (4:5) or 1080 × 1080',
+                              tiktok: '1080 × 1920 (9:16)',
+                            }[multiPlatforms[0] || newSlot.platform] || '1080 × 1080 px'
+                          }</span>
+                        </button>
+                        <button onClick={() => setShowLibrary('single')} className="rounded-xl border-2 border-dashed border-gm-sage/20 hover:border-gm-sage/50 transition-all p-10 flex flex-col items-center gap-2 cursor-pointer hover:bg-gm-sage/[0.04] bg-gm-sage/[0.02]">
+                          <span className="text-3xl opacity-30">📚</span>
+                          <span className="text-sm text-gm-sage/70">Pick from Library</span>
+                          <span className="text-[10px] text-gm-sage/40">Cloudinary assets</span>
+                          <span className="text-[10px] text-gm-sage/30 mt-1">Auto-resize for platform</span>
+                        </button>
+                      </div>
                     )}
                   </>
                 )}
@@ -1072,6 +1099,23 @@ export default function CalendarPage() {
           </div>
         )}
       </Modal>
+
+      <CloudinaryPicker
+        open={showLibrary !== null}
+        onClose={() => setShowLibrary(null)}
+        platform={multiPlatforms[0] || newSlot.platform}
+        onSelect={(url) => {
+          if (showLibrary === 'single') {
+            setNewImage(url)
+          } else if (showLibrary === 'carousel') {
+            const remaining = 10 - newCarouselImages.length
+            if (remaining > 0) {
+              setNewCarouselImages(prev => [...prev, { data: url, cloudinaryUrl: url }])
+            }
+          }
+          setShowLibrary(null)
+        }}
+      />
     </>
   )
 }
