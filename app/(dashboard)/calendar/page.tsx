@@ -179,6 +179,7 @@ export default function CalendarPage() {
 
   const filteredSlots = useMemo(() =>
     slots
+      .filter(s => s.status !== 'SKIPPED')
       .filter(s => filterPlatform === 'all' || s.platform === filterPlatform)
       .filter(s => filterMarket === 'all' || s.market === filterMarket)
   , [slots, filterPlatform, filterMarket])
