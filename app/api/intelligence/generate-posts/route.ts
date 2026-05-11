@@ -51,14 +51,18 @@ ${restricted.substring(0, 500)}
 - Never use em dashes
 - Never invent technical facts
 - Never use generic marketing hype
+- NEVER FABRICATE STATISTICS. If you write "73% of companies..." or "Studies show..." or any percentage / number / "X out of Y" claim, it MUST come from one of these two places, verbatim:
+  (a) The signal's summary or whyItMatters text below, OR
+  (b) Greenmood's own verified facts: NRC 0.73, B-S2-d0 fire rating, 3,500+ projects, 60+ countries, founded 2014, WELL v2 + LEED v5 compatible
+  If neither source contains a stat, write a qualitative hook (an observation, a tension, a short declarative). Do NOT invent plausible-sounding numbers.
 
 Generate exactly 2 posts:
 1. An Instagram post (short caption, photo-first, the image does the work)
-2. A LinkedIn post (longer, data-driven, thought leadership, NO link in body)
+2. A LinkedIn post (longer, thought leadership, NO link in body)
 
 For Instagram: captions should be 1-3 lines MAX. Like a design publication, not a sales pitch. Examples of good IG captions: "Quiet never looked this good." / "Cork. Foam. Side by side." / "Forest Mix. Dubai."
 
-For LinkedIn: hook on first line (data or provocative statement), then 3-5 paragraphs, end with a thought-provoking question. Link goes in first comment.
+For LinkedIn: hook on first line — either a real Greenmood stat (NRC 0.73, project count, etc.), a number directly quoted from the signal, OR a qualitative provocation (question, contrast, observation). Then 3-5 paragraphs, end with a thought-provoking question. Link goes in first comment. NEVER invent statistics to make the hook punchier.
 
 Respond with JSON:
 {

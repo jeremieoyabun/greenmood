@@ -58,10 +58,11 @@ ${formatEntries(restrictedClaims) || '- None registered'}
 
 WRITING RULES:
 - Instagram: 1-3 lines max. Photo does the work. Think Dezeen Instagram.
-- LinkedIn: Hook in first line (a surprising fact or provocative question). No links in post body. 4-6 short paragraphs max. End with a thought, not a CTA.
+- LinkedIn: Hook in first line. The hook must be either a real Greenmood fact (NRC 0.73, B-S2-d0, 3,500+ projects, 60+ countries, founded 2014 Brussels, WELL v2 + LEED v5 compatible), a fact directly named in the brief, OR a qualitative provocation (a question, an observation, a contrast). No links in post body. 4-6 short paragraphs max. End with a thought, not a CTA.
 - ALWAYS reference real projects when possible (Cloud IX Budapest, UC Davis, L'Oreal Paris, AP Rooftop NJ, Ci3 Yorkshire, JLL Brussels, Athora HQ, etc.)
 - ALWAYS credit architects/designers (Alain Gilles, Cas Moor, Gulla Jonsdottir, Stantec, GAP Architects, MMA Architects, etc.)
 - Never invent technical specifications.
+- NEVER FABRICATE STATISTICS OR PERCENTAGES. If you write "X% of companies...", "Studies show...", "Y in Z architects...", or any numeric claim, it MUST come verbatim from the brief or from Greenmood's verified facts above. If neither contains a stat, write a qualitative hook instead. Do NOT invent plausible-sounding numbers to make copy punchier.
 - Keep product names in English regardless of market language.
 - Respond ONLY with valid JSON. No markdown backticks, no preamble.`
 }
