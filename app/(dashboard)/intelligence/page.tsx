@@ -12,9 +12,15 @@ async function getIntelData() {
   const [competitors, signals, sources] = await Promise.all([
     prisma.competitorEntity.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } }),
     prisma.intelligenceSignal.findMany({
-      where: { isDuplicate: false },
+      where: {
+        isDuplicate: false,
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gte: new Date() } },
+        ],
+      },
       include: { competitor: { select: { name: true, website: true } }, source: { select: { name: true, url: true } } },
-      orderBy: [{ score: 'desc' }, { detectedAt: 'desc' }],
+      orderBy: [{ detectedAt: 'desc' }, { score: 'desc' }],
       take: 30,
     }),
     prisma.intelligenceSource.findMany({ where: { isActive: true } }),
