@@ -53,13 +53,14 @@ What to detect:
 - Event-related opportunities
 - Content gaps Greenmood could fill
 
-Your output MUST be structured signals:
+Your output MUST be structured signals. EVERY signal MUST cite a source — a publication name, social account, trade show, report, or event. If you cannot name a specific source for a claim, do NOT generate a signal for it.
+
 {
   "signals": [
     {
       "title": "signal title",
-      "source": "where detected",
-      "sourceUrl": "URL if available",
+      "source": "REQUIRED — specific source: publication name, LinkedIn account, Instagram handle, trade show, report title, or event. Never 'general market knowledge' or 'industry observations'.",
+      "sourceUrl": "URL if available (preferred)",
       "country": "country/region",
       "category": "competitor_move | trend | event | content_gap | narrative | product_launch",
       "competitor": "competitor name or null",
@@ -117,7 +118,7 @@ GOOD output example: "Repeated growth in LinkedIn discussions around acoustic we
     if (sourceData?.length) {
       userMessage += `\n\nSource data to analyze:\n${JSON.stringify(sourceData, null, 2)}`
     } else {
-      userMessage += `\n\nNo pre-fetched source data available. Based on your knowledge of the biophilic design market (up to your training cutoff), generate intelligence signals that would be relevant for Greenmood's marketing strategy. Flag confidence as "medium" or "low" for signals based on general knowledge rather than real-time data.`
+      userMessage += `\n\nNo pre-fetched source data available. Generate signals ONLY when you can attribute the claim to a specific, real source: a named publication (e.g., "Dezeen", "Frame", "Journal of Biophilic Design"), a specific LinkedIn/Instagram account you can name, a specific trade show or event, an industry report you can title, or a named competitor's public communication. Do NOT generate signals based on "general market knowledge" or unattributed observations. If a topic has no real source you can name, skip it. Flag confidence as "low" if the source is older than 6 months.`
     }
 
     userMessage += `\n\nProduce structured, actionable intelligence signals. Each signal must include a specific recommended marketing action for Greenmood.`

@@ -154,6 +154,23 @@ export default async function IntelligencePage() {
                         {signal.source && (
                           <span className="text-xs text-gm-cream/20">via {signal.source.name}</span>
                         )}
+                        {!signal.source && (signal.metadata as { source?: string; sourceUrl?: string } | null)?.source && (
+                          (signal.metadata as { sourceUrl?: string })?.sourceUrl ? (
+                            <a
+                              href={(signal.metadata as { sourceUrl: string }).sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-gm-sage/60 hover:text-gm-sage underline underline-offset-2"
+                            >
+                              via {(signal.metadata as { source: string }).source}
+                            </a>
+                          ) : (
+                            <span className="text-xs text-gm-cream/30">via {(signal.metadata as { source: string }).source}</span>
+                          )
+                        )}
+                        {!signal.source && !(signal.metadata as { source?: string } | null)?.source && (
+                          <span className="text-xs text-amber-500/40 italic">no source cited</span>
+                        )}
                         {signal.country && signal.country !== 'global' && (
                           <span className="text-xs text-gm-cream/20">{signal.country.toUpperCase()}</span>
                         )}

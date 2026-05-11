@@ -121,6 +121,10 @@ export async function GET(req: NextRequest) {
             recommendedChannel: signal.recommendedChannel || null,
             score,
             competitorId,
+            metadata: (signal.source || signal.sourceUrl) ? {
+              source: signal.source || null,
+              sourceUrl: signal.sourceUrl || null,
+            } : undefined,
             expiresAt: signal.urgency === 'act_now'
               ? new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)   // 3 days
               : signal.urgency === 'this_week'
