@@ -93,6 +93,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // Execute transition in a transaction
+    // Also clear the calendar_slot status on UNSCHEDULE so it returns to CONTENT_READY
     const [updatedPost, approvalStep] = await prisma.$transaction([
       prisma.post.update({
         where: { id },
@@ -104,11 +105,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           reviewerId,
           fromStatus: post.status,
           toStatus,
-          action: action === 'SCHEDULE' ? 'APPROVE' : action as any,
-          comment: comment || (action === 'SCHEDULE' ? 'Approved and scheduled' : undefined),
+          action: (action === 'SCHEDULE' || action === 'UNSCHEDULE') ? 'APPROVE' : action as any,
+          comment: comment || (
+            action === 'SCHEDULE' ? 'Approved and scheduled' :
+            action === 'UNSCHEDULE' ? 'Unscheduled — returned to Ready to Schedule' :
+            undefined
+          ),
         },
       }),
     ])
+
+    // Sync calendar slot status when the post is un-scheduled
+    if (action === 'UNSCHEDULE') {
+      await prisma.calendarSlot.updateMany({
+        where: { postId: id, status: 'SCHEDULED' },
+        data: { status: 'CONTENT_READY' },
+      })
+    }
 
     // Revalidate pages that show post status
     revalidatePath('/approvals')
