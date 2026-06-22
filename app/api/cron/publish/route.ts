@@ -26,6 +26,19 @@ function getNowInTimezone(tz: string): { date: string; time: string } {
   }
 }
 
+// Whole calendar days between two YYYY-MM-DD strings (toYmd - fromYmd).
+function daysBetween(fromYmd: string, toYmd: string): number {
+  const a = new Date(`${fromYmd}T00:00:00Z`).getTime()
+  const b = new Date(`${toYmd}T00:00:00Z`).getTime()
+  return Math.round((b - a) / 86_400_000)
+}
+
+// A post overdue by more than this many days is considered STALE and is NOT
+// auto-published. This prevents a "catch-up flood" where posts that piled up
+// during cron downtime all publish at once the moment the cron resumes.
+// Same-day and next-day catch-up is still allowed (short outages are fine).
+const STALE_AFTER_DAYS = 1
+
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -55,6 +68,7 @@ export async function GET(req: NextRequest) {
     })
 
     // Filter: only publish if the scheduled time has passed in the market's timezone
+    const staleSlots: any[] = []
     const dueSlots = readySlots.filter(slot => {
       const market = slot.post?.market || 'hq'
       const tz = MARKETS[market]?.timezone || 'Europe/Brussels'
@@ -63,13 +77,27 @@ export async function GET(req: NextRequest) {
       const slotDate = new Date(slot.date).toISOString().split('T')[0]
       const slotTime = slot.time || '00:00'
 
-      // Past days = overdue, publish immediately
-      if (slotDate < nowDate) return true
+      // Not due yet — scheduled in the future
+      if (slotDate > nowDate) return false
+      if (slotDate === nowDate && slotTime > nowTime) return false
 
-      // Today = check if time has passed in market's timezone
-      if (slotDate === nowDate && slotTime <= nowTime) return true
+      // Due. Guard against stale catch-up floods: if the scheduled day is more
+      // than STALE_AFTER_DAYS in the past, skip it and leave it SCHEDULED for a
+      // human to re-time. Publishing weeks-old content unannounced is worse than
+      // not publishing it. (This is what bit the PL feed after a cron outage.)
+      const overdueDays = daysBetween(slotDate, nowDate)
+      if (overdueDays > STALE_AFTER_DAYS) {
+        staleSlots.push({
+          postId: slot.post?.id,
+          platform: slot.post?.platform,
+          market: slot.post?.market,
+          scheduledDate: slotDate,
+          overdueDays,
+        })
+        return false
+      }
 
-      return false
+      return true
     })
 
     const results: any[] = []
@@ -112,7 +140,9 @@ export async function GET(req: NextRequest) {
       checked: readySlots.length,
       due: dueSlots.length,
       published: results.filter(r => r.success).length,
-      skipped: readySlots.length - dueSlots.length,
+      notYetDue: readySlots.length - dueSlots.length - staleSlots.length,
+      staleSkipped: staleSlots.length,
+      staleSlots,
       results,
     })
   } catch (error) {
